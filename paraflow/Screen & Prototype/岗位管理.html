@@ -1,0 +1,584 @@
+<!DOCTYPE html><html><head>
+    <style>@layer theme, base, paraflow, components, utilities;</style><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    
+    
+    <style id="moxt-styled">@layer paraflow{@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&family=Open+Sans:wght@300;400;500;600;700;800&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Roboto+Condensed:wght@100;200;300;400;500;600;700;800;900&family=Roboto+Mono:wght@100;200;300;400;500;600;700&family=PT+Serif:wght@400;700&family=Arimo:wght@400;500;600;700&family=Raleway:wght@100;200;300;400;500;600;700;800;900&family=Nunito:wght@200;300;400;500;600;700&;800;900&family=Rubik:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=Ubuntu:wght@300;400;500;700&family=Merriweather:wght@300;400;500;600;700;800;900&family=Roboto+Slab:wght@100;200;300;400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Inconsolata:wght@200;300;400;500;600;700;800;900&family=Dancing+Script:wght@400;500;600;700&family=Kanit:wght@100;200;300;400;500;600;700;800;900&display=swap')
+}</style>
+<!--FontAwesome version: 6.7.2--><link rel="stylesheet" href="https://static.paraflowcontent.com/public/css/font-awesome/font-awesome.672.css"><!--Tailwind version: 4.0.17--><script src="https://static.paraflowcontent.com/public/js/tailwind/tailwind.js"></script><!--iconify-icon version: 3.0.0--><script src="https://static.paraflowcontent.com/public/js/iconify/iconify-icon-3.0.0.js"></script></head>
+<body id="48:1" title="岗位管理.html" orderindex="80" relativetransform="1718.25, 756.87" class="font-[-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif] w-[1440px] min-h-[900px]" style="background-image: linear-gradient( to bottom right in oklab , #FEFCF9 0% , #F9F7F3 100% ); line-height: 1.5;">
+
+<header id="48:2" orderindex="80" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 2px 8px rgba(74, 139, 90, 0.08); border-bottom-style: solid; border-color: rgba(232, 240, 233, 1);" class="w-full border-b-[1px]">
+<div id="48:3" orderindex="80" style="padding: 1rem 2rem;" class="flex justify-between items-center">
+
+<div id="48:4" orderindex="80" class="flex items-center gap-y-3 gap-x-3">
+<div id="48:5" orderindex="80" style="background-color: rgba(74, 139, 90, 1);" class="flex justify-center items-center w-8 h-8 rounded-lg">
+<iconify-icon id="48:6" orderindex="80" style="color: rgba(255, 255, 255, 1);" icon="lucide:briefcase" class="text-lg"></iconify-icon>
+</div>
+<span id="48:7" orderindex="81" style="color: rgba(26, 31, 28, 1);" class="text-xl font-semibold">CareerMatch AI</span>
+</div>
+
+<nav id="48:8" orderindex="81" class="flex items-center gap-y-8 gap-x-8">
+<a id="48:9" orderindex="80" class="hover:text-[#4A8B5A] flex items-center gap-y-2 gap-x-2" style="color: rgba(74, 82, 78, 1);" href="#">
+<span id="48:10" orderindex="80">仪表盘</span>
+</a>
+<a id="48:11" orderindex="81" style="color: rgba(74, 139, 90, 1); border-bottom-style: solid; border-color: rgba(74, 139, 90, 1);" href="#" class="flex items-center gap-y-2 gap-x-2 pb-1 border-b-[2px] font-semibold">
+<span id="48:12" orderindex="80">岗位管理</span>
+</a>
+<a id="48:13" orderindex="82" class="hover:text-[#4A8B5A] flex items-center gap-y-2 gap-x-2" style="color: rgba(74, 82, 78, 1);" href="#">
+<span id="48:14" orderindex="80">简历管理</span>
+</a>
+<a id="48:15" orderindex="83" class="hover:text-[#4A8B5A] flex items-center gap-y-2 gap-x-2" style="color: rgba(74, 82, 78, 1);" href="#">
+<span id="48:16" orderindex="80">个人档案</span>
+</a>
+</nav>
+
+<div id="48:17" orderindex="82" class="flex items-center gap-y-4 gap-x-4">
+
+<div id="48:18" orderindex="80" class="relative">
+<input id="48:19" orderindex="80" class="focus:border-[#4A8B5A] focus:shadow-[0_0_0_3px_rgba(74,139,90,0.2)] text-sm w-64 pt-2 pr-4 pb-2 pl-10 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); border-color: rgba(232, 240, 233, 1);" type="text" placeholder="岗位快速搜索...">
+<div id="48:20" orderindex="81" style="top: 50%; transform: NaN; translate: 0 -50%;" class="flex absolute left-3 justify-center items-center w-4 h-4">
+<iconify-icon id="48:21" orderindex="80" style="color: rgba(122, 130, 126, 1);" icon="lucide:search" class="text-sm"></iconify-icon>
+</div>
+</div>
+
+<div id="48:22" orderindex="81" class="relative">
+<button id="48:23" orderindex="80" class="hover:bg-[#F8F6F2] flex justify-center items-center w-10 h-10 rounded-lg">
+<iconify-icon id="48:24" orderindex="80" style="color: rgba(74, 82, 78, 1);" icon="lucide:bell" class="text-lg"></iconify-icon>
+</button>
+<div id="48:25" orderindex="81" style="background-color: rgba(230, 126, 34, 1);" class="absolute -top-1 -right-1 w-3 h-3 rounded-full"></div>
+</div>
+
+<div id="48:26" orderindex="82" class="flex items-center gap-y-2 gap-x-2">
+<img id="48:27" orderindex="80" alt="Professional headshot of a young professional, friendly smile" src="https://static.paraflowcontent.com/public/resource/image/e29a3b5b-c7f8-4493-befe-7a7185ed221a.jpeg" class="w-10 h-10 object-cover rounded-full">
+<div id="48:28" orderindex="81" class="flex justify-center items-center w-4 h-4">
+<iconify-icon id="48:29" orderindex="80" style="color: rgba(122, 130, 126, 1);" icon="lucide:chevron-down" class="text-sm"></iconify-icon>
+</div>
+</div>
+</div>
+</div>
+</header>
+
+<main id="48:30" orderindex="81" class="w-full p-8">
+
+<section id="48:31" orderindex="80" class="mb-8">
+<div id="48:32" orderindex="80" class="flex justify-between items-center mb-6">
+<h1 id="48:33" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-2xl font-semibold">岗位管理</h1>
+<button id="48:34" orderindex="81" class="hover:bg-[#386843] flex items-center rounded-lg" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.75rem 1.5rem;">
+<div id="48:35" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="48:36" orderindex="80" icon="lucide:plus" class="text-sm"></iconify-icon>
+</div>
+<span id="48:37" orderindex="81">添加岗位</span>
+</button>
+</div>
+
+<div id="48:38" orderindex="81" class="grid grid-cols-4 gap-y-6 gap-x-6 mb-8">
+<div id="48:39" orderindex="80" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-5 border-[1px] border-solid rounded-lg">
+<div id="48:40" orderindex="80" class="flex justify-between items-center mb-3">
+<div id="48:41" orderindex="80" style="background-color: rgba(232, 243, 234, 1);" class="flex justify-center items-center w-10 h-10 rounded-lg">
+<iconify-icon id="48:42" orderindex="80" style="color: rgba(74, 139, 90, 1);" icon="lucide:bookmark" class="text-lg"></iconify-icon>
+</div>
+<div id="48:43" orderindex="81" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="48:44" orderindex="80">+8</span>
+</div>
+</div>
+<h3 id="48:45" orderindex="81" style="color: rgba(26, 31, 28, 1);" class="text-2xl mb-1 font-semibold">156</h3>
+<p id="48:46" orderindex="82" style="color: rgba(122, 130, 126, 1);" class="text-sm">总岗位数量</p>
+</div>
+<div id="48:47" orderindex="81" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-5 border-[1px] border-solid rounded-lg">
+<div id="48:48" orderindex="80" class="flex justify-between items-center mb-3">
+<div id="48:49" orderindex="80" style="background-color: rgba(232, 243, 234, 1);" class="flex justify-center items-center w-10 h-10 rounded-lg">
+<iconify-icon id="48:50" orderindex="80" style="color: rgba(74, 139, 90, 1);" icon="lucide:target" class="text-lg"></iconify-icon>
+</div>
+<div id="48:51" orderindex="81" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="48:52" orderindex="80">优秀</span>
+</div>
+</div>
+<h3 id="48:53" orderindex="81" style="color: rgba(26, 31, 28, 1);" class="text-2xl mb-1 font-semibold">28</h3>
+<p id="48:54" orderindex="82" style="color: rgba(122, 130, 126, 1);" class="text-sm">高匹配度岗位(&gt;80%)</p>
+</div>
+<div id="48:55" orderindex="82" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-5 border-[1px] border-solid rounded-lg">
+<div id="48:56" orderindex="80" class="flex justify-between items-center mb-3">
+<div id="48:57" orderindex="80" style="background-color: rgba(253, 248, 243, 1);" class="flex justify-center items-center w-10 h-10 rounded-lg">
+<iconify-icon id="48:58" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:clock" class="text-lg"></iconify-icon>
+</div>
+<div id="48:59" orderindex="81" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="48:60" orderindex="80">紧急</span>
+</div>
+</div>
+<h3 id="48:61" orderindex="81" style="color: rgba(26, 31, 28, 1);" class="text-2xl mb-1 font-semibold">43</h3>
+<p id="48:62" orderindex="82" style="color: rgba(122, 130, 126, 1);" class="text-sm">待申请岗位</p>
+</div>
+<div id="48:63" orderindex="83" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-5 border-[1px] border-solid rounded-lg">
+<div id="48:64" orderindex="80" class="flex justify-between items-center mb-3">
+<div id="48:65" orderindex="80" style="background-color: rgba(235, 240, 236, 1);" class="flex justify-center items-center w-10 h-10 rounded-lg">
+<iconify-icon id="48:66" orderindex="80" style="color: rgba(56, 104, 67, 1);" icon="lucide:calendar-plus" class="text-lg"></iconify-icon>
+</div>
+<div id="48:67" orderindex="81" style="background-color: rgba(235, 240, 236, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="48:68" orderindex="80">本周</span>
+</div>
+</div>
+<h3 id="48:69" orderindex="81" style="color: rgba(26, 31, 28, 1);" class="text-2xl mb-1 font-semibold">12</h3>
+<p id="48:70" orderindex="82" style="color: rgba(122, 130, 126, 1);" class="text-sm">本周新增岗位</p>
+</div>
+</div>
+</section>
+
+<section id="48:71" orderindex="81" class="mb-8">
+<div id="48:72" orderindex="80" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-6 border-[1px] border-solid rounded-lg">
+
+<div id="48:73" orderindex="80" class="grid grid-cols-3 gap-y-6 gap-x-6 mb-6">
+
+<div id="48:74" orderindex="80">
+<label id="48:75" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm block mb-2 font-medium">申请状态</label>
+<div id="48:76" orderindex="81" class="flex flex-wrap gap-y-2 gap-x-2">
+<button id="48:77" orderindex="80" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.25rem 0.75rem;" class="text-sm flex items-center rounded-full">
+<span id="48:78" orderindex="80">全部</span>
+</button>
+<button id="48:79" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:80" orderindex="80">草稿</span>
+</button>
+<button id="48:81" orderindex="82" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:82" orderindex="80">已投递</span>
+</button>
+<button id="48:83" orderindex="83" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:84" orderindex="80">面试中</span>
+</button>
+<button id="48:85" orderindex="84" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:86" orderindex="80">已录取</span>
+</button>
+<button id="48:87" orderindex="85" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:88" orderindex="80">已拒绝</span>
+</button>
+<button id="48:89" orderindex="86" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:90" orderindex="80">已撤回</span>
+</button>
+</div>
+</div>
+
+<div id="48:91" orderindex="81">
+<label id="48:92" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm block mb-2 font-medium">岗位类型</label>
+<div id="48:93" orderindex="81" class="flex flex-wrap gap-y-2 gap-x-2">
+<button id="48:94" orderindex="80" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-sm flex items-center rounded-full">
+<span id="48:95" orderindex="80">软件工程师</span>
+</button>
+<button id="48:96" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:97" orderindex="80">产品管理</span>
+</button>
+<button id="48:98" orderindex="82" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:99" orderindex="80">数据分析</span>
+</button>
+</div>
+</div>
+
+<div id="48:100" orderindex="82">
+<label id="48:101" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm block mb-2 font-medium">公司规模</label>
+<div id="48:102" orderindex="81" class="flex flex-wrap gap-y-2 gap-x-2">
+<button id="48:103" orderindex="80" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:104" orderindex="80">初创公司</span>
+</button>
+<button id="48:105" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:106" orderindex="80">中型企业</span>
+</button>
+<button id="48:107" orderindex="82" class="hover:bg-[#E8F3EA] text-sm flex items-center rounded-full" style="background-color: rgba(248, 246, 242, 1); color: rgba(122, 130, 126, 1); padding: 0.25rem 0.75rem;">
+<span id="48:108" orderindex="80">大型企业</span>
+</button>
+</div>
+</div>
+</div>
+
+<div id="48:109" orderindex="81" class="grid grid-cols-2 gap-y-6 gap-x-6 mb-6">
+
+<div id="48:110" orderindex="80">
+<label id="48:111" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm block mb-2 font-medium">匹配度范围</label>
+<div id="48:112" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<input id="48:113" orderindex="80" style="flex-basis: 0%;" value="60" type="range" min="0" max="100" class="grow shrink">
+<span id="48:114" orderindex="81" style="color: rgba(122, 130, 126, 1);" class="text-sm min-w-fit">60% - 100%</span>
+</div>
+</div>
+
+<div id="48:115" orderindex="81">
+<label id="48:116" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm block mb-2 font-medium">薪资范围</label>
+<div id="48:117" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<input id="48:118" orderindex="80" style="flex-basis: 0%;" value="20" type="range" min="5" max="100" class="grow shrink">
+<span id="48:119" orderindex="81" style="color: rgba(122, 130, 126, 1);" class="text-sm min-w-fit">20k - 100k</span>
+</div>
+</div>
+</div>
+
+<div id="48:120" orderindex="82" class="flex justify-between items-center">
+
+<div id="48:121" orderindex="80" class="flex items-center gap-y-2 gap-x-2">
+<span id="48:122" orderindex="80" style="color: rgba(122, 130, 126, 1);" class="text-sm">视图:</span>
+<div id="48:123" orderindex="81" style="background-color: rgba(248, 246, 242, 1);" class="flex items-center p-1 rounded-lg">
+<button id="48:124" orderindex="80" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 0.75rem;" class="text-sm flex items-center rounded-lg">
+<div id="48:125" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="48:126" orderindex="80" icon="lucide:grid-3x3" class="text-sm"></iconify-icon>
+</div>
+<span id="48:127" orderindex="81">卡片</span>
+</button>
+<button id="48:128" orderindex="81" class="hover:bg-white text-sm flex items-center rounded-lg" style="color: rgba(122, 130, 126, 1); padding: 0.5rem 0.75rem;">
+<div id="48:129" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="48:130" orderindex="80" icon="lucide:list" class="text-sm"></iconify-icon>
+</div>
+<span id="48:131" orderindex="81">列表</span>
+</button>
+<button id="48:132" orderindex="82" class="hover:bg-white text-sm flex items-center rounded-lg" style="color: rgba(122, 130, 126, 1); padding: 0.5rem 0.75rem;">
+<div id="48:133" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="48:134" orderindex="80" icon="lucide:kanban-square" class="text-sm"></iconify-icon>
+</div>
+<span id="48:135" orderindex="81">看板</span>
+</button>
+</div>
+</div>
+
+<div id="48:136" orderindex="81" class="flex items-center gap-y-4 gap-x-4">
+<span id="48:137" orderindex="80" style="color: rgba(122, 130, 126, 1);" class="text-sm">排序:</span>
+<select id="48:138" orderindex="81" class="focus:border-[#4A8B5A] text-sm border-[1px] border-solid rounded-lg" style="padding: 0.5rem 0.75rem; border-color: rgba(232, 240, 233, 1);">
+<option id="48:139" orderindex="80">最新收集</option>
+<option id="48:140" orderindex="81">匹配度高低</option>
+<option id="48:141" orderindex="82">申请截止时间</option>
+<option id="48:142" orderindex="83">薪资高低</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+
+<section id="48:143" orderindex="82" class="mb-6">
+<div id="48:144" orderindex="80" style="background-color: rgba(232, 243, 234, 1); border-color: rgba(74, 139, 90, 1);" class="flex justify-between items-center p-4 border-[1px] border-solid rounded-lg">
+<div id="48:145" orderindex="80" class="flex items-center gap-y-4 gap-x-4">
+<div id="48:146" orderindex="80" class="flex items-center gap-y-2 gap-x-2">
+<input id="48:147" orderindex="80" type="checkbox" class="w-4 h-4">
+<span id="48:148" orderindex="81" style="color: rgba(26, 31, 28, 1);" class="text-sm">已选择 12 个岗位</span>
+</div>
+<div id="48:149" orderindex="81" class="flex items-center gap-y-2 gap-x-2">
+<button id="48:150" orderindex="80" class="hover:text-[#386843] text-sm" style="color: rgba(74, 139, 90, 1);">全选</button>
+<span id="48:151" orderindex="81" style="color: rgba(168, 175, 169, 1);">|</span>
+<button id="48:152" orderindex="82" class="hover:text-[#386843] text-sm" style="color: rgba(74, 139, 90, 1);">取消全选</button>
+<span id="48:153" orderindex="83" style="color: rgba(168, 175, 169, 1);">|</span>
+<button id="48:154" orderindex="84" class="hover:text-[#386843] text-sm" style="color: rgba(74, 139, 90, 1);">反选</button>
+</div>
+</div>
+<div id="48:155" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="48:156" orderindex="80" class="hover:bg-[#386843] text-sm flex items-center rounded-lg" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 1rem;">
+<div id="48:157" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="48:158" orderindex="80" icon="lucide:edit-3" class="text-sm"></iconify-icon>
+</div>
+<span id="48:159" orderindex="81">更改状态</span>
+</button>
+<button id="48:160" orderindex="81" class="hover:bg-white text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<div id="48:161" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="48:162" orderindex="80" icon="lucide:download" class="text-sm"></iconify-icon>
+</div>
+<span id="48:163" orderindex="81">批量导出</span>
+</button>
+<button id="48:164" orderindex="82" class="hover:bg-[#FDF2F2] text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(209, 67, 67, 1); padding: 0.5rem 1rem; border-color: rgba(209, 67, 67, 1);">
+<div id="48:165" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="48:166" orderindex="80" icon="lucide:trash-2" class="text-sm"></iconify-icon>
+</div>
+<span id="48:167" orderindex="81">批量删除</span>
+</button>
+</div>
+</div>
+</section>
+
+<section id="48:168" orderindex="83" class="mb-8">
+<div id="48:169" orderindex="80" class="grid grid-cols-2 gap-y-6 gap-x-6">
+
+<div id="48:170" orderindex="80" class="hover:shadow-[0_6px_20px_rgba(74,139,90,0.15)] p-6 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);">
+<div id="48:171" orderindex="80" class="flex justify-between items-start mb-4">
+<div id="48:172" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<div id="48:173" orderindex="80" class="flex items-start gap-y-3 gap-x-3 mb-3">
+<input id="48:174" orderindex="80" type="checkbox" class="w-4 h-4 mt-1">
+<div id="48:175" orderindex="81" style="flex-basis: 0%;" class="grow shrink">
+<h3 id="48:176" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-1 font-semibold">高级前端工程师</h3>
+<p id="48:177" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-2">字节跳动 · 北京</p>
+</div>
+</div>
+
+<div id="48:178" orderindex="81" class="flex items-center gap-y-4 gap-x-4 mb-3">
+
+<div id="48:179" orderindex="80" class="relative w-12 h-12">
+<img id="48:180" orderindex="80" style="transform: NaN;" alt="SVG image #0" src="https://static.paraflowcontent.com/public/resource/image/0063bc95-0360-4047-99d6-196181d1bcff.svg" class="-rotate-90 w-12 h-12">
+<div id="48:181" orderindex="81" style="top: 0; right: 0; bottom: 0; left: 0;" class="flex absolute justify-center items-center">
+<span id="48:182" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-xs font-semibold">87%</span>
+</div>
+</div>
+
+<div id="48:183" orderindex="81" class="flex items-center gap-y-1 gap-x-1">
+<iconify-icon id="48:184" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:185" orderindex="81" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:186" orderindex="82" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:187" orderindex="83" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:188" orderindex="84" style="color: rgba(168, 175, 169, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+</div>
+</div>
+
+<div id="48:189" orderindex="82" style="color: rgba(122, 130, 126, 1);" class="text-sm flex items-center gap-y-4 gap-x-4 mb-3">
+<span id="48:190" orderindex="80">25-45k</span>
+<span id="48:191" orderindex="81">·</span>
+<span id="48:192" orderindex="82">发布2天前</span>
+<span id="48:193" orderindex="83">·</span>
+<span id="48:194" orderindex="84">3天后截止</span>
+</div>
+
+<div id="48:195" orderindex="83" class="flex items-center gap-y-2 gap-x-2 mb-4">
+<div id="48:196" orderindex="80" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="48:197" orderindex="80">待申请</span>
+</div>
+<div id="48:198" orderindex="81" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="48:199" orderindex="80">高匹配</span>
+</div>
+</div>
+</div>
+
+<img id="48:200" orderindex="81" alt="ByteDance company logo, modern tech company branding" src="https://static.paraflowcontent.com/public/resource/image/fa7c4c70-0c9f-4303-a4d3-ef476efcdfb6.jpeg" class="w-15 h-15 object-cover rounded-lg">
+</div>
+
+<div id="48:201" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="48:202" orderindex="80" class="hover:bg-[#386843] text-sm flex items-center rounded-lg" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 1rem;">
+<span id="48:203" orderindex="80">生成简历</span>
+</button>
+<button id="48:204" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<span id="48:205" orderindex="80">查看详情</span>
+</button>
+<button id="48:206" orderindex="82" class="hover:bg-[#F8F6F2] flex justify-center items-center w-10 h-10 rounded-lg" style="color: rgba(122, 130, 126, 1);">
+<iconify-icon id="48:207" orderindex="80" icon="lucide:more-horizontal" class="text-base"></iconify-icon>
+</button>
+</div>
+</div>
+
+<div id="48:208" orderindex="81" class="hover:shadow-[0_6px_20px_rgba(74,139,90,0.15)] p-6 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);">
+<div id="48:209" orderindex="80" class="flex justify-between items-start mb-4">
+<div id="48:210" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<div id="48:211" orderindex="80" class="flex items-start gap-y-3 gap-x-3 mb-3">
+<input id="48:212" orderindex="80" type="checkbox" class="w-4 h-4 mt-1">
+<div id="48:213" orderindex="81" style="flex-basis: 0%;" class="grow shrink">
+<h3 id="48:214" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-1 font-semibold">产品经理</h3>
+<p id="48:215" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-2">腾讯 · 深圳</p>
+</div>
+</div>
+
+<div id="48:216" orderindex="81" class="flex items-center gap-y-4 gap-x-4 mb-3">
+
+<div id="48:217" orderindex="80" class="relative w-12 h-12">
+<img id="48:218" orderindex="80" style="transform: NaN;" alt="SVG image #1" src="https://static.paraflowcontent.com/public/resource/image/8b83f955-eef4-42c5-a073-75fdb93afc32.svg" class="-rotate-90 w-12 h-12">
+<div id="48:219" orderindex="81" style="top: 0; right: 0; bottom: 0; left: 0;" class="flex absolute justify-center items-center">
+<span id="48:220" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-xs font-semibold">92%</span>
+</div>
+</div>
+
+<div id="48:221" orderindex="81" class="flex items-center gap-y-1 gap-x-1">
+<iconify-icon id="48:222" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:223" orderindex="81" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:224" orderindex="82" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:225" orderindex="83" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:226" orderindex="84" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+</div>
+</div>
+
+<div id="48:227" orderindex="82" style="color: rgba(122, 130, 126, 1);" class="text-sm flex items-center gap-y-4 gap-x-4 mb-3">
+<span id="48:228" orderindex="80">
+<span id="48:229" orderindex="80">30-50k</span>
+<span id="48:230" orderindex="81">·</span>
+<span id="48:231" orderindex="82">发布1天前</span>
+<span id="48:232" orderindex="83">·</span>
+<span id="48:233" orderindex="84">5天后截止</span>
+</span></div>
+
+<div id="48:234" orderindex="83" class="flex items-center gap-y-2 gap-x-2 mb-4">
+<div id="48:235" orderindex="80" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="48:236" orderindex="80">已投递</span>
+</div>
+<div id="48:237" orderindex="81" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="48:238" orderindex="80">高匹配</span>
+</div>
+</div>
+</div>
+
+<img id="48:239" orderindex="81" alt="Tencent company logo, blue and white design" src="https://static.paraflowcontent.com/public/resource/image/3928c58d-9396-4e42-8361-3f841190260f.jpeg" class="w-15 h-15 object-cover rounded-lg">
+</div>
+
+<div id="48:240" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="48:241" orderindex="80" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.5rem 1rem;" disabled="" class="text-sm flex items-center rounded-lg">
+<span id="48:242" orderindex="80">已申请</span>
+</button>
+<button id="48:243" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<span id="48:244" orderindex="80">查看详情</span>
+</button>
+<button id="48:245" orderindex="82" class="hover:bg-[#F8F6F2] flex justify-center items-center w-10 h-10 rounded-lg" style="color: rgba(122, 130, 126, 1);">
+<iconify-icon id="48:246" orderindex="80" icon="lucide:more-horizontal" class="text-base"></iconify-icon>
+</button>
+</div>
+</div>
+
+<div id="48:247" orderindex="82" class="hover:shadow-[0_6px_20px_rgba(74,139,90,0.15)] p-6 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);">
+<div id="48:248" orderindex="80" class="flex justify-between items-start mb-4">
+<div id="48:249" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<div id="48:250" orderindex="80" class="flex items-start gap-y-3 gap-x-3 mb-3">
+<input id="48:251" orderindex="80" type="checkbox" class="w-4 h-4 mt-1">
+<div id="48:252" orderindex="81" style="flex-basis: 0%;" class="grow shrink">
+<h3 id="48:253" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-1 font-semibold">数据分析师</h3>
+<p id="48:254" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-2">阿里巴巴 · 杭州</p>
+</div>
+</div>
+
+<div id="48:255" orderindex="81" class="flex items-center gap-y-4 gap-x-4 mb-3">
+
+<div id="48:256" orderindex="80" class="relative w-12 h-12">
+<img id="48:257" orderindex="80" style="transform: NaN;" alt="SVG image #2" src="https://static.paraflowcontent.com/public/resource/image/3625ae1d-101f-4365-9832-058a4f0e4c76.svg" class="-rotate-90 w-12 h-12">
+<div id="48:258" orderindex="81" style="top: 0; right: 0; bottom: 0; left: 0;" class="flex absolute justify-center items-center">
+<span id="48:259" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-xs font-semibold">75%</span>
+</div>
+</div>
+
+<div id="48:260" orderindex="81" class="flex items-center gap-y-1 gap-x-1">
+<iconify-icon id="48:261" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:262" orderindex="81" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:263" orderindex="82" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:264" orderindex="83" style="color: rgba(168, 175, 169, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:265" orderindex="84" style="color: rgba(168, 175, 169, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+</div>
+</div>
+
+<div id="48:266" orderindex="82" style="color: rgba(122, 130, 126, 1);" class="text-sm flex items-center gap-y-4 gap-x-4 mb-3">
+<span id="48:267" orderindex="80">20-35k</span>
+<span id="48:268" orderindex="81">·</span>
+<span id="48:269" orderindex="82">发布3天前</span>
+<span id="48:270" orderindex="83">·</span>
+<span id="48:271" orderindex="84">1天后截止</span>
+</div>
+
+<div id="48:272" orderindex="83" class="flex items-center gap-y-2 gap-x-2 mb-4">
+<div id="48:273" orderindex="80" style="background-color: rgba(253, 242, 242, 1); color: rgba(209, 67, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="48:274" orderindex="80">即将截止</span>
+</div>
+<div id="48:275" orderindex="81" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="48:276" orderindex="80">中等匹配</span>
+</div>
+</div>
+</div>
+
+<img id="48:277" orderindex="81" alt="Alibaba company logo, orange and modern design" src="https://static.paraflowcontent.com/public/resource/image/8f00e8a6-8096-428a-86e4-be555e5f005c.jpeg" class="w-15 h-15 object-cover rounded-lg">
+</div>
+
+<div id="48:278" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="48:279" orderindex="80" class="hover:bg-[#D16A1C] text-sm flex items-center rounded-lg" style="background-color: rgba(230, 126, 34, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 1rem;">
+<span id="48:280" orderindex="80">紧急申请</span>
+</button>
+<button id="48:281" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<span id="48:282" orderindex="80">查看详情</span>
+</button>
+<button id="48:283" orderindex="82" class="hover:bg-[#F8F6F2] flex justify-center items-center w-10 h-10 rounded-lg" style="color: rgba(122, 130, 126, 1);">
+<iconify-icon id="48:284" orderindex="80" icon="lucide:more-horizontal" class="text-base"></iconify-icon>
+</button>
+</div>
+</div>
+
+<div id="48:285" orderindex="83" class="hover:shadow-[0_6px_20px_rgba(74,139,90,0.15)] p-6 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);">
+<div id="48:286" orderindex="80" class="flex justify-between items-start mb-4">
+<div id="48:287" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<div id="48:288" orderindex="80" class="flex items-start gap-y-3 gap-x-3 mb-3">
+<input id="48:289" orderindex="80" type="checkbox" class="w-4 h-4 mt-1">
+<div id="48:290" orderindex="81" style="flex-basis: 0%;" class="grow shrink">
+<h3 id="48:291" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-1 font-semibold">UI/UX设计师</h3>
+<p id="48:292" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-2">美团 · 北京</p>
+</div>
+</div>
+
+<div id="48:293" orderindex="81" class="flex items-center gap-y-4 gap-x-4 mb-3">
+
+<div id="48:294" orderindex="80" class="relative w-12 h-12">
+<img id="48:295" orderindex="80" style="transform: NaN;" alt="SVG image #3" src="https://static.paraflowcontent.com/public/resource/image/416de128-0b41-47bb-b994-407ed563972b.svg" class="-rotate-90 w-12 h-12">
+<div id="48:296" orderindex="81" style="top: 0; right: 0; bottom: 0; left: 0;" class="flex absolute justify-center items-center">
+<span id="48:297" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-xs font-semibold">83%</span>
+</div>
+</div>
+
+<div id="48:298" orderindex="81" class="flex items-center gap-y-1 gap-x-1">
+<iconify-icon id="48:299" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:300" orderindex="81" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:301" orderindex="82" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:302" orderindex="83" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="48:303" orderindex="84" style="color: rgba(168, 175, 169, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+</div>
+</div>
+
+<div id="48:304" orderindex="82" style="color: rgba(122, 130, 126, 1);" class="text-sm flex items-center gap-y-4 gap-x-4 mb-3">
+<span id="48:305" orderindex="80">18-28k</span>
+<span id="48:306" orderindex="81">·</span>
+<span id="48:307" orderindex="82">发布4天前</span>
+<span id="48:308" orderindex="83">·</span>
+<span id="48:309" orderindex="84">7天后截止</span>
+</div>
+
+<div id="48:310" orderindex="83" class="flex items-center gap-y-2 gap-x-2 mb-4">
+<div id="48:311" orderindex="80" style="background-color: rgba(235, 240, 236, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="48:312" orderindex="80">面试中</span>
+</div>
+<div id="48:313" orderindex="81" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="48:314" orderindex="80">高匹配</span>
+</div>
+</div>
+</div>
+
+<img id="48:315" orderindex="81" alt="Meituan company logo, yellow and modern design" src="https://static.paraflowcontent.com/public/resource/image/f215907b-e6a2-48ba-bd1a-f64f5bf709f7.jpeg" class="w-15 h-15 object-cover rounded-lg">
+</div>
+
+<div id="48:316" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="48:317" orderindex="80" style="background-color: rgba(235, 240, 236, 1); color: rgba(56, 104, 67, 1); padding: 0.5rem 1rem;" disabled="" class="text-sm flex items-center rounded-lg">
+<span id="48:318" orderindex="80">面试中</span>
+</button>
+<button id="48:319" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<span id="48:320" orderindex="80">查看详情</span>
+</button>
+<button id="48:321" orderindex="82" class="hover:bg-[#F8F6F2] flex justify-center items-center w-10 h-10 rounded-lg" style="color: rgba(122, 130, 126, 1);">
+<iconify-icon id="48:322" orderindex="80" icon="lucide:more-horizontal" class="text-base"></iconify-icon>
+</button>
+</div>
+</div>
+</div>
+</section>
+
+<section id="48:323" orderindex="84" class="flex justify-between items-center">
+<div id="48:324" orderindex="80" class="flex items-center gap-y-4 gap-x-4">
+<span id="48:325" orderindex="80" style="color: rgba(122, 130, 126, 1);" class="text-sm">显示 1-20 项，共 156 项</span>
+<select id="48:326" orderindex="81" class="focus:border-[#4A8B5A] text-sm border-[1px] border-solid rounded-lg" style="padding: 0.5rem 0.75rem; border-color: rgba(232, 240, 233, 1);">
+<option id="48:327" orderindex="80">每页 20 项</option>
+<option id="48:328" orderindex="81">每页 50 项</option>
+<option id="48:329" orderindex="82">每页 100 项</option>
+</select>
+</div>
+<div id="48:330" orderindex="81" class="flex items-center gap-y-2 gap-x-2">
+<button id="48:331" orderindex="80" class="hover:bg-[#F8F6F2] text-sm flex items-center border-[1px] border-solid rounded-lg" style="padding: 0.5rem 0.75rem; border-color: rgba(232, 240, 233, 1);" disabled="">
+<div id="48:332" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-1">
+<iconify-icon id="48:333" orderindex="80" icon="lucide:chevron-left" class="text-sm"></iconify-icon>
+</div>
+<span id="48:334" orderindex="81">上一页</span>
+</button>
+<div id="48:335" orderindex="81" class="flex items-center gap-y-1 gap-x-1">
+<button id="48:336" orderindex="80" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1);" class="text-sm flex justify-center items-center w-8 h-8 rounded-sm">1</button>
+<button id="48:337" orderindex="81" class="hover:bg-[#F8F6F2] text-sm flex justify-center items-center w-8 h-8 rounded-sm" style="color: rgba(122, 130, 126, 1);">2</button>
+<button id="48:338" orderindex="82" class="hover:bg-[#F8F6F2] text-sm flex justify-center items-center w-8 h-8 rounded-sm" style="color: rgba(122, 130, 126, 1);">3</button>
+<span id="48:339" orderindex="83" style="color: rgba(168, 175, 169, 1);" class="pr-2 pl-2">...</span>
+<button id="48:340" orderindex="84" class="hover:bg-[#F8F6F2] text-sm flex justify-center items-center w-8 h-8 rounded-sm" style="color: rgba(122, 130, 126, 1);">8</button>
+</div>
+<button id="48:341" orderindex="82" class="hover:bg-[#F8F6F2] text-sm flex items-center border-[1px] border-solid rounded-lg" style="padding: 0.5rem 0.75rem; border-color: rgba(232, 240, 233, 1);">
+<span id="48:342" orderindex="80">下一页</span>
+<div id="48:343" orderindex="81" class="flex justify-center items-center w-4 h-4 ml-1">
+<iconify-icon id="48:344" orderindex="80" icon="lucide:chevron-right" class="text-sm"></iconify-icon>
+</div>
+</button>
+</div>
+</section>
+
+<button id="48:345" orderindex="85" class="hover:bg-[#386843] flex fixed right-8 bottom-8 justify-center items-center w-12 h-12 rounded-full" style="background-color: rgba(74, 139, 90, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.3); color: rgba(255, 255, 255, 1);">
+<iconify-icon id="48:346" orderindex="80" icon="lucide:arrow-up" class="text-lg"></iconify-icon>
+</button>
+</main>
+
+
+
+</body></html>

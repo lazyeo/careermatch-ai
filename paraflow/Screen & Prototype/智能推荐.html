@@ -1,0 +1,558 @@
+<!DOCTYPE html><html><head>
+    <style>@layer theme, base, paraflow, components, utilities;</style><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    
+    
+    <style id="moxt-styled">@layer paraflow{@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&family=Open+Sans:wght@300;400;500;600;700;800&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Poppins:wght@100;200;300;400;500;600;700;800;900&family=Roboto+Condensed:wght@100;200;300;400;500;600;700;800;900&family=Roboto+Mono:wght@100;200;300;400;500;600;700&family=PT+Serif:wght@400;700&family=Arimo:wght@400;500;600;700&family=Raleway:wght@100;200;300;400;500;600;700;800;900&family=Nunito:wght@200;300;400;500;600;700&;800;900&family=Rubik:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&family=Ubuntu:wght@300;400;500;700&family=Merriweather:wght@300;400;500;600;700;800;900&family=Roboto+Slab:wght@100;200;300;400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Inconsolata:wght@200;300;400;500;600;700;800;900&family=Dancing+Script:wght@400;500;600;700&family=Kanit:wght@100;200;300;400;500;600;700;800;900&display=swap')
+}</style>
+<!--FontAwesome version: 6.7.2--><link rel="stylesheet" href="https://static.paraflowcontent.com/public/css/font-awesome/font-awesome.672.css"><!--Tailwind version: 4.0.17--><script src="https://static.paraflowcontent.com/public/js/tailwind/tailwind.js"></script><!--iconify-icon version: 3.0.0--><script src="https://static.paraflowcontent.com/public/js/iconify/iconify-icon-3.0.0.js"></script></head>
+<body id="51:1" title="智能推荐.html" orderindex="80" relativetransform="6158.25, 756.87" class="font-[-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif] w-[1440px] min-h-[900px]" style="background-image: linear-gradient( to bottom right in oklab , #FEFCF9 0% , #F9F7F3 100% ); line-height: 1.5;">
+
+<header id="51:2" orderindex="80" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 2px 8px rgba(74, 139, 90, 0.08); border-bottom-style: solid; border-color: rgba(232, 240, 233, 1);" class="w-full border-b-[1px]">
+<div id="51:3" orderindex="80" style="padding: 1rem 2rem;" class="flex justify-between items-center">
+
+<div id="51:4" orderindex="80" class="flex items-center gap-y-3 gap-x-3">
+<div id="51:5" orderindex="80" style="background-color: rgba(74, 139, 90, 1);" class="flex justify-center items-center w-8 h-8 rounded-lg">
+<iconify-icon id="51:6" orderindex="80" style="color: rgba(255, 255, 255, 1);" icon="lucide:briefcase" class="text-lg"></iconify-icon>
+</div>
+<span id="51:7" orderindex="81" style="color: rgba(26, 31, 28, 1);" class="text-xl font-semibold">CareerMatch AI</span>
+</div>
+
+<nav id="51:8" orderindex="81" class="flex items-center gap-y-8 gap-x-8">
+<a id="51:9" orderindex="80" class="hover:text-[#4A8B5A] flex items-center gap-y-2 gap-x-2" style="color: rgba(74, 82, 78, 1);" href="#">
+<span id="51:10" orderindex="80">仪表盘</span>
+</a>
+<a id="51:11" orderindex="81" class="hover:text-[#4A8B5A] flex items-center gap-y-2 gap-x-2" style="color: rgba(74, 82, 78, 1);" href="#">
+<span id="51:12" orderindex="80">岗位管理</span>
+</a>
+<a id="51:13" orderindex="82" class="hover:text-[#4A8B5A] flex items-center gap-y-2 gap-x-2" style="color: rgba(74, 82, 78, 1);" href="#">
+<span id="51:14" orderindex="80">简历管理</span>
+</a>
+<a id="51:15" orderindex="83" style="color: rgba(74, 139, 90, 1); border-bottom-style: solid; border-color: rgba(74, 139, 90, 1);" href="#" class="flex items-center gap-y-2 gap-x-2 pb-1 border-b-[2px] font-semibold">
+<span id="51:16" orderindex="80">个人档案</span>
+</a>
+</nav>
+
+<div id="51:17" orderindex="82" class="flex items-center gap-y-4 gap-x-4">
+
+<div id="51:18" orderindex="80" class="relative">
+<input id="51:19" orderindex="80" class="focus:border-[#4A8B5A] focus:shadow-[0_0_0_3px_rgba(74,139,90,0.2)] text-sm w-64 pt-2 pr-4 pb-2 pl-10 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); border-color: rgba(232, 240, 233, 1);" type="text" placeholder="搜索岗位...">
+<div id="51:20" orderindex="81" style="top: 50%; transform: NaN; translate: 0 -50%;" class="flex absolute left-3 justify-center items-center w-4 h-4">
+<iconify-icon id="51:21" orderindex="80" style="color: rgba(122, 130, 126, 1);" icon="lucide:search" class="text-sm"></iconify-icon>
+</div>
+</div>
+
+<div id="51:22" orderindex="81" class="relative">
+<button id="51:23" orderindex="80" class="hover:bg-[#F8F6F2] flex justify-center items-center w-10 h-10 rounded-lg">
+<iconify-icon id="51:24" orderindex="80" style="color: rgba(74, 82, 78, 1);" icon="lucide:bell" class="text-lg"></iconify-icon>
+</button>
+<div id="51:25" orderindex="81" style="background-color: rgba(230, 126, 34, 1);" class="absolute -top-1 -right-1 w-3 h-3 rounded-full"></div>
+</div>
+
+<div id="51:26" orderindex="82" class="flex items-center gap-y-2 gap-x-2">
+<img id="51:27" orderindex="80" alt="Professional headshot of a young professional, friendly smile" src="https://static.paraflowcontent.com/public/resource/image/be4ecde9-9c19-429d-b8b1-2c4e090e1c20.jpeg" class="w-10 h-10 object-cover rounded-full">
+<div id="51:28" orderindex="81" class="flex justify-center items-center w-4 h-4">
+<iconify-icon id="51:29" orderindex="80" style="color: rgba(122, 130, 126, 1);" icon="lucide:chevron-down" class="text-sm"></iconify-icon>
+</div>
+</div>
+</div>
+</div>
+</header>
+
+<main id="51:30" orderindex="81" class="w-full p-8">
+
+<section id="51:31" orderindex="80" class="mb-8">
+<div id="51:32" orderindex="80" style="background-color: color-mix( in oklab , #fff 95% , transparent ); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-6 border-[1px] border-solid rounded-lg">
+<div id="51:33" orderindex="80" class="flex justify-between items-start">
+<div id="51:34" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<h1 id="51:35" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-2xl mb-2 font-semibold">为您智能推荐</h1>
+<p id="51:36" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-base mb-4">基于您的技能、经验和求职偏好，AI为您精选以下岗位机会</p>
+<div id="51:37" orderindex="82" class="flex items-center gap-y-6 gap-x-6 mb-4">
+<div id="51:38" orderindex="80" class="flex items-center gap-y-2 gap-x-2">
+<div id="51:39" orderindex="80" class="flex justify-center items-center w-4 h-4">
+<iconify-icon id="51:40" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:clock" class="text-sm"></iconify-icon>
+</div>
+<span id="51:41" orderindex="81" style="color: rgba(122, 130, 126, 1);" class="text-sm">最后更新：</span>
+<span id="51:42" orderindex="82" style="color: rgba(26, 31, 28, 1);" class="text-sm font-semibold">2小时前</span>
+</div>
+<div id="51:43" orderindex="81" class="flex items-center gap-y-2 gap-x-2">
+<div id="51:44" orderindex="80" class="flex justify-center items-center w-4 h-4">
+<iconify-icon id="51:45" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:refresh-cw" class="text-sm"></iconify-icon>
+</div>
+<span id="51:46" orderindex="81" style="color: rgba(122, 130, 126, 1);" class="text-sm">下次更新：</span>
+<span id="51:47" orderindex="82" style="color: rgba(26, 31, 28, 1);" class="text-sm font-semibold">明天早上8点</span>
+</div>
+</div>
+</div>
+<button id="51:48" orderindex="81" class="hover:bg-[#386843] flex items-center rounded-lg" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.75rem 1rem;">
+<div id="51:49" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="51:50" orderindex="80" icon="lucide:settings" class="text-sm"></iconify-icon>
+</div>
+<span id="51:51" orderindex="81">推荐设置</span>
+</button>
+</div>
+</div>
+</section>
+
+<section id="51:52" orderindex="81" class="mb-8">
+<div id="51:53" orderindex="80" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-6 border-[1px] border-solid rounded-lg">
+<div id="51:54" orderindex="80" class="grid grid-cols-5 gap-y-6 gap-x-6">
+
+<div id="51:55" orderindex="80">
+<h3 id="51:56" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm mb-3 font-semibold">推荐类型</h3>
+<div id="51:57" orderindex="81" class="flex flex-col gap-y-2 gap-x-2">
+<div id="51:58" orderindex="80" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.5rem 0.75rem;" class="text-sm flex items-center rounded-lg">
+<span id="51:59" orderindex="80">全部推荐</span>
+</div>
+<div id="51:60" orderindex="81" class="hover:bg-[#F8F6F2] text-sm flex items-center rounded-lg" style="color: rgba(74, 82, 78, 1); padding: 0.5rem 0.75rem;">
+<span id="51:61" orderindex="80">高匹配度(&gt;85%)</span>
+</div>
+<div id="51:62" orderindex="82" class="hover:bg-[#F8F6F2] text-sm flex items-center rounded-lg" style="color: rgba(74, 82, 78, 1); padding: 0.5rem 0.75rem;">
+<span id="51:63" orderindex="80">新发布岗位</span>
+</div>
+</div>
+</div>
+
+<div id="51:64" orderindex="81">
+<h3 id="51:65" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm mb-3 font-semibold">岗位类型</h3>
+<select id="51:66" orderindex="81" class="focus:border-[#4A8B5A] focus:shadow-[0_0_0_3px_rgba(74,139,90,0.2)] text-sm w-full pt-2 pr-4 pb-2 pl-3 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); border-color: rgba(232, 240, 233, 1);">
+<option id="51:67" orderindex="80">产品经理</option>
+<option id="51:68" orderindex="81">高级产品经理</option>
+<option id="51:69" orderindex="82">产品总监</option>
+</select>
+</div>
+
+<div id="51:70" orderindex="82">
+<h3 id="51:71" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm mb-3 font-semibold">期望城市</h3>
+<select id="51:72" orderindex="81" class="focus:border-[#4A8B5A] focus:shadow-[0_0_0_3px_rgba(74,139,90,0.2)] text-sm w-full pt-2 pr-4 pb-2 pl-3 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); border-color: rgba(232, 240, 233, 1);">
+<option id="51:73" orderindex="80">奥克兰</option>
+<option id="51:74" orderindex="81">惠灵顿</option>
+<option id="51:75" orderindex="82">基督城</option>
+</select>
+</div>
+
+<div id="51:76" orderindex="83">
+<h3 id="51:77" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm mb-3 font-semibold">薪资期望</h3>
+<select id="51:78" orderindex="81" class="focus:border-[#4A8B5A] focus:shadow-[0_0_0_3px_rgba(74,139,90,0.2)] text-sm w-full pt-2 pr-4 pb-2 pl-3 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); border-color: rgba(232, 240, 233, 1);">
+<option id="51:79" orderindex="80">80k-120k NZD</option>
+<option id="51:80" orderindex="81">60k-90k NZD</option>
+<option id="51:81" orderindex="82">120k+ NZD</option>
+</select>
+</div>
+
+<div id="51:82" orderindex="84">
+<h3 id="51:83" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-sm mb-3 font-semibold">工作类型</h3>
+<select id="51:84" orderindex="81" class="focus:border-[#4A8B5A] focus:shadow-[0_0_0_3px_rgba(74,139,90,0.2)] text-sm w-full pt-2 pr-4 pb-2 pl-3 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); border-color: rgba(232, 240, 233, 1);">
+<option id="51:85" orderindex="80">全职</option>
+<option id="51:86" orderindex="81">兼职</option>
+<option id="51:87" orderindex="82">合同</option>
+<option id="51:88" orderindex="83">远程</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+
+<section id="51:89" orderindex="82" class="mb-8">
+<h2 id="51:90" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-xl mb-6 font-semibold">今日精选推荐</h2>
+<div id="51:91" orderindex="81" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 6px 20px rgba(74, 139, 90, 0.15); border-color: rgba(232, 240, 233, 1);" class="p-8 border-[1px] border-solid rounded-lg">
+<div id="51:92" orderindex="80" class="flex justify-between items-start">
+<div id="51:93" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<div id="51:94" orderindex="80" class="flex items-center gap-y-3 gap-x-3 mb-4">
+<div id="51:95" orderindex="80" style="background-color: rgba(230, 126, 34, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 1rem;" class="text-sm flex items-center rounded-full">
+<div id="51:96" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="51:97" orderindex="80" icon="lucide:star" class="text-sm"></iconify-icon>
+</div>
+<span id="51:98" orderindex="81">超高匹配度 94%</span>
+</div>
+<div id="51:99" orderindex="81" style="background-color: rgba(253, 242, 242, 1); color: rgba(209, 67, 67, 1); padding: 0.5rem 1rem;" class="text-sm flex items-center rounded-full">
+<div id="51:100" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="51:101" orderindex="80" icon="lucide:clock" class="text-sm"></iconify-icon>
+</div>
+<span id="51:102" orderindex="81">3天后截止</span>
+</div>
+</div>
+<h3 id="51:103" orderindex="81" style="color: rgba(26, 31, 28, 1);" class="text-2xl mb-3 font-semibold">高级产品经理 - 金融科技</h3>
+<div id="51:104" orderindex="82" class="flex items-center gap-y-4 gap-x-4 mb-4">
+<span id="51:105" orderindex="80" style="color: rgba(74, 139, 90, 1);" class="text-lg font-semibold">Kiwibank</span>
+<span id="51:106" orderindex="81" style="color: rgba(122, 130, 126, 1);" class="text-base">·</span>
+<span id="51:107" orderindex="82" style="color: rgba(74, 82, 78, 1);" class="text-base">奥克兰</span>
+<span id="51:108" orderindex="83" style="color: rgba(122, 130, 126, 1);" class="text-base">·</span>
+<span id="51:109" orderindex="84" style="color: rgba(230, 126, 34, 1);" class="text-base font-semibold">110k-140k NZD</span>
+</div>
+<div id="51:110" orderindex="83" style="background-color: rgba(232, 243, 234, 1); border-left-style: solid; border-color: rgba(74, 139, 90, 1);" class="mb-4 border-l-[4px] p-4 rounded-lg">
+<h4 id="51:111" orderindex="80" style="color: rgba(56, 104, 67, 1);" class="text-sm mb-2 font-semibold">AI推荐理由</h4>
+<p id="51:112" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-sm">您的产品管理经验与金融科技背景完美匹配，技能覆盖度达94%。该岗位薪资范围符合您的期望，且公司文化与您的价值观高度契合。</p>
+</div>
+<div id="51:113" orderindex="84" class="flex items-center gap-y-6 gap-x-6 mb-6">
+<div id="51:114" orderindex="80" class="flex items-center gap-y-2 gap-x-2">
+<div id="51:115" orderindex="80" class="flex justify-center items-center w-4 h-4">
+<iconify-icon id="51:116" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:users" class="text-sm"></iconify-icon>
+</div>
+<span id="51:117" orderindex="81" style="color: rgba(122, 130, 126, 1);" class="text-sm">团队规模：8-12人</span>
+</div>
+<div id="51:118" orderindex="81" class="flex items-center gap-y-2 gap-x-2">
+<div id="51:119" orderindex="80" class="flex justify-center items-center w-4 h-4">
+<iconify-icon id="51:120" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:home" class="text-sm"></iconify-icon>
+</div>
+<span id="51:121" orderindex="81" style="color: rgba(122, 130, 126, 1);" class="text-sm">混合办公</span>
+</div>
+<div id="51:122" orderindex="82" class="flex items-center gap-y-2 gap-x-2">
+<div id="51:123" orderindex="80" class="flex justify-center items-center w-4 h-4">
+<iconify-icon id="51:124" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:trending-up" class="text-sm"></iconify-icon>
+</div>
+<span id="51:125" orderindex="81" style="color: rgba(122, 130, 126, 1);" class="text-sm">快速成长中</span>
+</div>
+</div>
+</div>
+<div id="51:126" orderindex="81" class="text-center ml-8">
+<img id="51:127" orderindex="80" alt="Kiwibank company logo, New Zealand bank branding" src="https://static.paraflowcontent.com/public/resource/image/07a8997a-e13d-4f21-bd78-4b8d7b23a1a3.jpeg" class="w-30 h-30 mb-4 object-cover rounded-lg">
+<div id="51:128" orderindex="81" class="flex justify-center items-center gap-y-1 gap-x-1 mb-2">
+<iconify-icon id="51:129" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-base"></iconify-icon>
+<iconify-icon id="51:130" orderindex="81" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-base"></iconify-icon>
+<iconify-icon id="51:131" orderindex="82" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-base"></iconify-icon>
+<iconify-icon id="51:132" orderindex="83" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-base"></iconify-icon>
+<iconify-icon id="51:133" orderindex="84" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-base"></iconify-icon>
+</div>
+<span id="51:134" orderindex="82" style="color: rgba(122, 130, 126, 1);" class="text-sm">4.8/5 员工评分</span>
+</div>
+</div>
+<div id="51:135" orderindex="81" style="border-top-style: solid; border-color: rgba(232, 240, 233, 1);" class="flex items-center gap-y-4 gap-x-4 pt-6 border-t-[1px]">
+<button id="51:136" orderindex="80" class="hover:bg-[#386843] flex items-center rounded-lg" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.75rem 2rem;">
+<span id="51:137" orderindex="80">立即申请</span>
+</button>
+<button id="51:138" orderindex="81" class="hover:bg-[#E8F3EA] flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.75rem 2rem; border-color: rgba(74, 139, 90, 1);">
+<span id="51:139" orderindex="80">查看详情</span>
+</button>
+<button id="51:140" orderindex="82" class="hover:bg-[#F8F6F2] flex items-center rounded-lg" style="color: rgba(122, 130, 126, 1); padding: 0.75rem 1rem;">
+<div id="51:141" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="51:142" orderindex="80" icon="lucide:bookmark" class="text-sm"></iconify-icon>
+</div>
+<span id="51:143" orderindex="81">收藏</span>
+</button>
+</div>
+</div>
+</section>
+
+<section id="51:144" orderindex="83" class="mb-8">
+<div id="51:145" orderindex="80" class="flex justify-between items-center mb-6">
+<h2 id="51:146" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-xl font-semibold">全部推荐岗位</h2>
+<div id="51:147" orderindex="81" class="flex items-center gap-y-4 gap-x-4">
+<div id="51:148" orderindex="80" class="flex items-center gap-y-2 gap-x-2">
+<span id="51:149" orderindex="80" style="color: rgba(122, 130, 126, 1);" class="text-sm">排序：</span>
+<select id="51:150" orderindex="81" class="focus:border-[#4A8B5A] text-sm pt-1 pr-4 pb-1 pl-2 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); border-color: rgba(232, 240, 233, 1);">
+<option id="51:151" orderindex="80">匹配度</option>
+<option id="51:152" orderindex="81">发布时间</option>
+<option id="51:153" orderindex="82">薪资</option>
+</select>
+</div>
+</div>
+</div>
+<div id="51:154" orderindex="81" class="grid grid-cols-2 gap-y-6 gap-x-6">
+
+<div id="51:155" orderindex="80" class="hover:shadow-[0_6px_20px_rgba(74,139,90,0.15)] p-6 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);">
+<div id="51:156" orderindex="80" class="flex justify-between items-start mb-4">
+<div id="51:157" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<h3 id="51:158" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-2 font-semibold">产品运营经理</h3>
+<p id="51:159" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-3">Xero · 惠灵顿</p>
+<div id="51:160" orderindex="82" class="flex items-center gap-y-2 gap-x-2 mb-3">
+<div id="51:161" orderindex="80" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="51:162" orderindex="80">91分匹配</span>
+</div>
+<div id="51:163" orderindex="81" class="flex items-center gap-y-1 gap-x-1">
+<iconify-icon id="51:164" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:165" orderindex="81" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:166" orderindex="82" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:167" orderindex="83" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:168" orderindex="84" style="color: rgba(168, 175, 169, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+</div>
+</div>
+<div id="51:169" orderindex="83" class="flex items-center gap-y-2 gap-x-2 mb-3">
+<div id="51:170" orderindex="80" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="51:171" orderindex="80">技能匹配</span>
+</div>
+<div id="51:172" orderindex="81" style="background-color: rgba(235, 240, 236, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="51:173" orderindex="80">经验相符</span>
+</div>
+</div>
+<div id="51:174" orderindex="84" style="color: rgba(122, 130, 126, 1);" class="text-sm flex items-center gap-y-4 gap-x-4 mb-4">
+<span id="51:175" orderindex="80" style="color: rgba(74, 139, 90, 1);" class="font-semibold">95k-115k NZD</span>
+<span id="51:176" orderindex="81">·</span>
+<span id="51:177" orderindex="82">2天前发布</span>
+<span id="51:178" orderindex="83">·</span>
+<span id="51:179" orderindex="84" style="color: rgba(230, 126, 34, 1);">热门</span>
+</div>
+<p id="51:180" orderindex="85" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-4">推荐理由：您的SaaS产品经验与Xero业务高度契合，数据分析能力突出</p>
+</div>
+<img id="51:181" orderindex="81" alt="Xero company logo, accounting software brand" src="https://static.paraflowcontent.com/public/resource/image/ad1c6232-8c1b-4ce6-a8b4-dae977c8bc8d.jpeg" class="w-15 h-15 object-cover rounded-lg">
+</div>
+<div id="51:182" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="51:183" orderindex="80" class="hover:bg-[#386843] text-sm flex items-center rounded-lg" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 1rem;">
+<span id="51:184" orderindex="80">快速申请</span>
+</button>
+<button id="51:185" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<span id="51:186" orderindex="80">查看详情</span>
+</button>
+</div>
+</div>
+
+<div id="51:187" orderindex="81" class="hover:shadow-[0_6px_20px_rgba(74,139,90,0.15)] p-6 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);">
+<div id="51:188" orderindex="80" class="flex justify-between items-start mb-4">
+<div id="51:189" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<h3 id="51:190" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-2 font-semibold">数字产品经理</h3>
+<p id="51:191" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-3">Trade Me · 奥克兰</p>
+<div id="51:192" orderindex="82" class="flex items-center gap-y-2 gap-x-2 mb-3">
+<div id="51:193" orderindex="80" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="51:194" orderindex="80">88分匹配</span>
+</div>
+<div id="51:195" orderindex="81" class="flex items-center gap-y-1 gap-x-1">
+<iconify-icon id="51:196" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:197" orderindex="81" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:198" orderindex="82" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:199" orderindex="83" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:200" orderindex="84" style="color: rgba(168, 175, 169, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+</div>
+</div>
+<div id="51:201" orderindex="83" class="flex items-center gap-y-2 gap-x-2 mb-3">
+<div id="51:202" orderindex="80" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="51:203" orderindex="80">文化契合</span>
+</div>
+<div id="51:204" orderindex="81" style="background-color: rgba(235, 240, 236, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="51:205" orderindex="80">成长机会</span>
+</div>
+</div>
+<div id="51:206" orderindex="84" style="color: rgba(122, 130, 126, 1);" class="text-sm flex items-center gap-y-4 gap-x-4 mb-4">
+<span id="51:207" orderindex="80" style="color: rgba(74, 139, 90, 1);" class="font-semibold">100k-125k NZD</span>
+<span id="51:208" orderindex="81">·</span>
+<span id="51:209" orderindex="82">1天前发布</span>
+<span id="51:210" orderindex="83">·</span>
+<span id="51:211" orderindex="84" style="color: rgba(74, 139, 90, 1);">新岗位</span>
+</div>
+<p id="51:212" orderindex="85" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-4">推荐理由：新西兰本土领先平台，提供丰富的产品创新机会和职业发展空间</p>
+</div>
+<img id="51:213" orderindex="81" alt="Trade Me company logo, New Zealand marketplace brand" src="https://static.paraflowcontent.com/public/resource/image/57d5a9ff-08ce-4364-b408-1ef6ca017e59.jpeg" class="w-15 h-15 object-cover rounded-lg">
+</div>
+<div id="51:214" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="51:215" orderindex="80" class="hover:bg-[#386843] text-sm flex items-center rounded-lg" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 1rem;">
+<span id="51:216" orderindex="80">快速申请</span>
+</button>
+<button id="51:217" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<span id="51:218" orderindex="80">查看详情</span>
+</button>
+</div>
+</div>
+
+<div id="51:219" orderindex="82" class="hover:shadow-[0_6px_20px_rgba(74,139,90,0.15)] p-6 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);">
+<div id="51:220" orderindex="80" class="flex justify-between items-start mb-4">
+<div id="51:221" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<h3 id="51:222" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-2 font-semibold">金融产品经理</h3>
+<p id="51:223" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-3">ANZ Bank · 奥克兰</p>
+<div id="51:224" orderindex="82" class="flex items-center gap-y-2 gap-x-2 mb-3">
+<div id="51:225" orderindex="80" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="51:226" orderindex="80">86分匹配</span>
+</div>
+<div id="51:227" orderindex="81" class="flex items-center gap-y-1 gap-x-1">
+<iconify-icon id="51:228" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:229" orderindex="81" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:230" orderindex="82" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:231" orderindex="83" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:232" orderindex="84" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+</div>
+</div>
+<div id="51:233" orderindex="83" class="flex items-center gap-y-2 gap-x-2 mb-3">
+<div id="51:234" orderindex="80" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="51:235" orderindex="80">隐藏机会</span>
+</div>
+<div id="51:236" orderindex="81" style="background-color: rgba(235, 240, 236, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="51:237" orderindex="80">大企业</span>
+</div>
+</div>
+<div id="51:238" orderindex="84" style="color: rgba(122, 130, 126, 1);" class="text-sm flex items-center gap-y-4 gap-x-4 mb-4">
+<span id="51:239" orderindex="80" style="color: rgba(74, 139, 90, 1);" class="font-semibold">120k-150k NZD</span>
+<span id="51:240" orderindex="81">·</span>
+<span id="51:241" orderindex="82">3天前发布</span>
+<span id="51:242" orderindex="83">·</span>
+<span id="51:243" orderindex="84" style="color: rgba(56, 104, 67, 1);">内推机会</span>
+</div>
+<p id="51:244" orderindex="85" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-4">推荐理由：顶级金融机构，薪资优厚，有内推渠道助您获得面试机会</p>
+</div>
+<img id="51:245" orderindex="81" alt="ANZ Bank company logo, Australian New Zealand bank branding" src="https://static.paraflowcontent.com/public/resource/image/08de8b44-7a66-4984-8a9f-9d0d9c0694bf.jpeg" class="w-15 h-15 object-cover rounded-lg">
+</div>
+<div id="51:246" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="51:247" orderindex="80" class="hover:bg-[#386843] text-sm flex items-center rounded-lg" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 1rem;">
+<span id="51:248" orderindex="80">快速申请</span>
+</button>
+<button id="51:249" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<span id="51:250" orderindex="80">查看详情</span>
+</button>
+</div>
+</div>
+
+<div id="51:251" orderindex="83" class="hover:shadow-[0_6px_20px_rgba(74,139,90,0.15)] p-6 border-[1px] border-solid rounded-lg" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);">
+<div id="51:252" orderindex="80" class="flex justify-between items-start mb-4">
+<div id="51:253" orderindex="80" style="flex-basis: 0%;" class="grow shrink">
+<h3 id="51:254" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-2 font-semibold">高级产品策略师</h3>
+<p id="51:255" orderindex="81" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-3">Atlassian · 远程工作</p>
+<div id="51:256" orderindex="82" class="flex items-center gap-y-2 gap-x-2 mb-3">
+<div id="51:257" orderindex="80" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.75rem;" class="text-xs flex items-center rounded-full">
+<span id="51:258" orderindex="80">84分匹配</span>
+</div>
+<div id="51:259" orderindex="81" class="flex items-center gap-y-1 gap-x-1">
+<iconify-icon id="51:260" orderindex="80" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:261" orderindex="81" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:262" orderindex="82" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:263" orderindex="83" style="color: rgba(230, 126, 34, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+<iconify-icon id="51:264" orderindex="84" style="color: rgba(168, 175, 169, 1);" icon="lucide:star" class="text-xs"></iconify-icon>
+</div>
+</div>
+<div id="51:265" orderindex="83" class="flex items-center gap-y-2 gap-x-2 mb-3">
+<div id="51:266" orderindex="80" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="51:267" orderindex="80">远程优先</span>
+</div>
+<div id="51:268" orderindex="81" style="background-color: rgba(235, 240, 236, 1); color: rgba(56, 104, 67, 1); padding: 0.25rem 0.5rem;" class="text-xs flex items-center rounded-full">
+<span id="51:269" orderindex="80">职业提升</span>
+</div>
+</div>
+<div id="51:270" orderindex="84" style="color: rgba(122, 130, 126, 1);" class="text-sm flex items-center gap-y-4 gap-x-4 mb-4">
+<span id="51:271" orderindex="80" style="color: rgba(74, 139, 90, 1);" class="font-semibold">130k-160k NZD</span>
+<span id="51:272" orderindex="81">·</span>
+<span id="51:273" orderindex="82">5天前发布</span>
+<span id="51:274" orderindex="83">·</span>
+<span id="51:275" orderindex="84" style="color: rgba(56, 104, 67, 1);">国际团队</span>
+</div>
+<p id="51:276" orderindex="85" style="color: rgba(74, 82, 78, 1);" class="text-sm mb-4">推荐理由：全球知名软件公司，远程工作友好，提供卓越的职业发展平台</p>
+</div>
+<img id="51:277" orderindex="81" alt="Atlassian company logo, blue software development brand" src="https://static.paraflowcontent.com/public/resource/image/4321d2be-466c-4c62-a620-5afb1aede9aa.jpeg" class="w-15 h-15 object-cover rounded-lg">
+</div>
+<div id="51:278" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="51:279" orderindex="80" class="hover:bg-[#386843] text-sm flex items-center rounded-lg" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 1rem;">
+<span id="51:280" orderindex="80">快速申请</span>
+</button>
+<button id="51:281" orderindex="81" class="hover:bg-[#E8F3EA] text-sm flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<span id="51:282" orderindex="80">查看详情</span>
+</button>
+</div>
+</div>
+</div>
+
+<div id="51:283" orderindex="82" class="text-center mt-8">
+<button id="51:284" orderindex="80" class="hover:bg-[#E8F3EA] flex items-center border-[1px] border-solid rounded-lg" style="margin-right: auto; margin-left: auto; color: rgba(74, 139, 90, 1); padding: 0.75rem 2rem; border-color: rgba(74, 139, 90, 1);">
+<span id="51:285" orderindex="80">加载更多推荐</span>
+<div id="51:286" orderindex="81" class="flex justify-center items-center w-4 h-4 ml-2">
+<iconify-icon id="51:287" orderindex="80" icon="lucide:chevron-down" class="text-sm"></iconify-icon>
+</div>
+</button>
+</div>
+</section>
+
+<section id="51:288" orderindex="84" class="mb-8">
+<div id="51:289" orderindex="80" class="grid grid-cols-2 gap-y-6 gap-x-6">
+
+<div id="51:290" orderindex="80" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-6 border-[1px] border-solid rounded-lg">
+<h3 id="51:291" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-4 font-semibold">您的核心技能标签</h3>
+<div id="51:292" orderindex="81" class="flex flex-wrap gap-y-3 gap-x-3">
+<div id="51:293" orderindex="80" style="background-color: rgba(74, 139, 90, 1); color: rgba(255, 255, 255, 1); padding: 0.5rem 1rem;" class="text-sm flex items-center rounded-full">
+<span id="51:294" orderindex="80">产品管理</span>
+</div>
+<div id="51:295" orderindex="81" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.5rem 1rem;" class="text-sm flex items-center rounded-full">
+<span id="51:296" orderindex="80">用户体验</span>
+</div>
+<div id="51:297" orderindex="82" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.5rem 1rem;" class="text-sm flex items-center rounded-full">
+<span id="51:298" orderindex="80">数据分析</span>
+</div>
+<div id="51:299" orderindex="83" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.5rem 1rem;" class="text-sm flex items-center rounded-full">
+<span id="51:300" orderindex="80">敏捷开发</span>
+</div>
+<div id="51:301" orderindex="84" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.5rem 1rem;" class="text-sm flex items-center rounded-full">
+<span id="51:302" orderindex="80">项目管理</span>
+</div>
+<div id="51:303" orderindex="85" style="background-color: rgba(232, 243, 234, 1); color: rgba(56, 104, 67, 1); padding: 0.5rem 1rem;" class="text-sm flex items-center rounded-full">
+<span id="51:304" orderindex="80">金融科技</span>
+</div>
+<div id="51:305" orderindex="86" style="background-color: rgba(253, 248, 243, 1); color: rgba(230, 126, 34, 1); padding: 0.5rem 1rem;" class="text-sm flex items-center rounded-full">
+<span id="51:306" orderindex="80">团队协作</span>
+</div>
+</div>
+</div>
+
+<div id="51:307" orderindex="81" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-6 border-[1px] border-solid rounded-lg">
+<h3 id="51:308" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base mb-4 font-semibold">新西兰就业市场趋势</h3>
+<div id="51:309" orderindex="81">
+<div id="51:310" orderindex="80" style="margin-top: 0;" class="flex justify-between items-center mb-4">
+<span id="51:311" orderindex="80" style="color: rgba(74, 82, 78, 1);" class="text-sm">产品经理岗位增长</span>
+<div id="51:312" orderindex="81" class="flex items-center gap-y-2 gap-x-2">
+<div id="51:313" orderindex="80" style="background-color: rgba(242, 240, 235, 1);" class="w-20 h-2 rounded-full">
+<div id="51:314" orderindex="80" style="background-color: rgba(74, 139, 90, 1);" class="w-16 h-2 rounded-full"></div>
+</div>
+<span id="51:315" orderindex="81" style="color: rgba(74, 139, 90, 1);" class="text-sm font-semibold">+23%</span>
+</div>
+</div>
+<div id="51:316" orderindex="81" style="margin-top: 0;" class="flex justify-between items-center mb-4">
+<span id="51:317" orderindex="80" style="color: rgba(74, 82, 78, 1);" class="text-sm">金融科技需求</span>
+<div id="51:318" orderindex="81" class="flex items-center gap-y-2 gap-x-2">
+<div id="51:319" orderindex="80" style="background-color: rgba(242, 240, 235, 1);" class="w-20 h-2 rounded-full">
+<div id="51:320" orderindex="80" style="background-color: rgba(230, 126, 34, 1);" class="w-14 h-2 rounded-full"></div>
+</div>
+<span id="51:321" orderindex="81" style="color: rgba(230, 126, 34, 1);" class="text-sm font-semibold">+18%</span>
+</div>
+</div>
+<div id="51:322" orderindex="82" class="flex justify-between items-center">
+<span id="51:323" orderindex="80" style="color: rgba(74, 82, 78, 1);" class="text-sm">远程工作接受度</span>
+<div id="51:324" orderindex="81" class="flex items-center gap-y-2 gap-x-2">
+<div id="51:325" orderindex="80" style="background-color: rgba(242, 240, 235, 1);" class="w-20 h-2 rounded-full">
+<div id="51:326" orderindex="80" style="background-color: rgba(56, 104, 67, 1);" class="w-18 h-2 rounded-full"></div>
+</div>
+<span id="51:327" orderindex="81" style="color: rgba(56, 104, 67, 1);" class="text-sm font-semibold">+35%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="51:328" orderindex="85" class="mb-8">
+<div id="51:329" orderindex="80" style="background-color: rgba(255, 255, 255, 1); box-shadow: 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 0 rgba(0, 0, 0, 0), 0 4px 12px rgba(74, 139, 90, 0.12); border-color: rgba(232, 240, 233, 1);" class="p-6 border-[1px] border-solid rounded-lg">
+<div id="51:330" orderindex="80" class="flex justify-between items-center">
+<div id="51:331" orderindex="80" class="flex items-center gap-y-6 gap-x-6">
+<h3 id="51:332" orderindex="80" style="color: rgba(26, 31, 28, 1);" class="text-base font-semibold">批量操作</h3>
+<div id="51:333" orderindex="81" class="flex items-center gap-y-3 gap-x-3">
+<button id="51:334" orderindex="80" class="hover:bg-[#E8F3EA] flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(74, 139, 90, 1); padding: 0.5rem 1rem; border-color: rgba(74, 139, 90, 1);">
+<div id="51:335" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="51:336" orderindex="80" icon="lucide:bookmark-plus" class="text-sm"></iconify-icon>
+</div>
+<span id="51:337" orderindex="81">批量收藏</span>
+</button>
+<button id="51:338" orderindex="81" class="hover:bg-[#FDF8F3] flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(230, 126, 34, 1); padding: 0.5rem 1rem; border-color: rgba(230, 126, 34, 1);">
+<div id="51:339" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="51:340" orderindex="80" icon="lucide:x" class="text-sm"></iconify-icon>
+</div>
+<span id="51:341" orderindex="81">批量隐藏</span>
+</button>
+<button id="51:342" orderindex="82" class="hover:bg-[#EBF0EC] flex items-center border-[1px] border-solid rounded-lg" style="color: rgba(56, 104, 67, 1); padding: 0.5rem 1rem; border-color: rgba(56, 104, 67, 1);">
+<div id="51:343" orderindex="80" class="flex justify-center items-center w-4 h-4 mr-2">
+<iconify-icon id="51:344" orderindex="80" icon="lucide:bar-chart" class="text-sm"></iconify-icon>
+</div>
+<span id="51:345" orderindex="81">生成匹配分析</span>
+</button>
+</div>
+</div>
+<div id="51:346" orderindex="81" class="flex items-center gap-y-4 gap-x-4">
+<span id="51:347" orderindex="80" style="color: rgba(122, 130, 126, 1);" class="text-sm">推荐质量评价：</span>
+<div id="51:348" orderindex="81" class="flex items-center gap-y-2 gap-x-2">
+<button id="51:349" orderindex="80" class="hover:bg-[#E8F3EA] flex justify-center items-center w-8 h-8 rounded-lg" style="color: rgba(74, 139, 90, 1);">
+<iconify-icon id="51:350" orderindex="80" icon="lucide:thumbs-up" class="text-sm"></iconify-icon>
+</button>
+<button id="51:351" orderindex="81" class="hover:bg-[#FDF2F2] flex justify-center items-center w-8 h-8 rounded-lg" style="color: rgba(209, 67, 67, 1);">
+<iconify-icon id="51:352" orderindex="80" icon="lucide:thumbs-down" class="text-sm"></iconify-icon>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+
+
+</body></html>
