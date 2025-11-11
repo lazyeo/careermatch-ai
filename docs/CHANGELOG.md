@@ -9,11 +9,135 @@
 
 ## [Unreleased]
 
+### 进行中 - Sprint 5: 申请追踪系统 (10% 完成)
+
+#### 已完成
+- ✅ 申请CRUD API路由
+- ✅ 状态管理逻辑
+- ✅ 时间线事件系统
+
+#### 待开发
+- 申请列表页面
+- 申请详情页面
+- 时间线可视化组件
+- 面试管理功能
+
 ### 计划添加
-- 申请追踪系统（Sprint 5）
 - Google OAuth集成（Sprint 6）
 - 简历PDF导出功能
 - 浏览器扩展
+
+---
+
+## [0.5.1] - 2025-11-11
+
+### Added - Sprint 5 Part 1: 申请追踪API 🚧
+
+#### 申请管理API
+- ✨ **申请CRUD API路由**
+  - `POST /api/applications` - 创建申请记录
+  - `GET /api/applications` - 获取所有申请
+  - `GET /api/applications/[id]` - 获取单个申请详情
+  - `PATCH /api/applications/[id]` - 更新申请状态
+  - `DELETE /api/applications/[id]` - 删除申请
+  - 完整的认证和权限检查
+  - RLS安全策略
+
+#### 8种申请状态管理
+- ✨ **申请状态流转**
+  - `draft` - 草稿
+  - `submitted` - 已提交
+  - `under_review` - 审核中
+  - `interview_scheduled` - 面试安排
+  - `offer_received` - 录取
+  - `rejected` - 拒绝
+  - `withdrawn` - 已撤回
+  - `accepted` - 已接受
+
+#### 时间线事件系统
+- ✨ **自动时间线记录**
+  - 创建申请时自动记录
+  - 状态变更自动添加事件
+  - 记录旧状态和新状态
+  - JSON格式存储事件详情
+  - 支持手动添加事件
+
+#### 数据关联
+- ✨ **完整数据关联**
+  - 关联岗位信息（job_id）
+  - 关联简历信息（resume_id）
+  - 包含面试数据
+  - 级联删除支持
+
+#### 业务逻辑
+- ✨ **智能处理**
+  - 重复申请检测（unique constraint on user_id + job_id）
+  - 初始化时间线（创建和提交事件）
+  - 自动时间戳更新
+  - 状态中文标签映射
+
+### Technical Details
+
+**User Stories进度**:
+- ✅ US-5.1: 创建申请记录 (部分完成 - API完成)
+- ✅ US-5.2: 状态管理 (部分完成 - 逻辑完成)
+- 🚧 US-5.3: 时间线可视化 (API准备好，UI待开发)
+- 📅 US-5.4: 面试管理 (计划中)
+- **Sprint 5总计**: 3/21 Story Points完成 (14%)
+
+**API设计**:
+```typescript
+// 创建申请
+POST /api/applications
+Body: {
+  jobId: string
+  resumeId: string
+  status?: 'draft' | 'submitted'
+  notes?: string
+}
+
+// 更新申请
+PATCH /api/applications/[id]
+Body: {
+  status?: ApplicationStatus
+  notes?: string
+  timeline?: TimelineEvent[]
+}
+```
+
+**数据模型**:
+```typescript
+Application {
+  id: uuid
+  user_id: uuid
+  job_id: uuid
+  resume_id: uuid
+  status: ApplicationStatus
+  timeline: TimelineEvent[] // JSONB
+  notes: text
+  created_at: timestamp
+  updated_at: timestamp
+}
+
+TimelineEvent {
+  type: string
+  date: string
+  description: string
+  oldStatus?: string
+  newStatus?: string
+}
+```
+
+**已知限制**:
+- 前端UI尚未开发
+- 面试管理功能待实现
+- 统计和图表功能待开发
+
+### Next Steps
+- 创建申请列表页面 (`/applications`)
+- 创建申请详情页面 (`/applications/[id]`)
+- 实现时间线可视化组件
+- 从岗位详情页添加"申请此岗位"按钮
 
 ---
 
