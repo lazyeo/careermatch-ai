@@ -50,6 +50,20 @@ export default async function DashboardPage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
 
+  // 获取各状态的申请数量
+  const { data: applications } = await supabase
+    .from('applications')
+    .select('status')
+    .eq('user_id', user.id)
+
+  const interviewScheduledCount = applications?.filter(
+    (a) => a.status === 'interview_scheduled'
+  ).length || 0
+
+  const offerReceivedCount = applications?.filter(
+    (a) => a.status === 'offer_received'
+  ).length || 0
+
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* 顶部导航栏 */}
@@ -130,22 +144,24 @@ export default async function DashboardPage() {
           </Link>
 
           {/* 申请追踪卡片 */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-60">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-2xl">📊</span>
-                申请追踪
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-neutral-600 mb-4">
-                追踪您的申请进度和面试安排
-              </p>
-              <Button variant="primary" size="sm" className="w-full" disabled>
-                敬请期待
-              </Button>
-            </CardContent>
-          </Card>
+          <Link href="/applications">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-2xl">📊</span>
+                  申请追踪
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-neutral-600 mb-4">
+                  追踪您的申请进度和面试安排
+                </p>
+                <Button variant="primary" size="sm" className="w-full">
+                  管理申请
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* 快速统计 */}
@@ -170,38 +186,79 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
           </Link>
-          <Card>
-            <CardContent className="p-6 text-center opacity-60">
-              <div className="text-3xl font-bold text-success-600 mb-1">
-                {applicationCount || 0}
-              </div>
-              <div className="text-sm text-neutral-600">申请中</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6 text-center opacity-60">
-              <div className="text-3xl font-bold text-warning-600 mb-1">
-                {interviewCount || 0}
-              </div>
-              <div className="text-sm text-neutral-600">面试安排</div>
-            </CardContent>
-          </Card>
+          <Link href="/applications">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="text-3xl font-bold text-success-600 mb-1">
+                  {applicationCount || 0}
+                </div>
+                <div className="text-sm text-neutral-600">总申请数</div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/applications">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <div className="text-3xl font-bold text-warning-600 mb-1">
+                  {interviewScheduledCount}
+                </div>
+                <div className="text-sm text-neutral-600">面试安排</div>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
+
+        {/* 申请状态快速概览 */}
+        {(applicationCount || 0) > 0 && (
+          <Card className="mt-8 border-blue-200">
+            <CardHeader>
+              <CardTitle className="text-blue-900">申请状态概览</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {applications?.filter((a) => a.status === 'submitted').length || 0}
+                  </div>
+                  <div className="text-xs text-blue-700 mt-1">已提交</div>
+                </div>
+                <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {applications?.filter((a) => a.status === 'under_review').length || 0}
+                  </div>
+                  <div className="text-xs text-yellow-700 mt-1">审核中</div>
+                </div>
+                <div className="text-center p-3 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {interviewScheduledCount}
+                  </div>
+                  <div className="text-xs text-purple-700 mt-1">面试安排</div>
+                </div>
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">
+                    {offerReceivedCount}
+                  </div>
+                  <div className="text-xs text-green-700 mt-1">已获录取</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 开发提示 */}
         <Card className="mt-8 bg-success-50 border-success-200">
           <CardHeader>
-            <CardTitle className="text-success-700">✅ Sprint 3 完成</CardTitle>
+            <CardTitle className="text-success-700">🚀 Sprint 5 开发中</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-neutral-700">
-              <strong>已完成：</strong>简历管理 + 岗位管理功能（完整CRUD）
+              <strong>已完成：</strong>简历管理 + 岗位管理 + AI智能匹配 + 申请追踪系统
             </p>
             <p className="text-sm text-neutral-700 mt-2">
-              <strong>下一步：</strong>AI智能匹配分析将在Sprint 4中开发
+              <strong>新功能：</strong>申请列表、申请详情、时间线可视化、状态管理
             </p>
             <p className="text-xs text-neutral-500 mt-2">
-              当前状态：<strong>Sprint 3 - 岗位管理完成</strong> ✅
+              当前状态：<strong>Sprint 5 - 申请追踪系统（前端完成）</strong> ✅
             </p>
           </CardContent>
         </Card>
