@@ -255,7 +255,6 @@ export default async function JobDetailPage({
                 </div>
               </CardContent>
             </Card>
-          </div>
         </div>
       </main>
     </div>

@@ -28,12 +28,16 @@ interface Application {
     job_type?: string
     salary_min?: number
     salary_max?: number
-    currency?: string
+    salary_currency?: string
   } | null
   resumes: {
     id: string
     title?: string
-    full_name: string
+    content: {
+      personal_info?: {
+        full_name?: string
+      }
+    }
   } | null
 }
 
@@ -106,7 +110,7 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
               <div className="text-gray-500">薪资范围</div>
               <div className="font-medium text-gray-900">
                 {job?.salary_min && job?.salary_max
-                  ? `${job.currency || 'NZD'} ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`
+                  ? `${job.salary_currency || 'NZD'} ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`
                   : '-'}
               </div>
             </div>
@@ -116,7 +120,7 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
           <div className="text-sm">
             <div className="text-gray-500">使用简历</div>
             <div className="font-medium text-gray-900">
-              {resume?.title || resume?.full_name || '未知简历'}
+              {resume?.title || resume?.content?.personal_info?.full_name || '未知简历'}
             </div>
           </div>
 

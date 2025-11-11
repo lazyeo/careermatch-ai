@@ -22,7 +22,9 @@
       "mcp__chrome-devtools__handle_dialog",
       "mcp__chrome-devtools__fill",
       "Bash(pnpm add:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "mcp__chrome-devtools__evaluate_script",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

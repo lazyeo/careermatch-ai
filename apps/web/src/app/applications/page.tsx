@@ -27,12 +27,12 @@ export default async function ApplicationsPage() {
         job_type,
         salary_min,
         salary_max,
-        currency
+        salary_currency
       ),
       resumes:resume_id (
         id,
         title,
-        full_name
+        content
       )
     `)
     .eq('user_id', user.id)
