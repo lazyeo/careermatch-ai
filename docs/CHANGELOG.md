@@ -9,10 +9,30 @@
 
 ## [Unreleased]
 
-### 计划添加 - Sprint 6: 高级功能
-- 面试管理功能（interviews表集成）
-- Google OAuth集成
+### Added - Sprint 6 Part 1: Google OAuth集成 ✅
+
+#### 用户认证增强
+- ✨ **Google OAuth登录** (2025-11-20)
+  - 登录页面添加"使用Google账号登录"按钮
+  - 注册页面添加"使用Google账号注册"按钮
+  - OAuth回调路由处理 (`/auth/callback`)
+  - 完整的错误处理和用户提示
+  - Google品牌图标和样式
+  - 自动跳转到仪表盘
+  - 降低用户注册门槛
+
+**技术细节**:
+- Supabase Auth OAuth provider (Google)
+- Next.js API Route处理回调
+- Code exchange for session机制
+- 错误信息URL参数传递
+- Client-side OAuth错误显示
+
+### 计划添加 - Sprint 6 剩余任务
 - 简历PDF导出功能
+- 岗位搜索筛选功能
+- Vercel生产部署
+- 面试管理功能（interviews表集成）
 - 浏览器扩展开发
 - 智能提醒系统
 
