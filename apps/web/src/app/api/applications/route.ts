@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
  *
  * Fetches all applications for the current user
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
 
@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
         ),
         resumes:resume_id (
           id,
-          full_name
+          title,
+          content
         )
       `)
       .eq('user_id', user.id)

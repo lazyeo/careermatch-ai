@@ -7,7 +7,7 @@
  * - 重定向到仪表盘
  */
 
-import { createClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const origin = requestUrl.origin
 
   if (code) {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // 交换authorization code获取session
     const { error } = await supabase.auth.exchangeCodeForSession(code)

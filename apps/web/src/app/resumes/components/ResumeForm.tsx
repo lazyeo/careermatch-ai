@@ -181,7 +181,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
         throw new Error('Failed to save resume')
       }
 
-      const savedResume = await response.json()
+      await response.json()
       router.push(`/resumes`)
       router.refresh()
     } catch (err) {

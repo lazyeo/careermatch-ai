@@ -6,14 +6,13 @@
  */
 
 import { createBrowserClient } from '@supabase/ssr'
-import type { Database } from '@careermatch/shared'
 
 /**
  * 创建浏览器端Supabase客户端
  * 用于Client Components和客户端交互
  */
 export function createClient() {
-  return createBrowserClient<Database>(
+  return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )

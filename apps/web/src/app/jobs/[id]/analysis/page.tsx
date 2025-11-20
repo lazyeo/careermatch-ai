@@ -154,7 +154,7 @@ export default async function JobAnalysisPage({
 
                 {/* Dimension Details */}
                 <div className="mt-6 grid md:grid-cols-3 gap-4">
-                  {analysis.dimensions.map((dim: any, index: number) => (
+                  {analysis.dimensions.map((dim: { name: string; score: number; description: string }, index: number) => (
                     <div key={index} className="p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm font-semibold text-gray-900">{dim.name}</h4>

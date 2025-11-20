@@ -10,7 +10,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { NextResponse } from 'next/server'
 
-export async function POST(request: Request) {
+export async function POST() {
   const supabase = await createClient()
 
   // 退出登录

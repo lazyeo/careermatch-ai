@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { ApplyJobButton } from './components/ApplyJobButton'
 
+// Job detail page component
 export default async function JobDetailPage({
   params,
 }: {

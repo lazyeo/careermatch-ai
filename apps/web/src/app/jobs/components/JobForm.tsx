@@ -63,7 +63,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
       title: initialData.title,
       company: initialData.company,
       location: initialData.location || '',
-      job_type: (initialData.job_type as any) || undefined,
+      job_type: (initialData.job_type as "full-time" | "part-time" | "contract" | "internship" | "casual" | undefined) || undefined,
       salary_min: initialData.salary_min || undefined,
       salary_max: initialData.salary_max || undefined,
       salary_currency: initialData.salary_currency || 'NZD',
@@ -73,7 +73,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
       source_url: initialData.source_url || '',
       posted_date: initialData.posted_date ? initialData.posted_date.split('T')[0] : '',
       deadline: initialData.deadline ? initialData.deadline.split('T')[0] : '',
-      status: initialData.status as any,
+      status: initialData.status as "saved" | "applied" | "interview" | "rejected" | "offer" | "withdrawn",
     } : {
       salary_currency: 'NZD',
       status: 'saved',
@@ -110,7 +110,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
           throw new Error('创建失败')
         }
 
-        const job = await response.json()
+        await response.json()
         router.push('/jobs')
         router.refresh()
       } else {

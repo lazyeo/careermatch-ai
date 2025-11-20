@@ -44,11 +44,11 @@ export default async function DashboardPage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
 
-  // 获取面试数量
-  const { count: interviewCount } = await supabase
-    .from('interviews')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
+  // 获取面试数量（暂未使用）
+  // const { count: interviewCount } = await supabase
+  //   .from('interviews')
+  //   .select('*', { count: 'exact', head: true })
+  //   .eq('user_id', user.id)
 
   // 获取各状态的申请数量
   const { data: applications } = await supabase

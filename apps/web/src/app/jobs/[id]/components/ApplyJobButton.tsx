@@ -31,6 +31,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
     if (showModal && resumes.length === 0) {
       fetchResumes()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal])
 
   const fetchResumes = async () => {

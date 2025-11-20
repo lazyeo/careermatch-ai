@@ -24,7 +24,10 @@
       "Bash(pnpm add:*)",
       "Bash(cat:*)",
       "mcp__chrome-devtools__evaluate_script",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npx tsc:*)",
+      "Bash(cd:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "ask": []

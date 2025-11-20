@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import { openai, isOpenAIConfigured, OPENAI_MODELS, TEMPERATURE_PRESETS } from '@/lib/openai'
 import { NextRequest, NextResponse } from 'next/server'
-import type { JobAnalysis, AnalysisDimension, SWOTAnalysis, KeywordMatch } from '@careermatch/shared'
+import type { AnalysisDimension, SWOTAnalysis, KeywordMatch } from '@careermatch/shared'
 
 /**
  * POST /api/jobs/[id]/analyze
@@ -181,7 +181,7 @@ export async function GET(
 /**
  * Perform AI analysis using OpenAI GPT-4
  */
-async function performAIAnalysis(job: any, resume: any) {
+async function performAIAnalysis(job: Record<string, unknown>, resume: Record<string, unknown>) {
   const prompt = buildAnalysisPrompt(job, resume)
 
   const completion = await openai.chat.completions.create({
@@ -223,7 +223,7 @@ Always respond with valid JSON only, no markdown or additional text.`,
 /**
  * Build the analysis prompt for OpenAI
  */
-function buildAnalysisPrompt(job: any, resume: any): string {
+function buildAnalysisPrompt(job: Record<string, unknown>, resume: Record<string, unknown>): string {
   return `
 Analyze the match between this job posting and resume. Provide a comprehensive analysis in JSON format.
 

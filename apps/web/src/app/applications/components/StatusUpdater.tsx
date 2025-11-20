@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@careermatch/ui'
 import { useRouter } from 'next/navigation'
 
 interface StatusUpdaterProps {

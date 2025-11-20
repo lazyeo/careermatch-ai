@@ -2,7 +2,6 @@ import { createClient, getCurrentUser } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
-import { ResumeCard } from './components/ResumeCard'
 import { DeleteResumeButton } from './components/DeleteResumeButton'
 
 export default async function ResumesPage() {

@@ -17,7 +17,7 @@ export function MatchScoreCard({ score }: MatchScoreCardProps) {
   return (
     <div className={`${level.bgColor} rounded-lg p-6 text-center`}>
       <div className="mb-3">
-        <MatchScoreBadge score={score} size="large" />
+        <MatchScoreBadge score={score} size="lg" />
       </div>
       <h3 className={`text-2xl font-bold ${level.color} mb-1`}>
         {level.label}

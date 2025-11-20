@@ -13,7 +13,7 @@ interface TestResult {
   name: string
   status: 'success' | 'error'
   message: string
-  details?: any
+  details?: Record<string, unknown> | string
 }
 
 async function runTests(): Promise<TestResult[]> {
@@ -38,7 +38,7 @@ async function runTests(): Promise<TestResult[]> {
     const supabase = await createClient()
 
     // 测试2: 测试数据库连接
-    const { data: connectionTest, error: connectionError } = await supabase
+    const { error: connectionError } = await supabase
       .from('profiles')
       .select('count')
       .limit(1)
@@ -49,7 +49,7 @@ async function runTests(): Promise<TestResult[]> {
       message: connectionError
         ? `连接失败: ${connectionError.message}`
         : 'Supabase连接成功',
-      details: connectionError ? connectionError : '数据库可访问',
+      details: connectionError ? connectionError.message : '数据库可访问',
     })
 
     // 测试3: 检查所有核心表是否存在
@@ -109,12 +109,12 @@ async function runTests(): Promise<TestResult[]> {
         error: rlsError ? rlsError.message : 'None',
       },
     })
-  } catch (error: any) {
+  } catch (error) {
     results.push({
       name: '未知错误',
       status: 'error',
-      message: error.message || '发生未知错误',
-      details: error,
+      message: error instanceof Error ? error.message : '发生未知错误',
+      details: String(error),
     })
   }
 
