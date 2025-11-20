@@ -48,9 +48,12 @@ CareerMatch AI is an AI-powered job search platform that helps job seekers disco
 - **API Layer**: Next.js API Routes + Serverless Functions
 - **Heavy Compute**: Cloudflare Workers (job scraping, AI tasks)
 
-**AI Services (Hybrid Strategy)**
-- **OpenAI GPT-4**: Core matching analysis, resume generation, cover letters
-- **Cloudflare AI Workers**: Keyword extraction, text similarity, optimization hints
+**AI Services (Multi-Provider Support)** 🆕
+- **Multiple AI Providers**: OpenAI, Codex, Claude, Gemini (via relay service)
+- **Primary Use**: 9-dimension job matching, SWOT analysis, resume optimization
+- **Relay Support**: Compatible with [claude-relay-service](https://github.com/Wei-Shaw/claude-relay-service)
+- **Auto-Selection**: Intelligent provider selection (Claude > OpenAI > Codex > Gemini)
+- **Cloudflare AI Workers**: (Future) Keyword extraction, text similarity
 
 **DevOps**
 - **Monorepo**: Turborepo + pnpm workspaces
@@ -108,20 +111,36 @@ careermatch-ai/
 
 3. **Set up environment variables**
 
-   Create `.env.local` in `apps/web/`:
+   Copy the example file and configure:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Edit `.env.local` in project root:
    ```env
-   # Supabase
+   # Supabase (Required)
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-   # OpenAI
-   OPENAI_API_KEY=your_openai_api_key
+   # AI Provider (Choose at least ONE)
+   # Option 1: OpenAI (Native)
+   OPENAI_API_KEY=sk-xxx...
+   OPENAI_BASE_URL=https://api.openai.com/v1
 
-   # Cloudflare (optional for MVP)
-   CLOUDFLARE_ACCOUNT_ID=your_account_id
-   CLOUDFLARE_API_TOKEN=your_api_token
+   # Option 2: Claude (Relay) - Recommended
+   # CLAUDE_API_KEY=your-relay-api-key
+   # CLAUDE_BASE_URL=https://your-relay-service.com/v1
+
+   # Option 3: Codex (Relay)
+   # CODEX_API_KEY=your-relay-api-key
+   # CODEX_BASE_URL=https://your-relay-service.com/v1
+
+   # Option 4: Gemini (Relay)
+   # GEMINI_API_KEY=your-relay-api-key
+   # GEMINI_BASE_URL=https://your-relay-service.com/v1
    ```
+
+   > 📖 **详细配置指南**: 参见 [AI提供商配置文档](docs/AI_PROVIDERS_SETUP.md)
 
 4. **Set up Supabase**
 

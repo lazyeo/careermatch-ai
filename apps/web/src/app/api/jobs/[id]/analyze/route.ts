@@ -1,5 +1,13 @@
 import { createClient } from '@/lib/supabase-server'
-import { openai, isOpenAIConfigured, OPENAI_MODELS, TEMPERATURE_PRESETS } from '@/lib/openai'
+import {
+  createAIClient,
+  isAnyAIConfigured,
+  getBestModel,
+  getDefaultProvider,
+  TEMPERATURE_PRESETS,
+  handleAIError,
+  type AIProviderType,
+} from '@/lib/ai-providers'
 import { NextRequest, NextResponse } from 'next/server'
 import type { AnalysisDimension, SWOTAnalysis, KeywordMatch } from '@careermatch/shared'
 
@@ -26,16 +34,20 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if OpenAI is configured
-    if (!isOpenAIConfigured()) {
+    // Check if any AI provider is configured
+    if (!isAnyAIConfigured()) {
       return NextResponse.json(
-        { error: 'OpenAI API is not configured. Please add OPENAI_API_KEY to .env.local' },
+        {
+          error: 'No AI provider is configured. Please add API keys to .env.local',
+          hint: 'Supported providers: OpenAI, Codex (relay), Claude (relay), Gemini (relay)',
+        },
         { status: 503 }
       )
     }
 
-    // Get resume_id from request body
-    const { resumeId } = await request.json()
+    // Get resume_id and optional provider from request body
+    const body = await request.json()
+    const { resumeId, provider } = body as { resumeId: string; provider?: AIProviderType }
 
     if (!resumeId) {
       return NextResponse.json(
@@ -81,10 +93,16 @@ export async function POST(
       return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
     }
 
-    console.log('🤖 Calling OpenAI for job matching analysis...')
+    // Get the provider info for logging
+    const defaultProvider = getDefaultProvider()
+    const providerName = provider
+      ? provider.toUpperCase()
+      : defaultProvider?.displayName || 'Unknown'
 
-    // Call OpenAI to perform analysis
-    const analysisResult = await performAIAnalysis(job, resume)
+    console.log(`🤖 Calling ${providerName} for job matching analysis...`)
+
+    // Call AI provider to perform analysis
+    const analysisResult = await performAIAnalysis(job, resume, provider)
 
     // Save analysis to database
     const { data: savedAnalysis, error: saveError } = await supabase
@@ -179,44 +197,58 @@ export async function GET(
 }
 
 /**
- * Perform AI analysis using OpenAI GPT-4
+ * Perform AI analysis using configured AI provider
  */
-async function performAIAnalysis(job: Record<string, unknown>, resume: Record<string, unknown>) {
-  const prompt = buildAnalysisPrompt(job, resume)
+async function performAIAnalysis(
+  job: Record<string, unknown>,
+  resume: Record<string, unknown>,
+  provider?: AIProviderType
+) {
+  try {
+    const prompt = buildAnalysisPrompt(job, resume)
 
-  const completion = await openai.chat.completions.create({
-    model: OPENAI_MODELS.GPT4,
-    messages: [
-      {
-        role: 'system',
-        content: `You are an expert career advisor and ATS (Applicant Tracking System) specialist.
+    // Create AI client for the specified or default provider
+    const aiClient = createAIClient(provider)
+    const model = getBestModel(provider)
+
+    console.log(`📊 Using model: ${model}`)
+
+    const completion = await aiClient.chat.completions.create({
+      model,
+      messages: [
+        {
+          role: 'system',
+          content: `You are an expert career advisor and ATS (Applicant Tracking System) specialist.
 Your task is to analyze job-resume matches using a comprehensive 9-dimension framework.
 Always respond with valid JSON only, no markdown or additional text.`,
-      },
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-    temperature: TEMPERATURE_PRESETS.ANALYTICAL,
-    response_format: { type: 'json_object' },
-  })
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: TEMPERATURE_PRESETS.ANALYTICAL,
+      response_format: { type: 'json_object' },
+    })
 
-  const responseText = completion.choices[0].message.content
-  if (!responseText) {
-    throw new Error('OpenAI returned empty response')
-  }
+    const responseText = completion.choices[0].message.content
+    if (!responseText) {
+      throw new Error('AI provider returned empty response')
+    }
 
-  // Parse the JSON response
-  const analysis = JSON.parse(responseText)
+    // Parse the JSON response
+    const analysis = JSON.parse(responseText)
 
-  return {
-    matchScore: analysis.matchScore,
-    dimensions: analysis.dimensions as AnalysisDimension[],
-    strengths: analysis.strengths as string[],
-    gaps: analysis.gaps as string[],
-    swot: analysis.swot as SWOTAnalysis,
-    keywords: analysis.keywords as KeywordMatch[],
+    return {
+      matchScore: analysis.matchScore,
+      dimensions: analysis.dimensions as AnalysisDimension[],
+      strengths: analysis.strengths as string[],
+      gaps: analysis.gaps as string[],
+      swot: analysis.swot as SWOTAnalysis,
+      keywords: analysis.keywords as KeywordMatch[],
+    }
+  } catch (error) {
+    handleAIError(error, provider)
   }
 }
 

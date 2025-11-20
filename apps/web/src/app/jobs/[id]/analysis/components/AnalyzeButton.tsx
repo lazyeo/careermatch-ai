@@ -5,13 +5,16 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@careermatch/ui'
 import { Loader2, Sparkles } from 'lucide-react'
 
+export type AIProviderType = 'openai' | 'codex' | 'claude' | 'gemini'
+
 interface AnalyzeButtonProps {
   jobId: string
   resumeId: string
   label?: string
+  provider?: AIProviderType
 }
 
-export function AnalyzeButton({ jobId, resumeId, label = '开始AI分析' }: AnalyzeButtonProps) {
+export function AnalyzeButton({ jobId, resumeId, label = '开始AI分析', provider }: AnalyzeButtonProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -26,7 +29,7 @@ export function AnalyzeButton({ jobId, resumeId, label = '开始AI分析' }: Ana
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ resumeId }),
+        body: JSON.stringify({ resumeId, provider }),
       })
 
       if (!response.ok) {
