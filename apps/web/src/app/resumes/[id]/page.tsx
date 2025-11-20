@@ -3,6 +3,7 @@ import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import type { ResumeContent } from '@careermatch/shared'
+import { ExportPDFButton } from '@/components/ExportPDFButton'
 
 export default async function ResumeDetailPage({
   params,
@@ -45,6 +46,7 @@ export default async function ResumeDetailPage({
               </p>
             </div>
             <div className="flex gap-2">
+              <ExportPDFButton resumeId={params.id} resumeTitle={resume.title} />
               <Link href={`/resumes/${params.id}/edit`}>
                 <Button variant="primary">编辑</Button>
               </Link>
