@@ -30,7 +30,30 @@ export default async function ResumeDetailPage({
     notFound()
   }
 
-  const content = resume.content as ResumeContent
+  const rawContent = resume.content as Record<string, unknown>
+
+  // Handle both camelCase and snake_case field names for personalInfo
+  const rawPersonalInfo = (rawContent.personalInfo || rawContent.personal_info || {}) as Record<string, unknown>
+  const personalInfo: ResumeContent['personalInfo'] = {
+    fullName: (rawPersonalInfo.fullName || rawPersonalInfo.full_name || '') as string,
+    email: (rawPersonalInfo.email || '') as string,
+    phone: (rawPersonalInfo.phone || '') as string,
+    location: (rawPersonalInfo.location || '') as string,
+    linkedIn: (rawPersonalInfo.linkedIn || rawPersonalInfo.linkedin || '') as string,
+    github: (rawPersonalInfo.github || '') as string,
+  }
+
+  // Handle both camelCase and snake_case field names
+  const content: ResumeContent = {
+    personalInfo,
+    careerObjective: (rawContent.careerObjective || rawContent.career_objective || '') as string,
+    skills: (rawContent.skills || []) as ResumeContent['skills'],
+    workExperience: (rawContent.workExperience || rawContent.work_experience || []) as ResumeContent['workExperience'],
+    projects: (rawContent.projects || []) as ResumeContent['projects'],
+    education: (rawContent.education || []) as ResumeContent['education'],
+    certifications: (rawContent.certifications || []) as ResumeContent['certifications'],
+    interests: (rawContent.interests || []) as string[],
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
