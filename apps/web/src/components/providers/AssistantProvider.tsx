@@ -7,23 +7,18 @@
  */
 
 import { useEffect, useCallback } from 'react'
-import { usePathname } from 'next/navigation'
 import { useAssistantStore } from '@/stores/assistant-store'
-import { createPageContext } from '@/lib/ai/prompts/builders/context-builder'
+import { usePageContext } from '@/components/assistant/hooks'
 
 interface AssistantProviderProps {
   children: React.ReactNode
 }
 
 export function AssistantProvider({ children }: AssistantProviderProps) {
-  const pathname = usePathname()
-  const { updateContext, toggle, isOpen } = useAssistantStore()
+  const { toggle, isOpen } = useAssistantStore()
 
-  // 监听路径变化，更新上下文
-  useEffect(() => {
-    const pageContext = createPageContext(pathname)
-    updateContext({ currentPage: pageContext })
-  }, [pathname, updateContext])
+  // 使用 usePageContext hook 自动加载上下文
+  usePageContext()
 
   // 键盘快捷键处理
   const handleKeyDown = useCallback(

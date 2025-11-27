@@ -45,7 +45,7 @@ export function AssistantChat() {
     inputRef.current?.focus()
   }, [])
 
-  // 发送消息
+  // 发送消息（支持流式响应）
   const handleSend = async () => {
     if (!input.trim() || isLoading || isStreaming) return
 
@@ -63,8 +63,8 @@ export function AssistantChat() {
     setLoading(true)
 
     try {
-      // 调用 API
-      const response = await fetch('/api/assistant/chat', {
+      // 使用流式 API
+      const response = await fetch('/api/assistant/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -79,21 +79,59 @@ export function AssistantChat() {
         throw new Error(data.error || '请求失败')
       }
 
-      const data = await response.json()
+      // 处理SSE流
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('无法读取响应流')
 
-      // 添加助手回复
-      addMessage({
-        sessionId: currentSession?.id || '',
-        role: 'assistant',
-        content: data.content,
-        metadata: {
-          intent: data.metadata?.intent,
-          actions: data.actions,
-          suggestions: data.suggestions,
-        },
-      })
+      const decoder = new TextDecoder()
+      let streamContent = ''
+      let suggestions: string[] = []
+
+      setLoading(false)
+      useAssistantStore.getState().setStreaming(true)
+      useAssistantStore.getState().clearStreamContent()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n')
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+
+              if (data.type === 'content') {
+                streamContent += data.data
+                useAssistantStore.getState().appendStreamContent(data.data)
+              } else if (data.type === 'done') {
+                suggestions = data.data.suggestions || []
+                streamContent = data.data.content || streamContent
+              } else if (data.type === 'error') {
+                throw new Error(data.data.message)
+              }
+            } catch (parseError) {
+              // 忽略解析错误，可能是不完整的chunk
+              if (line.trim() !== 'data: ') {
+                console.warn('Parse error:', parseError)
+              }
+            }
+          }
+        }
+      }
+
+      // 流结束，添加最终消息
+      useAssistantStore.getState().finalizeStream(
+        undefined,
+        suggestions,
+        undefined
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : '发送失败，请重试')
+      useAssistantStore.getState().setStreaming(false)
+      useAssistantStore.getState().clearStreamContent()
     } finally {
       setLoading(false)
     }
