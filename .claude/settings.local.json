@@ -36,7 +36,9 @@
       "mcp__chrome-devtools__press_key",
       "Bash(for model in \"claude-3-opus-20240229\" \"claude-3-sonnet-20240229\" \"claude-3-haiku-20240307\" \"claude-sonnet-4-20250514\")",
       "Bash(do echo \"Testing $model...\" curl -s -X POST 'https://relay.a-dobe.club/api/v1/chat/completions' -H 'Authorization: Bearer cr_5d8aed6af03dff73b87ad0198fb1e98d67267cff77480197172f7c9c08359c06' -H 'Content-Type: application/json' -d \"{\"\"model\"\":\"\"$model\"\",\"\"messages\"\":[{\"\"role\"\":\"\"user\"\",\"\"content\"\":\"\"Hi\"\"}],\"\"max_tokens\"\":10}\")",
-      "Bash(git -C /Users/flash/Claude/projects/project-resume-optimizer log --oneline)"
+      "Bash(git -C /Users/flash/Claude/projects/project-resume-optimizer log --oneline)",
+      "Bash(npx supabase:*)",
+      "mcp__chrome-devtools__upload_file"
     ],
     "deny": [],
     "ask": []
