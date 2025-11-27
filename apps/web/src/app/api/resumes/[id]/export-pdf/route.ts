@@ -32,10 +32,34 @@ export async function GET(
       )
     }
 
-    // 准备简历数据
+    // 准备简历数据 - 处理 snake_case 和 camelCase 字段名兼容
+    const rawContent = resume.content as Record<string, unknown>
+
+    // Handle personalInfo field names
+    const rawPersonalInfo = (rawContent.personalInfo || rawContent.personal_info || {}) as Record<string, unknown>
+    const personalInfo = {
+      fullName: (rawPersonalInfo.fullName || rawPersonalInfo.full_name || '') as string,
+      email: (rawPersonalInfo.email || '') as string,
+      phone: (rawPersonalInfo.phone || '') as string,
+      location: (rawPersonalInfo.location || '') as string,
+      linkedIn: (rawPersonalInfo.linkedIn || rawPersonalInfo.linkedin || '') as string,
+      github: (rawPersonalInfo.github || '') as string,
+    }
+
+    const content: ResumeContent = {
+      personalInfo,
+      careerObjective: (rawContent.careerObjective || rawContent.career_objective || '') as string,
+      skills: (rawContent.skills || []) as ResumeContent['skills'],
+      workExperience: (rawContent.workExperience || rawContent.work_experience || []) as ResumeContent['workExperience'],
+      projects: (rawContent.projects || []) as ResumeContent['projects'],
+      education: (rawContent.education || []) as ResumeContent['education'],
+      certifications: (rawContent.certifications || []) as ResumeContent['certifications'],
+      interests: (rawContent.interests || []) as string[],
+    }
+
     const resumeData = {
       title: resume.title,
-      content: resume.content as ResumeContent,
+      content,
     }
 
     // 生成PDF
