@@ -75,13 +75,17 @@ export async function GET(
     const buffer = Buffer.concat(chunks)
 
     // 返回PDF文件
-    const fileName = `${resume.title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
+    // 使用ASCII安全的文件名作为fallback，同时提供UTF-8编码的文件名
+    const dateStr = new Date().toISOString().split('T')[0]
+    const safeFileName = `resume_${dateStr}.pdf`
+    const utf8FileName = `${resume.title.replace(/\s+/g, '_')}_${dateStr}.pdf`
 
     return new NextResponse(buffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
+        // RFC 5987: 使用filename作为ASCII fallback，filename*作为UTF-8编码的实际文件名
+        'Content-Disposition': `attachment; filename="${safeFileName}"; filename*=UTF-8''${encodeURIComponent(utf8FileName)}`,
         'Content-Length': buffer.length.toString(),
       },
     })
