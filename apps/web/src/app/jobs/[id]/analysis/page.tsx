@@ -3,14 +3,9 @@ import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { ArrowLeft, FileText, Sparkles } from 'lucide-react'
-import { RadarChartComponent } from './components/RadarChartComponent'
-import { MatchScoreCard } from './components/MatchScoreCard'
-import { StrengthsGapsSection } from './components/StrengthsGapsSection'
-import { SWOTMatrix } from './components/SWOTMatrix'
-import { KeywordsTable } from './components/KeywordsTable'
-import { AnalyzeButton } from './components/AnalyzeButton'
 import { ResumeSelector } from './components/ResumeSelector'
 import { AnalysisInterface } from './components/AnalysisInterface'
+import { AnalysisResultsView } from './components/AnalysisResultsView'
 
 export default async function JobAnalysisPage({
   params,
@@ -42,21 +37,38 @@ export default async function JobAnalysisPage({
   // Fetch user's resumes for selection
   const { data: resumes } = await supabase
     .from('resumes')
-    .select('id, full_name, created_at, updated_at')
+    .select('id, title, created_at, updated_at')
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
 
-  // Fetch existing analysis if resumeId is provided
-  let analysis = null
+  // Fetch existing analysis session if resumeId is provided
+  let session = null
+  let messages: Array<{ id: string; role: string; content: string; created_at: string }> = []
+
   if (searchParams.resumeId) {
-    const { data } = await supabase
-      .from('job_analyses')
+    // Try new analysis_sessions table first
+    const { data: sessionData } = await supabase
+      .from('analysis_sessions')
       .select('*')
       .eq('job_id', params.id)
       .eq('resume_id', searchParams.resumeId)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single()
 
-    analysis = data
+    if (sessionData) {
+      session = sessionData
+
+      // Fetch messages for this session
+      const { data: messagesData } = await supabase
+        .from('analysis_messages')
+        .select('*')
+        .eq('session_id', session.id)
+        .order('created_at', { ascending: true })
+
+      messages = messagesData || []
+    }
   }
 
   const hasResumes = resumes && resumes.length > 0
@@ -76,7 +88,7 @@ export default async function JobAnalysisPage({
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary-600" />
-                <h1 className="text-xl font-bold text-gray-900">AI匹配分析</h1>
+                <h1 className="text-xl font-bold text-gray-900">AI智能分析</h1>
               </div>
               <p className="text-sm text-gray-600 mt-1">
                 {job.title} @ {job.company}
@@ -114,74 +126,22 @@ export default async function JobAnalysisPage({
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-6">
-                选择一份简历，AI将分析其与该岗位的匹配度
+                选择一份简历，AI将对其与该岗位的匹配度进行深度分析
               </p>
               <ResumeSelector resumes={resumes || []} jobId={params.id} />
             </CardContent>
           </Card>
-        ) : !analysis ? (
+        ) : !session ? (
           /* Start analysis - with AI provider selection */
           <AnalysisInterface jobId={params.id} resumeId={searchParams.resumeId} />
         ) : (
-          /* Show analysis results */
-          <div className="space-y-6">
-            {/* Match Score */}
-            <MatchScoreCard score={analysis.match_score} />
-
-            {/* 9 Dimensions Radar Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>9维度匹配分析</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RadarChartComponent dimensions={analysis.dimensions} />
-
-                {/* Dimension Details */}
-                <div className="mt-6 grid md:grid-cols-3 gap-4">
-                  {analysis.dimensions.map((dim: { name: string; score: number; description: string }, index: number) => (
-                    <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-semibold text-gray-900">{dim.name}</h4>
-                        <span className="text-lg font-bold text-primary-600">{dim.score}</span>
-                      </div>
-                      <p className="text-xs text-gray-600">{dim.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Strengths and Gaps */}
-            <StrengthsGapsSection
-              strengths={analysis.strengths}
-              gaps={analysis.gaps}
-            />
-
-            {/* SWOT Analysis */}
-            <Card>
-              <CardHeader>
-                <CardTitle>SWOT 分析</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SWOTMatrix swot={analysis.swot} />
-              </CardContent>
-            </Card>
-
-            {/* Keywords Matching */}
-            <KeywordsTable keywords={analysis.keywords} />
-
-            {/* Actions */}
-            <div className="flex gap-3 justify-end">
-              <AnalyzeButton
-                jobId={params.id}
-                resumeId={searchParams.resumeId}
-                label="重新分析"
-              />
-              <Link href={`/resumes/${searchParams.resumeId}/edit`}>
-                <Button variant="primary">优化简历</Button>
-              </Link>
-            </div>
-          </div>
+          /* Show analysis results - with option to re-analyze using streaming */
+          <AnalysisResultsView
+            session={session}
+            messages={messages}
+            jobId={params.id}
+            resumeId={searchParams.resumeId}
+          />
         )}
       </main>
     </div>

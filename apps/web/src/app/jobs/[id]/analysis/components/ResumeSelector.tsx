@@ -8,7 +8,7 @@ import { zhCN } from 'date-fns/locale'
 
 interface Resume {
   id: string
-  full_name: string
+  title: string
   created_at: string
   updated_at: string
 }
@@ -40,7 +40,7 @@ export function ResumeSelector({ resumes, jobId }: ResumeSelectorProps) {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 mb-1">
-                  {resume.full_name}
+                  {resume.title}
                 </h3>
                 <div className="flex items-center gap-1 text-xs text-gray-500">
                   <Clock className="w-3 h-3" />

@@ -92,12 +92,12 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
       apiKey: process.env.CLAUDE_API_KEY,
       baseURL: process.env.CLAUDE_BASE_URL,
       models: {
-        best: 'claude-3-opus-20240229',
-        balanced: 'claude-3-sonnet-20240229',
-        fast: 'claude-3-haiku-20240307',
+        best: 'claude-sonnet-4-5-20250929',  // Claude Sonnet 4.5 - fixed model
+        balanced: 'claude-sonnet-4-5-20250929',
+        fast: 'claude-sonnet-4-5-20250929',
       },
       isConfigured: !!(process.env.CLAUDE_API_KEY && process.env.CLAUDE_BASE_URL),
-      displayName: 'Claude 3 (Relay)',
+      displayName: 'Claude Sonnet 4.5 (Relay)',
       icon: '🧠',
     },
     gemini: {
@@ -106,12 +106,12 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
       apiKey: process.env.GEMINI_API_KEY,
       baseURL: process.env.GEMINI_BASE_URL,
       models: {
-        best: 'gemini-pro',
-        balanced: 'gemini-pro',
-        fast: 'gemini-pro',
+        best: 'gemini-2.5-pro',
+        balanced: 'gemini-2.5-pro',
+        fast: 'gemini-2.5-pro',
       },
       isConfigured: !!(process.env.GEMINI_API_KEY && process.env.GEMINI_BASE_URL),
-      displayName: 'Google Gemini (Relay)',
+      displayName: 'Gemini 2.5 Pro (Relay)',
       icon: '💎',
     },
   }

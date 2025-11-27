@@ -20,6 +20,14 @@ export type {
   AnalysisDimension,
   SWOTAnalysis,
   KeywordMatch,
+  // 新版AI分析系统类型
+  AnalysisSessionStatus,
+  AnalysisRecommendation,
+  AnalysisSession,
+  AnalysisMessage,
+  AnalyzeResponse,
+  ChatResponse,
+  AIAnalysisOutput,
 } from './job'
 
 // Application types

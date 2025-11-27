@@ -12,9 +12,10 @@ interface AnalyzeButtonProps {
   resumeId: string
   label?: string
   provider?: AIProviderType
+  force?: boolean  // Force re-analysis, skip cache
 }
 
-export function AnalyzeButton({ jobId, resumeId, label = '开始AI分析', provider }: AnalyzeButtonProps) {
+export function AnalyzeButton({ jobId, resumeId, label = '开始AI分析', provider, force = false }: AnalyzeButtonProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -29,7 +30,7 @@ export function AnalyzeButton({ jobId, resumeId, label = '开始AI分析', provi
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ resumeId, provider }),
+        body: JSON.stringify({ resumeId, provider, force }),
       })
 
       if (!response.ok) {

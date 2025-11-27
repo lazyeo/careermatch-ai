@@ -9,6 +9,99 @@
 
 ## [Unreleased]
 
+### Added - Sprint 6 Part 3: AI流式分析功能 ✅
+
+#### 多AI提供商支持 (2025-11-26)
+- ✨ **AI提供商抽象层** (`src/lib/ai-providers.ts`)
+  - 统一的AI客户端创建函数
+  - 支持OpenAI、Anthropic Claude、Relay服务
+  - 自动检测可用提供商
+  - 智能选择最佳模型
+  - 温度预设配置
+  - 提供商类型定义和配置接口
+
+- ✨ **AI提供商选择器组件** (`AIProviderSelector.tsx`)
+  - 可视化选择AI提供商
+  - 显示可用提供商列表
+  - 实时状态反馈
+  - 集成到分析界面
+
+#### 流式分析系统 (2025-11-27)
+- ✨ **流式API端点** (`/api/jobs/[id]/analyze/stream`)
+  - Server-Sent Events (SSE) 流式传输
+  - OpenAI兼容的流式API调用 (`stream: true`)
+  - 分隔符格式解析 (`---SCORE---`, `---ANALYSIS---`, `---END---`)
+  - 实时内容块传输
+  - 分析结果自动保存到数据库
+  - 错误处理和中断恢复
+
+- ✨ **流式分析组件** (`StreamingAnalysis.tsx`)
+  - 实时内容渲染
+  - 评分卡片实时更新
+  - Markdown内容渐进式显示
+  - 自动滚动到最新内容
+  - 取消分析支持 (AbortController)
+  - 完成后操作按钮
+
+- ✨ **分析模式选择** (`AnalysisInterface.tsx` 更新)
+  - 双模式选择UI：流式分析 vs 批量分析
+  - 流式模式推荐标签
+  - 模式切换逻辑
+  - AI提供商选择集成
+
+- ✨ **分析结果视图** (`AnalysisResultsView.tsx` 新建)
+  - 显示已有分析结果
+  - 重新分析功能（带模式选择）
+  - 结果/重分析状态切换
+  - 与AI优化简历功能集成
+
+#### 技术实现细节
+
+**流式传输架构**:
+```typescript
+// SSE消息格式
+data: {"content": "分析内容块", "done": false}
+data: {"done": true, "sessionId": "uuid", "score": 78, "recommendation": "moderate"}
+```
+
+**分隔符格式**:
+```
+---SCORE---
+78
+---RECOMMENDATION---
+moderate
+---ANALYSIS---
+## 总体评估
+...详细Markdown分析...
+---END---
+```
+
+**文件结构**:
+```
+apps/web/src/
+├── app/api/jobs/[id]/analyze/
+│   ├── route.ts           # 批量分析API
+│   └── stream/route.ts    # 流式分析API (新)
+├── app/jobs/[id]/analysis/
+│   ├── page.tsx           # 分析页面 (更新)
+│   └── components/
+│       ├── AnalysisInterface.tsx    # 模式选择 (更新)
+│       ├── StreamingAnalysis.tsx    # 流式组件 (新)
+│       ├── AnalysisResultsView.tsx  # 结果视图 (新)
+│       ├── AIProviderSelector.tsx   # 提供商选择 (新)
+│       └── ...
+└── lib/
+    └── ai-providers.ts    # AI提供商抽象 (新)
+```
+
+**测试验证**:
+- ✅ 流式API响应正常 (200 OK, SSE格式)
+- ✅ 评分卡片实时更新 (78/100)
+- ✅ Markdown内容渐进式渲染
+- ✅ 分析完成后保存到数据库
+- ✅ 模式选择UI正常工作
+- ✅ 重新分析功能正常
+
 ### Added - Sprint 6 Part 1: Google OAuth集成 ✅
 
 #### 用户认证增强
