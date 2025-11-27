@@ -106,12 +106,12 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
       apiKey: process.env.GEMINI_API_KEY,
       baseURL: process.env.GEMINI_BASE_URL,
       models: {
-        best: 'gemini-2.5-pro',
-        balanced: 'gemini-2.5-pro',
-        fast: 'gemini-2.5-pro',
+        best: 'gemini-2.0-flash-exp',
+        balanced: 'gemini-2.0-flash-exp',
+        fast: 'gemini-2.0-flash-exp',
       },
       isConfigured: !!(process.env.GEMINI_API_KEY && process.env.GEMINI_BASE_URL),
-      displayName: 'Gemini 2.5 Pro (Relay)',
+      displayName: 'Gemini 2.0 Flash (Relay)',
       icon: '💎',
     },
   }
