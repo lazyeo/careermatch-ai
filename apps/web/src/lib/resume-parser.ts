@@ -1,0 +1,441 @@
+/**
+ * 简历解析器
+ *
+ * 使用AI从PDF/Word/Text文件中主动挖掘所有有价值的信息
+ */
+
+import OpenAI from 'openai'
+import type { ParsedResumeData, SkillLevel } from '@careermatch/shared'
+
+// 改进的解析Prompt - 主动挖掘所有有价值信息
+const PARSE_PROMPT = `你是专业的简历解析专家和职业顾问。你的任务是从简历中**主动挖掘**所有有价值的信息。
+
+## 核心原则
+1. **主动挖掘**：不要被动等待信息出现，要主动识别简历中的每一个有价值的细节
+2. **信息完整性**：即使是隐含的、不明显的信息也要尝试提取
+3. **灵活扩展**：对于标准字段之外的信息，使用 extended_data 字段保存
+
+## 提取指令
+1. **基本信息**：姓名、联系方式、社交链接、所在地等
+2. **职业经历**：完整提取每份工作的公司、职位、时间、职责、成就、使用的技术
+3. **教育背景**：学校、学位、专业、时间、GPA、荣誉奖项
+4. **技能清单**：主动识别技术技能、软技能、语言能力、工具熟练度
+5. **项目经历**：项目名称、描述、角色、技术栈、成果亮点
+6. **证书资质**：证书名称、颁发机构、有效期
+7. **其他有价值信息**：
+   - 志愿者经历、社区贡献
+   - 发表的文章、演讲、专利
+   - 兴趣爱好（如果与求职相关）
+   - 推荐人信息
+   - 期望薪资、工作偏好
+   - 任何其他独特的、有价值的信息
+
+## 格式化规则
+- 日期格式化为 YYYY-MM-DD（仅有年份时用 YYYY-01-01）
+- "至今"/"Present"/"Current" → is_current=true, end_date=null
+- 技能分类：编程语言、框架、工具、软技能、语言等
+- 保留原始措辞，尤其是成就描述
+
+## 简历内容：
+{CONTENT}
+
+## 输出格式
+返回严格的JSON（不要用markdown代码块包裹），包含标准字段和扩展字段：
+{
+  "personal_info": {
+    "full_name": "姓名",
+    "email": "邮箱",
+    "phone": "电话",
+    "location": "所在地",
+    "linkedin_url": "LinkedIn链接",
+    "github_url": "GitHub链接",
+    "website_url": "个人网站",
+    "professional_summary": "职业摘要/个人简介"
+  },
+  "work_experiences": [
+    {
+      "company": "公司名称",
+      "position": "职位",
+      "location": "工作地点",
+      "start_date": "YYYY-MM-DD",
+      "end_date": "YYYY-MM-DD或null",
+      "is_current": false,
+      "description": "工作描述",
+      "achievements": ["成就1", "成就2"],
+      "technologies": ["技术1", "技术2"]
+    }
+  ],
+  "education": [
+    {
+      "institution": "学校名称",
+      "degree": "学位",
+      "major": "专业",
+      "location": "地点",
+      "start_date": "YYYY-MM-DD",
+      "end_date": "YYYY-MM-DD或null",
+      "is_current": false,
+      "gpa": 3.8,
+      "achievements": ["荣誉/奖项"]
+    }
+  ],
+  "skills": [
+    {
+      "name": "技能名称",
+      "level": "beginner|intermediate|advanced|expert",
+      "category": "分类（如：编程语言、框架、工具、软技能、语言等）"
+    }
+  ],
+  "projects": [
+    {
+      "name": "项目名称",
+      "description": "项目描述",
+      "role": "角色",
+      "start_date": "YYYY-MM-DD",
+      "end_date": "YYYY-MM-DD",
+      "technologies": ["技术1"],
+      "highlights": ["亮点1"],
+      "url": "项目链接",
+      "github_url": "GitHub链接"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "证书名称",
+      "issuer": "颁发机构",
+      "issue_date": "YYYY-MM-DD",
+      "expiry_date": "YYYY-MM-DD或null",
+      "credential_id": "证书编号",
+      "credential_url": "验证链接"
+    }
+  ],
+  "extended_data": {
+    "volunteer_experience": [
+      {
+        "organization": "组织名称",
+        "role": "角色",
+        "period": "时间段",
+        "description": "描述"
+      }
+    ],
+    "publications": [
+      {
+        "title": "标题",
+        "type": "文章|演讲|专利",
+        "date": "日期",
+        "url": "链接"
+      }
+    ],
+    "languages": [
+      {
+        "language": "语言",
+        "proficiency": "熟练程度"
+      }
+    ],
+    "references": [
+      {
+        "name": "姓名",
+        "relationship": "关系",
+        "contact": "联系方式"
+      }
+    ],
+    "preferences": {
+      "expected_salary": "期望薪资",
+      "preferred_locations": ["偏好地点"],
+      "job_types": ["工作类型偏好"],
+      "availability": "可到岗时间"
+    },
+    "additional_sections": [
+      {
+        "title": "部分标题",
+        "content": "格式化的内容（可以是字符串或对象）"
+      }
+    ]
+  }
+}
+
+注意：
+1. extended_data 中的字段是可选的，只有在简历中存在相关信息时才需要填写
+2. 如果某个字段找不到信息，使用空字符串、空数组或null
+3. 不要返回markdown代码块，直接返回JSON`
+
+/**
+ * 从文本内容解析简历
+ */
+export async function parseResumeContent(
+  content: string,
+  options?: {
+    provider?: 'claude' | 'openai' | 'gemini'
+    model?: string
+  }
+): Promise<ParsedResumeData> {
+  // 使用 CLAUDE_API_KEY 与其他AI功能保持一致
+  const apiKey = process.env.CLAUDE_API_KEY
+  const baseUrl = process.env.CLAUDE_BASE_URL || 'https://relay.a-dobe.club/api/v1'
+
+  if (!apiKey) {
+    throw new Error('CLAUDE_API_KEY is not configured')
+  }
+
+  const client = new OpenAI({
+    apiKey: apiKey,
+    baseURL: baseUrl,
+  })
+
+  // 默认使用Claude Sonnet
+  const model = options?.model || 'claude-sonnet-4-5-20250929'
+
+  const prompt = PARSE_PROMPT.replace('{CONTENT}', content)
+
+  console.log('🔍 Parsing resume with AI...')
+  console.log(`📊 Using model: ${model}`)
+
+  const response = await client.chat.completions.create({
+    model,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+    temperature: 0.1, // 低温度确保稳定输出
+    max_tokens: 8000,
+  })
+
+  const responseText = response.choices[0]?.message?.content || ''
+  console.log(`📝 AI response length: ${responseText.length}`)
+
+  // 尝试解析JSON
+  try {
+    // 提取JSON部分（处理可能的markdown代码块）
+    let jsonStr = responseText
+    const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+    if (jsonMatch) {
+      jsonStr = jsonMatch[1]
+    }
+
+    // 尝试直接解析
+    const parsed = JSON.parse(jsonStr.trim()) as ParsedResumeData
+    console.log('✅ Successfully parsed resume data')
+
+    // 验证和清理数据
+    return sanitizeParsedData(parsed)
+  } catch (error) {
+    console.error('❌ Failed to parse AI response:', error)
+    console.error('Response text preview:', responseText.substring(0, 500))
+
+    // 尝试修复常见JSON问题
+    try {
+      const fixedJson = tryFixJson(responseText)
+      const parsed = JSON.parse(fixedJson) as ParsedResumeData
+      console.log('✅ Successfully parsed resume data after fix')
+      return sanitizeParsedData(parsed)
+    } catch {
+      console.error('❌ Failed to fix JSON')
+      // 返回空结构
+      return getEmptyParsedData()
+    }
+  }
+}
+
+/**
+ * 尝试修复常见的JSON格式问题
+ */
+function tryFixJson(text: string): string {
+  // 移除markdown代码块
+  let json = text.replace(/```(?:json)?\s*/g, '').replace(/\s*```/g, '')
+
+  // 尝试提取JSON对象
+  const match = json.match(/\{[\s\S]*\}/)
+  if (match) {
+    json = match[0]
+  }
+
+  // 移除注释
+  json = json.replace(/\/\/[^\n]*/g, '')
+
+  // 移除尾随逗号
+  json = json.replace(/,\s*([\]}])/g, '$1')
+
+  return json.trim()
+}
+
+/**
+ * 清理和验证解析的数据
+ */
+function sanitizeParsedData(data: ParsedResumeData): ParsedResumeData {
+  // 确保所有必需的字段存在
+  return {
+    personal_info: {
+      full_name: data.personal_info?.full_name || '',
+      email: data.personal_info?.email || '',
+      phone: data.personal_info?.phone,
+      location: data.personal_info?.location,
+      linkedin_url: data.personal_info?.linkedin_url,
+      github_url: data.personal_info?.github_url,
+      website_url: data.personal_info?.website_url,
+      professional_summary: data.personal_info?.professional_summary,
+    },
+    work_experiences: (data.work_experiences || []).map((w) => ({
+      company: w.company || '',
+      position: w.position || '',
+      location: w.location,
+      start_date: formatDate(w.start_date) || '',
+      end_date: w.end_date ? formatDate(w.end_date) : undefined,
+      is_current: w.is_current || false,
+      description: w.description,
+      achievements: ensureArray(w.achievements),
+      technologies: ensureArray(w.technologies),
+    })),
+    education: (data.education || []).map((e) => ({
+      institution: e.institution || '',
+      degree: e.degree || '',
+      major: e.major || '',
+      location: e.location,
+      start_date: formatDate(e.start_date) || '',
+      end_date: e.end_date ? formatDate(e.end_date) : undefined,
+      is_current: e.is_current || false,
+      gpa: e.gpa,
+      achievements: ensureArray(e.achievements),
+    })),
+    skills: (data.skills || []).map((s) => ({
+      name: s.name || '',
+      level: validateSkillLevel(s.level),
+      category: s.category,
+    })),
+    projects: (data.projects || []).map((p) => ({
+      name: p.name || '',
+      description: p.description || '',
+      role: p.role,
+      start_date: p.start_date ? formatDate(p.start_date) : undefined,
+      end_date: p.end_date ? formatDate(p.end_date) : undefined,
+      technologies: ensureArray(p.technologies),
+      highlights: ensureArray(p.highlights),
+      url: p.url,
+      github_url: p.github_url,
+    })),
+    certifications: (data.certifications || []).map((c) => ({
+      name: c.name || '',
+      issuer: c.issuer || '',
+      issue_date: formatDate(c.issue_date) || '',
+      expiry_date: c.expiry_date ? formatDate(c.expiry_date) : undefined,
+      credential_id: c.credential_id,
+      credential_url: c.credential_url,
+    })),
+  }
+}
+
+/**
+ * 格式化日期为 YYYY-MM-DD
+ */
+function formatDate(date?: string): string | undefined {
+  if (!date) return undefined
+
+  // 如果已经是YYYY-MM-DD格式
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date
+  }
+
+  // 如果只有年份
+  if (/^\d{4}$/.test(date)) {
+    return `${date}-01-01`
+  }
+
+  // 尝试解析其他格式
+  try {
+    const parsed = new Date(date)
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().split('T')[0]
+    }
+  } catch {
+    // 忽略解析错误
+  }
+
+  return date
+}
+
+/**
+ * 确保值是数组
+ */
+function ensureArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((v) => typeof v === 'string')
+  }
+  if (typeof value === 'string' && value) {
+    return [value]
+  }
+  return []
+}
+
+/**
+ * 验证技能等级
+ */
+function validateSkillLevel(level?: string): SkillLevel | undefined {
+  const validLevels: SkillLevel[] = ['beginner', 'intermediate', 'advanced', 'expert']
+  if (level && validLevels.includes(level as SkillLevel)) {
+    return level as SkillLevel
+  }
+  return undefined
+}
+
+/**
+ * 获取空的解析数据结构
+ */
+function getEmptyParsedData(): ParsedResumeData {
+  return {
+    personal_info: {
+      full_name: '',
+      email: '',
+    },
+    work_experiences: [],
+    education: [],
+    skills: [],
+    projects: [],
+    certifications: [],
+  }
+}
+
+/**
+ * 从PDF Buffer提取文本
+ */
+export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
+  // 动态导入pdf-parse以避免打包问题
+  try {
+    const pdfParse = (await import('pdf-parse')).default
+    const data = await pdfParse(buffer)
+    return data.text
+  } catch (error) {
+    console.error('PDF parsing error:', error)
+    // 回退方案：尝试提取可读文本
+    const text = buffer.toString('utf-8')
+    const cleanText = text.replace(/[^\x20-\x7E\n\r\t\u4e00-\u9fff]/g, ' ')
+    return cleanText.trim()
+  }
+}
+
+/**
+ * 提取文件内容为文本
+ */
+export async function extractFileContent(
+  file: Buffer,
+  fileType: 'pdf' | 'docx' | 'doc' | 'txt'
+): Promise<string> {
+  switch (fileType) {
+    case 'txt':
+      return file.toString('utf-8')
+    case 'pdf':
+      return extractTextFromPDF(file)
+    case 'docx':
+    case 'doc':
+      // Word文档可以使用mammoth库，这里简化处理
+      try {
+        const mammoth = (await import('mammoth')).default
+        const result = await mammoth.extractRawText({ buffer: file })
+        return result.value
+      } catch (error) {
+        console.error('Word parsing error:', error)
+        return file.toString('utf-8')
+      }
+    default:
+      throw new Error(`Unsupported file type: ${fileType}`)
+  }
+}

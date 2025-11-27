@@ -226,7 +226,7 @@ export default async function JobDetailPage({
         )}
 
         {/* Action Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Apply for Job */}
           <ApplyJobButton jobId={params.id} />
 
@@ -237,25 +237,52 @@ export default async function JobDetailPage({
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 mb-4">
                   <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    AI智能匹配分析
-                  </h3>
-                  <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-                    使用AI分析您的简历与该岗位的匹配度，获得9维度分析、SWOT分析和优化建议
-                  </p>
-                  <Link href={`/jobs/${params.id}/analysis`}>
-                    <Button variant="primary" className="gap-2">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      开始AI分析
-                    </Button>
-                  </Link>
+                  </svg>
                 </div>
-              </CardContent>
-            </Card>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  AI智能匹配分析
+                </h3>
+                <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
+                  分析简历与岗位匹配度，获得优化建议
+                </p>
+                <Link href={`/jobs/${params.id}/analysis`}>
+                  <Button variant="primary" className="gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    开始分析
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* AI Cover Letter */}
+          <Card className="bg-gradient-to-br from-accent-50 to-success-50 border-accent-200">
+            <CardContent className="py-12">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent-100 mb-4">
+                  <svg className="w-6 h-6 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  AI求职信生成
+                </h3>
+                <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
+                  根据岗位要求生成个性化求职信
+                </p>
+                <Link href={`/jobs/${params.id}/cover-letter`}>
+                  <Button variant="primary" className="gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    生成求职信
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>

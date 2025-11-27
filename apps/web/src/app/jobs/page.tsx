@@ -130,11 +130,18 @@ export default async function JobsPage() {
         {/* Action Bar */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold text-gray-900">我的岗位</h2>
-          <Link href="/jobs/new">
-            <Button variant="primary">
-              + 添加岗位
-            </Button>
-          </Link>
+          <div className="flex gap-3">
+            <Link href="/jobs/import">
+              <Button variant="outline">
+                🔗 智能导入
+              </Button>
+            </Link>
+            <Link href="/jobs/new">
+              <Button variant="primary">
+                + 手动创建
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Job List */}
@@ -160,10 +167,15 @@ export default async function JobsPage() {
                 <p className="mt-1 text-sm text-gray-500">
                   添加您感兴趣的岗位，开始智能匹配分析
                 </p>
-                <div className="mt-6">
+                <div className="mt-6 flex gap-3 justify-center">
+                  <Link href="/jobs/import">
+                    <Button variant="outline">
+                      🔗 智能导入
+                    </Button>
+                  </Link>
                   <Link href="/jobs/new">
                     <Button variant="primary">
-                      + 添加岗位
+                      + 手动创建
                     </Button>
                   </Link>
                 </div>

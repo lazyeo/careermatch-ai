@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/supabase-server'
-import { JobForm } from '../components/JobForm'
+import { JobImportForm } from '../components/JobImportForm'
 import Link from 'next/link'
 import { Button } from '@careermatch/ui'
 
-export default async function NewJobPage() {
+export default async function ImportJobPage() {
   const user = await getCurrentUser()
 
   if (!user) {
-    redirect('/login?redirect=/jobs/new')
+    redirect('/login?redirect=/jobs/import')
   }
 
   return (
@@ -18,14 +18,14 @@ export default async function NewJobPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">添加岗位</h1>
+              <h1 className="text-2xl font-bold text-gray-900">智能导入岗位</h1>
               <p className="text-sm text-gray-600 mt-1">
-                保存您感兴趣的岗位信息，开始智能匹配分析
+                粘贴招聘链接或内容，AI自动提取岗位信息
               </p>
             </div>
             <div className="flex gap-3">
-              <Link href="/jobs/import">
-                <Button variant="outline">智能导入</Button>
+              <Link href="/jobs/new">
+                <Button variant="outline">手动创建</Button>
               </Link>
               <Link href="/jobs">
                 <Button variant="outline">返回列表</Button>
@@ -37,7 +37,7 @@ export default async function NewJobPage() {
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <JobForm mode="create" />
+        <JobImportForm />
       </main>
     </div>
   )
