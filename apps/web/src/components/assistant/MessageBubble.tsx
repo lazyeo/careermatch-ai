@@ -4,6 +4,7 @@
  * 消息气泡组件
  *
  * 显示单条聊天消息
+ * 支持普通文本消息和分析卡片
  */
 
 import { useRouter } from 'next/navigation'
@@ -11,21 +12,27 @@ import { User, Bot, ExternalLink, Play } from 'lucide-react'
 import { Button } from '@careermatch/ui'
 import type { AssistantMessage, AgentAction } from '@/lib/ai/prompts/types'
 import ReactMarkdown from 'react-markdown'
+import { AnalysisCard, type AnalysisCardData } from './AnalysisCard'
 
 interface MessageBubbleProps {
   message: AssistantMessage
   isStreaming?: boolean
   onSuggestionClick?: (suggestion: string) => void
+  onAnalysisNavigate?: () => void
 }
 
 export function MessageBubble({
   message,
   isStreaming = false,
   onSuggestionClick,
+  onAnalysisNavigate,
 }: MessageBubbleProps) {
   const router = useRouter()
   const isUser = message.role === 'user'
   const actions = message.metadata?.actions || []
+
+  // 检查是否是分析卡片消息
+  const analysisCard = message.metadata?.analysisCard as AnalysisCardData | undefined
 
   // 处理操作点击
   const handleActionClick = (action: AgentAction) => {
@@ -35,6 +42,34 @@ export function MessageBubble({
       // TODO: 实现操作执行
       console.log('Execute action:', action)
     }
+  }
+
+  // 如果是分析卡片消息，使用特殊渲染
+  if (analysisCard && !isUser) {
+    return (
+      <div className="flex gap-3">
+        {/* 头像 */}
+        <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-accent-100">
+          <Bot className="w-4 h-4 text-accent-600" />
+        </div>
+
+        {/* 卡片内容 */}
+        <div className="flex-1 max-w-[90%]">
+          {/* 简短说明 */}
+          {message.content && (
+            <p className="text-sm text-gray-600 mb-2">{message.content}</p>
+          )}
+
+          {/* 分析卡片 */}
+          <AnalysisCard data={analysisCard} onNavigate={onAnalysisNavigate} />
+
+          {/* 时间戳 */}
+          <p className="text-xs text-gray-400 mt-2">
+            {formatTime(message.createdAt)}
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (

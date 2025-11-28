@@ -11,48 +11,56 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from '@careermatch/ui'
 import { createClient } from '@/lib/supabase'
+import { useTranslations } from 'next-intl'
 
-// 表单验证Schema
-const registerSchema = z.object({
-  fullName: z
-    .string()
-    .min(1, '请输入您的姓名')
-    .min(2, '姓名至少需要2个字符')
-    .max(50, '姓名不能超过50个字符'),
-  email: z
-    .string()
-    .min(1, '请输入邮箱地址')
-    .email('请输入有效的邮箱地址'),
-  password: z
-    .string()
-    .min(8, '密码至少需要8位字符')
-    .regex(/[a-zA-Z]/, '密码必须包含字母')
-    .regex(/[0-9]/, '密码必须包含数字'),
-  confirmPassword: z
-    .string()
-    .min(1, '请确认您的密码'),
-  agreeToTerms: z
-    .boolean()
-    .refine((val) => val === true, '请同意服务条款和隐私政策'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: '两次输入的密码不一致',
-  path: ['confirmPassword'],
-})
-
-type RegisterFormData = z.infer<typeof registerSchema>
+type RegisterFormData = {
+  fullName: string
+  email: string
+  password: string
+  confirmPassword: string
+  agreeToTerms: boolean
+}
 
 export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const supabase = createClient()
+  const t = useTranslations('auth')
+
+  // 动态创建 schema 以使用翻译
+  const registerSchema = useMemo(() => z.object({
+    fullName: z
+      .string()
+      .min(1, t('nameRequired'))
+      .min(2, t('nameTooShort'))
+      .max(50, t('nameTooLong')),
+    email: z
+      .string()
+      .min(1, t('emailRequired'))
+      .email(t('emailInvalid')),
+    password: z
+      .string()
+      .min(8, t('passwordTooShort'))
+      .regex(/[a-zA-Z]/, t('passwordNeedLetter'))
+      .regex(/[0-9]/, t('passwordNeedNumber')),
+    confirmPassword: z
+      .string()
+      .min(1, t('confirmPasswordRequired')),
+    agreeToTerms: z
+      .boolean()
+      .refine((val) => val === true, t('mustAgreeTerms')),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('passwordMismatch'),
+    path: ['confirmPassword'],
+  }), [t])
 
   const {
     register,
@@ -82,9 +90,9 @@ export default function RegisterPage() {
     if (/[0-9]/.test(pwd)) strength++
     if (/[^a-zA-Z0-9]/.test(pwd)) strength++
 
-    if (strength <= 2) return { strength: 1, label: '弱', color: 'bg-error-500' }
-    if (strength <= 3) return { strength: 2, label: '中等', color: 'bg-warning-500' }
-    return { strength: 3, label: '强', color: 'bg-success-500' }
+    if (strength <= 2) return { strength: 1, label: t('passwordStrength.weak'), color: 'bg-error-500' }
+    if (strength <= 3) return { strength: 2, label: t('passwordStrength.medium'), color: 'bg-warning-500' }
+    return { strength: 3, label: t('passwordStrength.strong'), color: 'bg-success-500' }
   }
 
   const passwordStrength = getPasswordStrength(password)
@@ -108,9 +116,9 @@ export default function RegisterPage() {
       if (error) {
         // 处理注册错误
         if (error.message.includes('already registered')) {
-          setErrorMessage('该邮箱已被注册，请直接登录或使用其他邮箱')
+          setErrorMessage(t('emailAlreadyRegistered'))
         } else if (error.message.includes('Password')) {
-          setErrorMessage('密码不符合安全要求，请重新设置')
+          setErrorMessage(t('passwordNotSecure'))
         } else {
           setErrorMessage(error.message)
         }
@@ -126,13 +134,13 @@ export default function RegisterPage() {
           router.refresh()
         } else {
           // 需要验证邮箱
-          alert('注册成功！请检查您的邮箱并点击验证链接完成注册。')
+          alert(t('registerSuccess'))
           router.push('/login')
         }
       }
     } catch (error) {
       console.error('注册失败:', error)
-      setErrorMessage('注册过程中发生错误，请稍后重试')
+      setErrorMessage(t('registerError'))
     } finally {
       setIsLoading(false)
     }
@@ -151,12 +159,12 @@ export default function RegisterPage() {
       })
 
       if (error) {
-        setErrorMessage('Google注册失败: ' + error.message)
+        setErrorMessage(t('googleRegisterError') + ': ' + error.message)
       }
       // OAuth会自动重定向，无需手动跳转
     } catch (error) {
       console.error('Google注册失败:', error)
-      setErrorMessage('Google注册过程中发生错误，请稍后重试')
+      setErrorMessage(t('registerError'))
       setIsLoading(false)
     }
   }
@@ -169,15 +177,15 @@ export default function RegisterPage() {
           <h1 className="text-4xl font-bold text-primary-600 mb-2">
             CareerMatch AI
           </h1>
-          <p className="text-neutral-600">创建您的账户，开启智能求职之旅</p>
+          <p className="text-neutral-600">{t('welcomeRegister')}</p>
         </div>
 
         {/* 注册表单卡片 */}
         <Card>
           <CardHeader>
-            <CardTitle>注册</CardTitle>
+            <CardTitle>{t('register')}</CardTitle>
             <CardDescription>
-              填写以下信息创建您的账户
+              {t('registerDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -195,14 +203,14 @@ export default function RegisterPage() {
                   htmlFor="fullName"
                   className="block text-sm font-medium text-neutral-700 mb-1"
                 >
-                  姓名
+                  {t('fullName')}
                 </label>
                 <input
                   {...register('fullName')}
                   id="fullName"
                   type="text"
                   autoComplete="name"
-                  placeholder="张三"
+                  placeholder={t('namePlaceholder')}
                   className={`
                     w-full px-3 py-2 border rounded-lg
                     focus:outline-none focus:ring-2 focus:ring-primary-500
@@ -222,14 +230,14 @@ export default function RegisterPage() {
                   htmlFor="email"
                   className="block text-sm font-medium text-neutral-700 mb-1"
                 >
-                  邮箱地址
+                  {t('emailAddress')}
                 </label>
                 <input
                   {...register('email')}
                   id="email"
                   type="email"
                   autoComplete="email"
-                  placeholder="your@email.com"
+                  placeholder={t('emailPlaceholder')}
                   className={`
                     w-full px-3 py-2 border rounded-lg
                     focus:outline-none focus:ring-2 focus:ring-primary-500
@@ -249,14 +257,14 @@ export default function RegisterPage() {
                   htmlFor="password"
                   className="block text-sm font-medium text-neutral-700 mb-1"
                 >
-                  密码
+                  {t('password')}
                 </label>
                 <input
                   {...register('password')}
                   id="password"
                   type="password"
                   autoComplete="new-password"
-                  placeholder="••••••••"
+                  placeholder={t('passwordPlaceholder')}
                   className={`
                     w-full px-3 py-2 border rounded-lg
                     focus:outline-none focus:ring-2 focus:ring-primary-500
@@ -284,7 +292,7 @@ export default function RegisterPage() {
                       </span>
                     </div>
                     <p className="text-xs text-neutral-500">
-                      建议：至少8位，包含大小写字母、数字和特殊字符
+                      {t('passwordHint')}
                     </p>
                   </div>
                 )}
@@ -296,14 +304,14 @@ export default function RegisterPage() {
                   htmlFor="confirmPassword"
                   className="block text-sm font-medium text-neutral-700 mb-1"
                 >
-                  确认密码
+                  {t('confirmPassword')}
                 </label>
                 <input
                   {...register('confirmPassword')}
                   id="confirmPassword"
                   type="password"
                   autoComplete="new-password"
-                  placeholder="••••••••"
+                  placeholder={t('passwordPlaceholder')}
                   className={`
                     w-full px-3 py-2 border rounded-lg
                     focus:outline-none focus:ring-2 focus:ring-primary-500
@@ -326,13 +334,13 @@ export default function RegisterPage() {
                     className="mt-1 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                   />
                   <span className="text-sm text-neutral-700">
-                    我已阅读并同意
+                    {t('agreeToTerms')}
                     <a href="/terms" className="text-primary-600 hover:underline mx-1">
-                      服务条款
+                      {t('termsOfService')}
                     </a>
-                    和
+                    &amp;
                     <a href="/privacy" className="text-primary-600 hover:underline mx-1">
-                      隐私政策
+                      {t('privacyPolicy')}
                     </a>
                   </span>
                 </label>
@@ -350,7 +358,7 @@ export default function RegisterPage() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? '注册中...' : '创建账户'}
+                {isLoading ? t('registering') : t('createAccountBtn')}
               </Button>
 
               {/* OAuth分割线 */}
@@ -360,7 +368,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white text-neutral-500">
-                    或使用以下方式注册
+                    {t('orRegisterWith')}
                   </span>
                 </div>
               </div>
@@ -391,7 +399,7 @@ export default function RegisterPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                使用 Google 账号注册
+                {t('registerWithGoogle')}
               </Button>
 
               {/* 分割线 */}
@@ -401,7 +409,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white text-neutral-500">
-                    已有账户？
+                    {t('hasAccount')}
                   </span>
                 </div>
               </div>
@@ -413,7 +421,7 @@ export default function RegisterPage() {
                 className="w-full"
                 onClick={() => router.push('/login')}
               >
-                返回登录
+                {t('backToLogin')}
               </Button>
             </form>
           </CardContent>

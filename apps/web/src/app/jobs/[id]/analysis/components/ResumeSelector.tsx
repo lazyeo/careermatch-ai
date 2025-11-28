@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@careermatch/ui'
 import { FileText, Clock } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { zhCN, enUS } from 'date-fns/locale'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface Resume {
   id: string
@@ -20,6 +21,9 @@ interface ResumeSelectorProps {
 
 export function ResumeSelector({ resumes, jobId }: ResumeSelectorProps) {
   const router = useRouter()
+  const t = useTranslations('analysis')
+  const locale = useLocale()
+  const dateLocale = locale === 'zh-CN' ? zhCN : enUS
 
   const handleSelectResume = (resumeId: string) => {
     router.push(`/jobs/${jobId}/analysis?resumeId=${resumeId}`)
@@ -45,10 +49,10 @@ export function ResumeSelector({ resumes, jobId }: ResumeSelectorProps) {
                 <div className="flex items-center gap-1 text-xs text-gray-500">
                   <Clock className="w-3 h-3" />
                   <span>
-                    更新于{' '}
+                    {t('updatedAt')}{' '}
                     {formatDistanceToNow(new Date(resume.updated_at), {
                       addSuffix: true,
-                      locale: zhCN,
+                      locale: dateLocale,
                     })}
                   </span>
                 </div>

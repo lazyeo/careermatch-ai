@@ -7,7 +7,7 @@
  */
 
 import { useEffect } from 'react'
-import { X, Minus, MessageSquare } from 'lucide-react'
+import { X, Minus, MessageSquare, Trash2 } from 'lucide-react'
 import { Button } from '@careermatch/ui'
 import {
   useAssistantStore,
@@ -20,7 +20,7 @@ import { SuggestedActions } from './SuggestedActions'
 export function AIAssistantSidebar() {
   const isOpen = useAssistantIsOpen()
   const isMinimized = useAssistantIsMinimized()
-  const { close, minimize, maximize, startNewSession, currentSession } = useAssistantStore()
+  const { close, minimize, maximize, startNewSession, clearCurrentSession, currentSession } = useAssistantStore()
 
   // 自动创建新会话
   useEffect(() => {
@@ -81,6 +81,15 @@ export function AIAssistantSidebar() {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearCurrentSession}
+              className="w-8 h-8 p-0 text-gray-500 hover:text-gray-700"
+              title="清除会话"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"

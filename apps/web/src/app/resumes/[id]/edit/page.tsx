@@ -3,6 +3,7 @@ import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import { ResumeForm } from '../../components/ResumeForm'
 import Link from 'next/link'
 import { Button } from '@careermatch/ui'
+import { getTranslations } from 'next-intl/server'
 
 export default async function EditResumePage({
   params,
@@ -29,6 +30,8 @@ export default async function EditResumePage({
     notFound()
   }
 
+  const t = await getTranslations('resumes')
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -36,17 +39,17 @@ export default async function EditResumePage({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">编辑简历</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('editResume')}</h1>
               <p className="text-sm text-gray-600 mt-1">
-                修改您的简历信息
+                {t('editResumeDesc')}
               </p>
             </div>
             <div className="flex gap-2">
               <Link href={`/resumes/${params.id}`}>
-                <Button variant="outline">预览</Button>
+                <Button variant="outline">{t('preview')}</Button>
               </Link>
               <Link href="/resumes">
-                <Button variant="outline">返回列表</Button>
+                <Button variant="outline">{t('backToList')}</Button>
               </Link>
             </div>
           </div>

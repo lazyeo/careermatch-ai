@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import {
   Button,
@@ -32,6 +33,8 @@ export default function CoverLetterPage({
   params: { id: string }
 }) {
   const router = useRouter()
+  const t = useTranslations('coverLetter')
+  const tCommon = useTranslations('common')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<CoverLetterResult | null>(null)
@@ -55,12 +58,12 @@ export default function CoverLetterPage({
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || '生成失败')
+        throw new Error(data.error || t('generationFailed'))
       }
 
       setResult(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '生成失败')
+      setError(err instanceof Error ? err.message : t('generationFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -74,7 +77,7 @@ export default function CoverLetterPage({
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      setError('复制失败')
+      setError(t('copyFailed'))
     }
   }
 
@@ -101,18 +104,18 @@ export default function CoverLetterPage({
             <Link href={`/jobs/${params.id}`}>
               <Button variant="ghost" className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                返回岗位
+                {t('backToJob')}
               </Button>
             </Link>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary-600" />
                 <h1 className="text-xl font-bold text-gray-900">
-                  AI求职信生成
+                  {t('title')}
                 </h1>
               </div>
               <p className="text-sm text-gray-600 mt-1">
-                根据您的资料和岗位要求，生成个性化求职信
+                {t('subtitle')}
               </p>
             </div>
           </div>
@@ -124,19 +127,19 @@ export default function CoverLetterPage({
         {!result ? (
           <Card>
             <CardHeader>
-              <CardTitle>生成选项</CardTitle>
+              <CardTitle>{t('generateOptions')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Tone Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  语气风格
+                  {t('toneStyle')}
                 </label>
                 <div className="flex gap-3">
                   {[
-                    { value: 'professional', label: '专业', desc: '正式但友好' },
-                    { value: 'friendly', label: '亲切', desc: '热情友好' },
-                    { value: 'formal', label: '正式', desc: '严肃庄重' },
+                    { value: 'professional', label: t('tones.professional'), desc: t('tones.professionalDesc') },
+                    { value: 'friendly', label: t('tones.friendly'), desc: t('tones.friendlyDesc') },
+                    { value: 'formal', label: t('tones.formal'), desc: t('tones.formalDesc') },
                   ].map((option) => (
                     <button
                       key={option.value}
@@ -161,12 +164,12 @@ export default function CoverLetterPage({
               {/* Language Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  语言
+                  {t('language')}
                 </label>
                 <div className="flex gap-3">
                   {[
-                    { value: 'en', label: 'English', desc: '英文求职信' },
-                    { value: 'zh', label: '中文', desc: '中文求职信' },
+                    { value: 'en', label: t('languages.en'), desc: t('languages.enDesc') },
+                    { value: 'zh', label: t('languages.zh'), desc: t('languages.zhDesc') },
                   ].map((option) => (
                     <button
                       key={option.value}
@@ -200,19 +203,19 @@ export default function CoverLetterPage({
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      AI正在生成求职信...
+                      {t('generating')}
                     </>
                   ) : (
                     <>
                       <FileText className="w-4 h-4" />
-                      生成求职信
+                      {t('generate')}
                     </>
                   )}
                 </Button>
               </div>
 
               <p className="text-sm text-gray-500 text-center">
-                请确保您已完善个人资料，以获得最佳生成效果
+                {t('ensureProfile')}
               </p>
             </CardContent>
           </Card>
@@ -229,7 +232,7 @@ export default function CoverLetterPage({
                     <p className="text-sm text-gray-600">{result.job.company}</p>
                   </div>
                   <div className="text-sm text-gray-500">
-                    {result.coverLetter.wordCount} 字
+                    {result.coverLetter.wordCount} {t('wordCount')}
                   </div>
                 </div>
               </CardContent>
@@ -239,7 +242,7 @@ export default function CoverLetterPage({
             {result.coverLetter.highlights.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">亮点提示</CardTitle>
+                  <CardTitle className="text-base">{t('highlights')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
@@ -261,7 +264,7 @@ export default function CoverLetterPage({
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>求职信内容</CardTitle>
+                  <CardTitle>{t('content')}</CardTitle>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -272,12 +275,12 @@ export default function CoverLetterPage({
                       {copied ? (
                         <>
                           <Check className="w-4 h-4" />
-                          已复制
+                          {tCommon('copied')}
                         </>
                       ) : (
                         <>
                           <Copy className="w-4 h-4" />
-                          复制
+                          {tCommon('copy')}
                         </>
                       )}
                     </Button>
@@ -288,7 +291,7 @@ export default function CoverLetterPage({
                       className="gap-1"
                     >
                       <Download className="w-4 h-4" />
-                      下载
+                      {tCommon('download')}
                     </Button>
                   </div>
                 </div>
@@ -308,10 +311,10 @@ export default function CoverLetterPage({
                 className="gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                重新生成
+                {t('regenerate')}
               </Button>
               <Link href={`/jobs/${params.id}`}>
-                <Button variant="primary">完成</Button>
+                <Button variant="primary">{t('done')}</Button>
               </Link>
             </div>
           </div>

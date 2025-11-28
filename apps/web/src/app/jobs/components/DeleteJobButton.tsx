@@ -3,8 +3,11 @@
 import { useState } from 'react'
 import { Button } from '@careermatch/ui'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 export function DeleteJobButton({ jobId }: { jobId: string }) {
+  const t = useTranslations('forms.deleteJob')
+  const tCommon = useTranslations('common')
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -30,7 +33,7 @@ export function DeleteJobButton({ jobId }: { jobId: string }) {
       setShowConfirm(false)
     } catch (error) {
       console.error('Error deleting job:', error)
-      alert('删除失败，请重试')
+      alert(t('deleteFailed'))
     } finally {
       setIsDeleting(false)
     }
@@ -50,7 +53,7 @@ export function DeleteJobButton({ jobId }: { jobId: string }) {
           disabled={isDeleting}
           className="text-xs px-2 py-1"
         >
-          取消
+          {tCommon('cancel')}
         </Button>
         <Button
           variant="outline"
@@ -59,7 +62,7 @@ export function DeleteJobButton({ jobId }: { jobId: string }) {
           disabled={isDeleting}
           className="text-xs px-2 py-1 text-error-600 border-error-300 hover:bg-error-50"
         >
-          {isDeleting ? '删除中...' : '确认'}
+          {isDeleting ? t('deleting') : t('confirm')}
         </Button>
       </div>
     )
@@ -72,7 +75,7 @@ export function DeleteJobButton({ jobId }: { jobId: string }) {
       onClick={handleDelete}
       className="text-error-600 border-error-300 hover:bg-error-50"
     >
-      删除
+      {t('deleteButton')}
     </Button>
   )
 }

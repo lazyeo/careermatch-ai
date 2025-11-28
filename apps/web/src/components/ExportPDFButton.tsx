@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@careermatch/ui'
+import { useTranslations } from 'next-intl'
 
 interface ExportPDFButtonProps {
   resumeId: string
@@ -9,6 +10,7 @@ interface ExportPDFButtonProps {
 }
 
 export function ExportPDFButton({ resumeId, resumeTitle }: ExportPDFButtonProps) {
+  const t = useTranslations('forms.exportPDF')
   const [isExporting, setIsExporting] = useState(false)
 
   const handleExport = async () => {
@@ -38,7 +40,7 @@ export function ExportPDFButton({ resumeId, resumeTitle }: ExportPDFButtonProps)
       document.body.removeChild(a)
     } catch (error) {
       console.error('Export error:', error)
-      alert('导出PDF失败，请重试')
+      alert(t('exportFailed'))
     } finally {
       setIsExporting(false)
     }
@@ -50,7 +52,7 @@ export function ExportPDFButton({ resumeId, resumeTitle }: ExportPDFButtonProps)
       onClick={handleExport}
       disabled={isExporting}
     >
-      {isExporting ? '导出中...' : '导出PDF'}
+      {isExporting ? t('exporting') : t('exportPDF')}
     </Button>
   )
 }

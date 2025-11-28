@@ -12,6 +12,7 @@ import type {
   AssistantSession,
   AgentAction,
   IntentType,
+  AnalysisCardMetadata,
 } from '@/lib/ai/prompts/types'
 
 // ============================================
@@ -56,6 +57,8 @@ export interface AssistantActions {
 
   // 消息操作
   addMessage: (message: Omit<AssistantMessage, 'id' | 'createdAt'>) => void
+  addAnalysisMessage: (jobId: string, jobTitle?: string, company?: string) => string
+  updateAnalysisCard: (messageId: string, data: Partial<AnalysisCardMetadata>) => void
   updateLastMessage: (content: string) => void
   setMessages: (messages: AssistantMessage[]) => void
 
@@ -82,6 +85,7 @@ export interface AssistantActions {
 
   // 重置
   reset: () => void
+  clearCurrentSession: () => void
 }
 
 export type AssistantStore = AssistantState & AssistantActions
@@ -223,6 +227,90 @@ export const useAssistantStore = create<AssistantStore>()(
             messages: [...state.currentSession.messages, newMessage],
             updatedAt: now,
             lastMessageAt: now,
+          }
+
+          return {
+            currentSession: updatedSession,
+            sessions: state.sessions.map((s) =>
+              s.id === updatedSession.id ? updatedSession : s
+            ),
+          }
+        })
+      },
+
+      // 添加分析卡片消息（返回消息ID用于后续更新）
+      addAnalysisMessage: (jobId, jobTitle, company) => {
+        const messageId = generateId()
+        const now = getCurrentTimestamp()
+        const { currentSession } = get()
+
+        if (!currentSession) {
+          console.warn('No active session to add analysis message to')
+          return messageId
+        }
+
+        const analysisMessage: AssistantMessage = {
+          id: messageId,
+          sessionId: currentSession.id,
+          role: 'assistant',
+          content: '正在为您分析岗位匹配度...',
+          metadata: {
+            analysisCard: {
+              status: 'loading',
+              jobId,
+              jobTitle,
+              company,
+            },
+          },
+          createdAt: now,
+        }
+
+        set((state) => {
+          if (!state.currentSession) return state
+
+          const updatedSession: AssistantSession = {
+            ...state.currentSession,
+            messages: [...state.currentSession.messages, analysisMessage],
+            updatedAt: now,
+            lastMessageAt: now,
+          }
+
+          return {
+            currentSession: updatedSession,
+            sessions: state.sessions.map((s) =>
+              s.id === updatedSession.id ? updatedSession : s
+            ),
+          }
+        })
+
+        return messageId
+      },
+
+      // 更新分析卡片状态
+      updateAnalysisCard: (messageId, data) => {
+        set((state) => {
+          if (!state.currentSession) return state
+
+          const messages = state.currentSession.messages.map((msg) => {
+            if (msg.id === messageId && msg.metadata?.analysisCard) {
+              return {
+                ...msg,
+                metadata: {
+                  ...msg.metadata,
+                  analysisCard: {
+                    ...msg.metadata.analysisCard,
+                    ...data,
+                  },
+                },
+              }
+            }
+            return msg
+          })
+
+          const updatedSession: AssistantSession = {
+            ...state.currentSession,
+            messages,
+            updatedAt: getCurrentTimestamp(),
           }
 
           return {
@@ -389,6 +477,34 @@ export const useAssistantStore = create<AssistantStore>()(
       // ============================================
 
       reset: () => set(initialState),
+
+      clearCurrentSession: () => {
+        const { currentSession } = get()
+        if (!currentSession) return
+
+        // 创建新会话，清空消息但保留上下文
+        const now = getCurrentTimestamp()
+        const newSession: AssistantSession = {
+          id: generateId(),
+          userId: currentSession.userId,
+          title: undefined,
+          status: 'active',
+          initialContext: currentSession.currentContext,
+          currentContext: currentSession.currentContext,
+          messages: [],
+          createdAt: now,
+          updatedAt: now,
+        }
+
+        set((state) => ({
+          currentSession: newSession,
+          sessions: [newSession, ...state.sessions.filter((s) => s.id !== currentSession.id)],
+          streamingContent: '',
+          isStreaming: false,
+          isLoading: false,
+          error: null,
+        }))
+      },
     }),
     {
       name: 'careermatch-assistant',

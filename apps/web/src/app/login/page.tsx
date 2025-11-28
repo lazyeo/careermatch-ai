@@ -10,28 +10,20 @@
 
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from '@careermatch/ui'
 import { createClient } from '@/lib/supabase'
+import { useTranslations } from 'next-intl'
 
-// 表单验证Schema
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, '请输入邮箱地址')
-    .email('请输入有效的邮箱地址'),
-  password: z
-    .string()
-    .min(1, '请输入密码')
-    .min(8, '密码至少需要8位字符'),
-  rememberMe: z.boolean().default(false),
-})
-
-type LoginFormData = z.infer<typeof loginSchema>
+type LoginFormData = {
+  email: string
+  password: string
+  rememberMe: boolean
+}
 
 function LoginPageContent() {
   const router = useRouter()
@@ -39,6 +31,20 @@ function LoginPageContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const supabase = createClient()
+  const t = useTranslations('auth')
+
+  // 动态创建 schema 以使用翻译
+  const loginSchema = useMemo(() => z.object({
+    email: z
+      .string()
+      .min(1, t('emailRequired'))
+      .email(t('emailInvalid')),
+    password: z
+      .string()
+      .min(1, t('passwordRequired'))
+      .min(8, t('passwordTooShort')),
+    rememberMe: z.boolean().default(false),
+  }), [t])
 
   const {
     register,
@@ -76,9 +82,9 @@ function LoginPageContent() {
       if (error) {
         // 处理登录错误
         if (error.message.includes('Invalid login credentials')) {
-          setErrorMessage('邮箱或密码错误，请重试')
+          setErrorMessage(t('invalidCredentials'))
         } else if (error.message.includes('Email not confirmed')) {
-          setErrorMessage('请先验证您的邮箱地址')
+          setErrorMessage(t('emailNotConfirmed'))
         } else {
           setErrorMessage(error.message)
         }
@@ -92,7 +98,7 @@ function LoginPageContent() {
       }
     } catch (error) {
       console.error('登录失败:', error)
-      setErrorMessage('登录过程中发生错误，请稍后重试')
+      setErrorMessage(t('loginError'))
     } finally {
       setIsLoading(false)
     }
@@ -111,12 +117,12 @@ function LoginPageContent() {
       })
 
       if (error) {
-        setErrorMessage('Google登录失败: ' + error.message)
+        setErrorMessage(t('googleLoginError') + ': ' + error.message)
       }
       // OAuth会自动重定向，无需手动跳转
     } catch (error) {
       console.error('Google登录失败:', error)
-      setErrorMessage('Google登录过程中发生错误，请稍后重试')
+      setErrorMessage(t('loginError'))
       setIsLoading(false)
     }
   }
@@ -129,15 +135,15 @@ function LoginPageContent() {
           <h1 className="text-4xl font-bold text-primary-600 mb-2">
             CareerMatch AI
           </h1>
-          <p className="text-neutral-600">欢迎回来！请登录您的账户</p>
+          <p className="text-neutral-600">{t('welcomeBack')}</p>
         </div>
 
         {/* 登录表单卡片 */}
         <Card>
           <CardHeader>
-            <CardTitle>登录</CardTitle>
+            <CardTitle>{t('login')}</CardTitle>
             <CardDescription>
-              使用您的邮箱和密码登录
+              {t('loginDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -155,14 +161,14 @@ function LoginPageContent() {
                   htmlFor="email"
                   className="block text-sm font-medium text-neutral-700 mb-1"
                 >
-                  邮箱地址
+                  {t('emailAddress')}
                 </label>
                 <input
                   {...register('email')}
                   id="email"
                   type="email"
                   autoComplete="email"
-                  placeholder="your@email.com"
+                  placeholder={t('emailPlaceholder')}
                   className={`
                     w-full px-3 py-2 border rounded-lg
                     focus:outline-none focus:ring-2 focus:ring-primary-500
@@ -182,14 +188,14 @@ function LoginPageContent() {
                   htmlFor="password"
                   className="block text-sm font-medium text-neutral-700 mb-1"
                 >
-                  密码
+                  {t('password')}
                 </label>
                 <input
                   {...register('password')}
                   id="password"
                   type="password"
                   autoComplete="current-password"
-                  placeholder="••••••••"
+                  placeholder={t('passwordPlaceholder')}
                   className={`
                     w-full px-3 py-2 border rounded-lg
                     focus:outline-none focus:ring-2 focus:ring-primary-500
@@ -211,14 +217,14 @@ function LoginPageContent() {
                     type="checkbox"
                     className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="text-sm text-neutral-700">记住我</span>
+                  <span className="text-sm text-neutral-700">{t('rememberMe')}</span>
                 </label>
 
                 <a
                   href="/forgot-password"
                   className="text-sm text-primary-600 hover:text-primary-700 hover:underline"
                 >
-                  忘记密码？
+                  {t('forgotPassword')}
                 </a>
               </div>
 
@@ -229,7 +235,7 @@ function LoginPageContent() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? '登录中...' : '登录'}
+                {isLoading ? t('loggingIn') : t('login')}
               </Button>
 
               {/* OAuth分割线 */}
@@ -239,7 +245,7 @@ function LoginPageContent() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white text-neutral-500">
-                    或使用以下方式登录
+                    {t('orLoginWith')}
                   </span>
                 </div>
               </div>
@@ -270,7 +276,7 @@ function LoginPageContent() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                使用 Google 账号登录
+                {t('loginWithGoogle')}
               </Button>
 
               {/* 分割线 */}
@@ -280,7 +286,7 @@ function LoginPageContent() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white text-neutral-500">
-                    还没有账户？
+                    {t('noAccount')}
                   </span>
                 </div>
               </div>
@@ -292,7 +298,7 @@ function LoginPageContent() {
                 className="w-full"
                 onClick={() => router.push('/register')}
               >
-                创建新账户
+                {t('createAccount')}
               </Button>
             </form>
           </CardContent>
@@ -300,13 +306,13 @@ function LoginPageContent() {
 
         {/* 底部说明 */}
         <p className="mt-6 text-center text-sm text-neutral-600">
-          登录即表示您同意我们的
+          {t('loginFooter')}
           <a href="/terms" className="text-primary-600 hover:underline mx-1">
-            服务条款
+            {t('termsOfService')}
           </a>
-          和
+          &amp;
           <a href="/privacy" className="text-primary-600 hover:underline mx-1">
-            隐私政策
+            {t('privacyPolicy')}
           </a>
         </p>
       </div>
@@ -316,7 +322,7 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">加载中...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">Loading...</div>}>
       <LoginPageContent />
     </Suspense>
   )

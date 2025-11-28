@@ -3,6 +3,7 @@ import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { ApplyJobButton } from './components/ApplyJobButton'
+import { getTranslations, getLocale } from 'next-intl/server'
 
 // Job detail page component
 export default async function JobDetailPage({
@@ -15,6 +16,9 @@ export default async function JobDetailPage({
   if (!user) {
     redirect('/login?redirect=/jobs/' + params.id)
   }
+
+  const t = await getTranslations('jobs')
+  const locale = await getLocale()
 
   const supabase = await createClient()
 
@@ -32,27 +36,29 @@ export default async function JobDetailPage({
 
   // Helper functions
   const getJobTypeLabel = (type: string | null) => {
-    if (!type) return '未指定'
-    const labels: Record<string, string> = {
-      'full-time': '全职',
-      'part-time': '兼职',
-      'contract': '合同',
-      'internship': '实习',
-      'casual': '临时',
+    if (!type) return t('notSpecified')
+    const typeMap: Record<string, string> = {
+      'full-time': 'fullTime',
+      'part-time': 'partTime',
+      'contract': 'contract',
+      'internship': 'internship',
+      'casual': 'casual',
     }
-    return labels[type] || type
+    const key = typeMap[type]
+    return key ? t(key as keyof typeof t) : type
   }
 
   const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      'saved': '已保存',
-      'applied': '已申请',
-      'interview': '面试中',
-      'rejected': '已拒绝',
-      'offer': '已录用',
-      'withdrawn': '已撤回',
+    const statusMap: Record<string, string> = {
+      'saved': 'statusLabels.saved',
+      'applied': 'statusLabels.applied',
+      'interview': 'statusLabels.interview',
+      'rejected': 'statusLabels.rejected',
+      'offer': 'statusLabels.offer',
+      'withdrawn': 'statusLabels.withdrawn',
     }
-    return labels[status] || status
+    const key = statusMap[status]
+    return key ? t(key as keyof typeof t) : status
   }
 
   const getStatusColor = (status: string) => {
@@ -82,15 +88,15 @@ export default async function JobDetailPage({
               </div>
               <p className="text-lg text-gray-600 mt-1">{job.company}</p>
               <p className="text-sm text-gray-500 mt-1">
-                更新于 {new Date(job.updated_at).toLocaleDateString('zh-CN')}
+                {t('updatedAt')} {new Date(job.updated_at).toLocaleDateString(locale)}
               </p>
             </div>
             <div className="flex gap-2">
               <Link href={`/jobs/${params.id}/edit`}>
-                <Button variant="primary">编辑</Button>
+                <Button variant="primary">{t('edit')}</Button>
               </Link>
               <Link href="/jobs">
-                <Button variant="outline">返回列表</Button>
+                <Button variant="outline">{t('backToList')}</Button>
               </Link>
             </div>
           </div>
@@ -102,33 +108,33 @@ export default async function JobDetailPage({
         {/* Basic Information */}
         <Card>
           <CardHeader>
-            <CardTitle>基本信息</CardTitle>
+            <CardTitle>{t('basicInfo')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="text-sm font-medium text-gray-500">岗位标题</span>
+                <span className="text-sm font-medium text-gray-500">{t('jobTitle')}</span>
                 <p className="mt-1 text-gray-900">{job.title}</p>
               </div>
               <div>
-                <span className="text-sm font-medium text-gray-500">公司名称</span>
+                <span className="text-sm font-medium text-gray-500">{t('companyName')}</span>
                 <p className="mt-1 text-gray-900">{job.company}</p>
               </div>
               {job.location && (
                 <div>
-                  <span className="text-sm font-medium text-gray-500">工作地点</span>
+                  <span className="text-sm font-medium text-gray-500">{t('location')}</span>
                   <p className="mt-1 text-gray-900">{job.location}</p>
                 </div>
               )}
               {job.job_type && (
                 <div>
-                  <span className="text-sm font-medium text-gray-500">岗位类型</span>
+                  <span className="text-sm font-medium text-gray-500">{t('jobType')}</span>
                   <p className="mt-1 text-gray-900">{getJobTypeLabel(job.job_type)}</p>
                 </div>
               )}
               {(job.salary_min || job.salary_max) && (
                 <div>
-                  <span className="text-sm font-medium text-gray-500">薪资范围</span>
+                  <span className="text-sm font-medium text-gray-500">{t('salaryRange')}</span>
                   <p className="mt-1 text-gray-900">
                     {job.salary_currency} {job.salary_min?.toLocaleString() || '0'}
                     {job.salary_max ? ` - ${job.salary_max.toLocaleString()}` : '+'}
@@ -137,7 +143,7 @@ export default async function JobDetailPage({
               )}
               {job.source_url && (
                 <div className="col-span-2">
-                  <span className="text-sm font-medium text-gray-500">来源链接</span>
+                  <span className="text-sm font-medium text-gray-500">{t('sourceUrl')}</span>
                   <p className="mt-1">
                     <a
                       href={job.source_url}
@@ -158,7 +164,7 @@ export default async function JobDetailPage({
         {job.description && (
           <Card>
             <CardHeader>
-              <CardTitle>岗位描述</CardTitle>
+              <CardTitle>{t('description')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
@@ -172,7 +178,7 @@ export default async function JobDetailPage({
         {job.requirements && (
           <Card>
             <CardHeader>
-              <CardTitle>岗位要求</CardTitle>
+              <CardTitle>{t('requirements')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
@@ -186,7 +192,7 @@ export default async function JobDetailPage({
         {job.benefits && (
           <Card>
             <CardHeader>
-              <CardTitle>福利待遇</CardTitle>
+              <CardTitle>{t('benefits')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
@@ -200,23 +206,23 @@ export default async function JobDetailPage({
         {(job.posted_date || job.deadline) && (
           <Card>
             <CardHeader>
-              <CardTitle>时间信息</CardTitle>
+              <CardTitle>{t('timeInfo')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 {job.posted_date && (
                   <div>
-                    <span className="text-sm font-medium text-gray-500">发布日期</span>
+                    <span className="text-sm font-medium text-gray-500">{t('postedDate')}</span>
                     <p className="mt-1 text-gray-900">
-                      {new Date(job.posted_date).toLocaleDateString('zh-CN')}
+                      {new Date(job.posted_date).toLocaleDateString(locale)}
                     </p>
                   </div>
                 )}
                 {job.deadline && (
                   <div>
-                    <span className="text-sm font-medium text-gray-500">截止日期</span>
+                    <span className="text-sm font-medium text-gray-500">{t('deadline')}</span>
                     <p className="mt-1 text-gray-900">
-                      {new Date(job.deadline).toLocaleDateString('zh-CN')}
+                      {new Date(job.deadline).toLocaleDateString(locale)}
                     </p>
                   </div>
                 )}
@@ -240,17 +246,17 @@ export default async function JobDetailPage({
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  AI智能匹配分析
+                  {t('aiMatchAnalysis')}
                 </h3>
                 <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-                  分析简历与岗位匹配度，获得优化建议
+                  {t('aiMatchAnalysisDesc')}
                 </p>
                 <Link href={`/jobs/${params.id}/analysis`}>
                   <Button variant="primary" className="gap-2">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    开始分析
+                    {t('startAnalysis')}
                   </Button>
                 </Link>
               </div>
@@ -267,17 +273,17 @@ export default async function JobDetailPage({
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  AI求职信生成
+                  {t('aiCoverLetter')}
                 </h3>
                 <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-                  根据岗位要求生成个性化求职信
+                  {t('aiCoverLetterDesc')}
                 </p>
                 <Link href={`/jobs/${params.id}/cover-letter`}>
                   <Button variant="primary" className="gap-2">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    生成求职信
+                    {t('generateCoverLetter')}
                   </Button>
                 </Link>
               </div>

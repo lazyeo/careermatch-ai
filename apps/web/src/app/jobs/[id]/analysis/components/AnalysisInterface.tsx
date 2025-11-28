@@ -7,6 +7,7 @@ import { Sparkles, Zap, Clock } from 'lucide-react'
 import { AIProviderSelector, type AIProviderType } from './AIProviderSelector'
 import { AnalyzeButton } from './AnalyzeButton'
 import { StreamingAnalysis } from './StreamingAnalysis'
+import { useTranslations } from 'next-intl'
 
 interface AnalysisInterfaceProps {
   jobId: string
@@ -17,6 +18,7 @@ type AnalysisMode = 'select' | 'streaming' | 'batch'
 
 export function AnalysisInterface({ jobId, resumeId }: AnalysisInterfaceProps) {
   const router = useRouter()
+  const t = useTranslations('analysis')
   const [selectedProvider, setSelectedProvider] = useState<AIProviderType | undefined>(undefined)
   const [mode, setMode] = useState<AnalysisMode>('select')
 
@@ -49,17 +51,17 @@ export function AnalysisInterface({ jobId, resumeId }: AnalysisInterfaceProps) {
           <CardContent className="py-12">
             <div className="text-center">
               <Sparkles className="w-12 h-12 text-primary-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">准备开始分析</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('readyToAnalyze')}</h3>
               <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
-                点击下方按钮，AI将深度分析您的简历与该岗位的匹配度
+                {t('readyToAnalyzeDesc')}
               </p>
               <AnalyzeButton jobId={jobId} resumeId={resumeId} provider={selectedProvider} />
-              <p className="text-xs text-gray-500 mt-4">⏱️ 分析通常需要60-90秒</p>
+              <p className="text-xs text-gray-500 mt-4">{t('analysisTime')}</p>
               <button
                 onClick={() => setMode('select')}
                 className="text-xs text-primary-600 hover:text-primary-700 mt-2 underline"
               >
-                返回选择
+                {t('backToSelection')}
               </button>
             </div>
           </CardContent>
@@ -77,9 +79,9 @@ export function AnalysisInterface({ jobId, resumeId }: AnalysisInterfaceProps) {
         <CardContent className="py-8">
           <div className="text-center mb-8">
             <Sparkles className="w-12 h-12 text-primary-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">选择分析模式</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('selectAnalysisMode')}</h3>
             <p className="text-sm text-gray-600">
-              选择您喜欢的分析方式
+              {t('selectAnalysisModeDesc')}
             </p>
           </div>
 
@@ -94,16 +96,16 @@ export function AnalysisInterface({ jobId, resumeId }: AnalysisInterfaceProps) {
                   <Zap className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900">流式分析</h4>
-                  <span className="text-xs text-primary-600 font-medium">推荐</span>
+                  <h4 className="font-semibold text-gray-900">{t('streamingAnalysis')}</h4>
+                  <span className="text-xs text-primary-600 font-medium">{t('recommended')}</span>
                 </div>
               </div>
               <p className="text-sm text-gray-600 mb-3">
-                实时查看AI生成的分析内容，边生成边显示
+                {t('streamingAnalysisDesc')}
               </p>
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 <Clock className="w-3 h-3" />
-                <span>体验更流畅</span>
+                <span>{t('smootherExperience')}</span>
               </div>
             </button>
 
@@ -117,16 +119,16 @@ export function AnalysisInterface({ jobId, resumeId }: AnalysisInterfaceProps) {
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900">批量分析</h4>
-                  <span className="text-xs text-gray-500">传统模式</span>
+                  <h4 className="font-semibold text-gray-900">{t('batchAnalysis')}</h4>
+                  <span className="text-xs text-gray-500">{t('traditionalMode')}</span>
                 </div>
               </div>
               <p className="text-sm text-gray-600 mb-3">
-                等待AI完成全部分析后一次性显示结果
+                {t('batchAnalysisDesc')}
               </p>
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 <Clock className="w-3 h-3" />
-                <span>约60-90秒</span>
+                <span>{t('estimatedTime', { time: '60-90秒' })}</span>
               </div>
             </button>
           </div>

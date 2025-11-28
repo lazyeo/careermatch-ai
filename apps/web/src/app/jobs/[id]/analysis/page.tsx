@@ -2,18 +2,22 @@ import { redirect, notFound } from 'next/navigation'
 import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
-import { ArrowLeft, FileText, Sparkles } from 'lucide-react'
+import { ArrowLeft, FileText, Sparkles, User } from 'lucide-react'
 import { ResumeSelector } from './components/ResumeSelector'
 import { AnalysisInterface } from './components/AnalysisInterface'
 import { AnalysisResultsView } from './components/AnalysisResultsView'
+import { ProfileAnalysisInterface } from './components/ProfileAnalysisInterface'
+import { getTranslations } from 'next-intl/server'
 
 export default async function JobAnalysisPage({
   params,
   searchParams,
 }: {
   params: { id: string }
-  searchParams: { resumeId?: string }
+  searchParams: { resumeId?: string; mode?: 'profile' | 'resume' }
 }) {
+  const t = await getTranslations('analysis')
+  const tCommon = await getTranslations('common')
   const user = await getCurrentUser()
 
   if (!user) {
@@ -72,6 +76,7 @@ export default async function JobAnalysisPage({
   }
 
   const hasResumes = resumes && resumes.length > 0
+  const isProfileMode = searchParams.mode === 'profile' || !hasResumes
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -82,16 +87,16 @@ export default async function JobAnalysisPage({
             <Link href={`/jobs/${params.id}`}>
               <Button variant="ghost" className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                返回岗位详情
+                {t('backToJob')}
               </Button>
             </Link>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary-600" />
-                <h1 className="text-xl font-bold text-gray-900">AI智能分析</h1>
+                <h1 className="text-xl font-bold text-gray-900">{t('title')}</h1>
               </div>
               <p className="text-sm text-gray-600 mt-1">
-                {job.title} @ {job.company}
+                {t('jobAt', { title: job.title, company: job.company })}
               </p>
             </div>
           </div>
@@ -100,37 +105,63 @@ export default async function JobAnalysisPage({
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!hasResumes ? (
-          /* No resumes - prompt to create */
-          <Card>
-            <CardContent className="py-12">
-              <div className="text-center">
-                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  还没有简历
-                </h3>
-                <p className="text-sm text-gray-600 mb-6">
-                  请先创建一份简历，然后再进行AI匹配分析
-                </p>
-                <Link href="/resumes/new">
-                  <Button variant="primary">创建简历</Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+        {isProfileMode && !searchParams.resumeId ? (
+          /* Profile-based analysis (no resume needed) */
+          <ProfileAnalysisInterface jobId={params.id} hasResumes={hasResumes} />
         ) : !searchParams.resumeId ? (
-          /* Resume selection */
-          <Card>
-            <CardHeader>
-              <CardTitle>选择简历进行分析</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 mb-6">
-                选择一份简历，AI将对其与该岗位的匹配度进行深度分析
-              </p>
-              <ResumeSelector resumes={resumes || []} jobId={params.id} />
-            </CardContent>
-          </Card>
+          /* Resume selection - with profile option */
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('selectMethod')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-6">
+                  {t('selectMethodDesc')}
+                </p>
+
+                {/* Analysis Mode Options */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  {/* Resume-based Option */}
+                  <div className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-primary-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">{t('resumeMatching')}</h4>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {t('resumeMatchingDesc')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Profile-based Option */}
+                  <Link href={`/jobs/${params.id}/analysis?mode=profile`}>
+                    <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/50 transition-colors cursor-pointer h-full">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                          <User className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">{t('profileAnalysis')}</h4>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {t('profileAnalysisDesc')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+
+                <div className="border-t border-gray-100 pt-6">
+                  <h4 className="text-sm font-medium text-gray-700 mb-4">{t('selectResume')}</h4>
+                  <ResumeSelector resumes={resumes || []} jobId={params.id} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         ) : !session ? (
           /* Start analysis - with AI provider selection */
           <AnalysisInterface jobId={params.id} resumeId={searchParams.resumeId} />

@@ -3,6 +3,7 @@ import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import { JobForm } from '../../components/JobForm'
 import Link from 'next/link'
 import { Button } from '@careermatch/ui'
+import { getTranslations } from 'next-intl/server'
 
 export default async function EditJobPage({
   params,
@@ -29,6 +30,8 @@ export default async function EditJobPage({
     notFound()
   }
 
+  const t = await getTranslations('jobs')
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -36,17 +39,17 @@ export default async function EditJobPage({
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">编辑岗位</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('editJob')}</h1>
               <p className="text-sm text-gray-600 mt-1">
-                修改岗位信息和状态
+                {t('editJobDesc')}
               </p>
             </div>
             <div className="flex gap-2">
               <Link href={`/jobs/${params.id}`}>
-                <Button variant="outline">查看详情</Button>
+                <Button variant="outline">{t('viewDetail')}</Button>
               </Link>
               <Link href="/jobs">
-                <Button variant="outline">返回列表</Button>
+                <Button variant="outline">{t('backToList')}</Button>
               </Link>
             </div>
           </div>

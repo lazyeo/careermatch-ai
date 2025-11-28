@@ -256,6 +256,21 @@ export interface AgentResponse {
 export type MessageRole = 'user' | 'assistant' | 'system'
 
 /**
+ * 分析卡片数据（用于在对话中显示分析结果）
+ */
+export interface AnalysisCardMetadata {
+  status: 'loading' | 'completed' | 'failed'
+  jobId: string
+  jobTitle?: string
+  company?: string
+  score?: number
+  recommendation?: 'strong' | 'moderate' | 'weak' | 'not_recommended'
+  summary?: string
+  error?: string
+  sessionId?: string
+}
+
+/**
  * 对话消息
  */
 export interface AssistantMessage {
@@ -269,6 +284,8 @@ export interface AssistantMessage {
     suggestions?: string[]
     relatedJobId?: string
     relatedResumeId?: string
+    /** 分析卡片数据 */
+    analysisCard?: AnalysisCardMetadata
   }
   createdAt: string
 }

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale, getMessages } from 'next-intl/server'
 import './globals.css'
 import { Providers } from '@/components/providers'
 import { AIAssistantSidebar } from '@/components/assistant'
@@ -11,18 +13,23 @@ export const metadata: Metadata = {
   description: 'AI-powered job search assistant tailored for the New Zealand market. Find, match, and optimize your job applications with intelligent insights.',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const locale = await getLocale()
+  const messages = await getMessages()
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={inter.className}>
-        <Providers>
-          {children}
-          <AIAssistantSidebar />
-        </Providers>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>
+            {children}
+            <AIAssistantSidebar />
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

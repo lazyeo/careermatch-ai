@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button, Card, CardContent } from '@careermatch/ui'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 interface Resume {
   id: string
@@ -16,6 +17,9 @@ interface ApplyJobButtonProps {
 }
 
 export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
+  const t = useTranslations('forms.applyJob')
+  const tApp = useTranslations('applications')
+  const tCommon = useTranslations('common')
   const [showModal, setShowModal] = useState(false)
   const [resumes, setResumes] = useState<Resume[]>([])
   const [selectedResumeId, setSelectedResumeId] = useState<string>('')
@@ -38,14 +42,14 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
     setIsLoading(true)
     try {
       const response = await fetch('/api/resumes')
-      if (!response.ok) throw new Error('获取简历列表失败')
+      if (!response.ok) throw new Error(t('fetchResumesFailed'))
       const data = await response.json()
       setResumes(data)
       if (data.length > 0) {
         setSelectedResumeId(data[0].id)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '获取简历失败')
+      setError(err instanceof Error ? err.message : t('fetchResumesFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -53,7 +57,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
 
   const handleSubmit = async () => {
     if (!selectedResumeId) {
-      setError('请选择一份简历')
+      setError(t('selectResumeError'))
       return
     }
 
@@ -76,7 +80,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || '创建申请失败')
+        throw new Error(data.error || t('createFailed'))
       }
 
       const application = await response.json()
@@ -85,7 +89,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
       router.push(`/applications/${application.id}`)
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : '创建申请失败')
+      setError(err instanceof Error ? err.message : t('createFailed'))
       setIsSubmitting(false)
     }
   }
@@ -111,9 +115,9 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">申请此岗位</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('title')}</h3>
             <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-              选择一份简历并创建申请记录，开始追踪您的求职进度
+              {t('description')}
             </p>
             <Button
               variant="primary"
@@ -133,7 +137,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              创建申请
+              {t('createApplication')}
             </Button>
           </div>
         </CardContent>
@@ -146,7 +150,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-900">创建申请记录</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('modalTitle')}</h2>
                 <button
                   onClick={() => setShowModal(false)}
                   className="text-gray-400 hover:text-gray-600"
@@ -196,21 +200,21 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
               {/* Resume Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  选择简历 *
+                  {t('selectResume')}
                 </label>
                 {isLoading ? (
                   <div className="text-center py-8">
                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                    <p className="text-sm text-gray-500 mt-2">加载简历...</p>
+                    <p className="text-sm text-gray-500 mt-2">{t('loadingResumes')}</p>
                   </div>
                 ) : resumes.length === 0 ? (
                   <div className="text-center py-8 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-4">您还没有创建简历</p>
+                    <p className="text-sm text-gray-600 mb-4">{t('noResumes')}</p>
                     <Button
                       variant="primary"
                       onClick={() => router.push('/resumes/new')}
                     >
-                      创建简历
+                      {t('createResume')}
                     </Button>
                   </div>
                 ) : (
@@ -237,7 +241,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
                             {resume.title || resume.full_name}
                           </div>
                           <div className="text-sm text-gray-500 mt-1">
-                            更新于{' '}
+                            {t('updatedAt')}{' '}
                             {new Date(resume.updated_at).toLocaleDateString('zh-CN')}
                           </div>
                         </div>
@@ -250,29 +254,29 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
               {/* Status */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  申请状态
+                  {t('applicationStatus')}
                 </label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'draft' | 'submitted')}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 >
-                  <option value="draft">草稿</option>
-                  <option value="submitted">已提交</option>
+                  <option value="draft">{tApp('draft')}</option>
+                  <option value="submitted">{tApp('submitted')}</option>
                 </select>
               </div>
 
               {/* Notes */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  备注（可选）
+                  {t('notes')}
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={4}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="添加申请相关的备注信息..."
+                  placeholder={t('notesPlaceholder')}
                 />
               </div>
             </div>
@@ -284,7 +288,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
                 onClick={() => setShowModal(false)}
                 disabled={isSubmitting}
               >
-                取消
+                {tCommon('cancel')}
               </Button>
               <Button
                 variant="primary"
@@ -292,7 +296,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
                 disabled={isSubmitting || !selectedResumeId || isLoading}
                 className="bg-green-600 hover:bg-green-700"
               >
-                {isSubmitting ? '创建中...' : '创建申请'}
+                {isSubmitting ? t('creating') : t('createApplication')}
               </Button>
             </div>
           </div>

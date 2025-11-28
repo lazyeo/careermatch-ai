@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { ArrowLeft, Loader2, Sparkles, Check, X, ArrowRight } from 'lucide-react'
@@ -52,6 +53,8 @@ export default function OptimizeResumePage({
   const searchParams = useSearchParams()
   const resumeId = searchParams.get('resumeId')
   const sessionId = searchParams.get('sessionId')
+  const t = useTranslations('analysis.optimize')
+  const tCommon = useTranslations('common')
 
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -60,7 +63,7 @@ export default function OptimizeResumePage({
 
   useEffect(() => {
     if (!resumeId || !sessionId) {
-      setError('缺少必要参数')
+      setError(t('missingParams'))
       setIsLoading(false)
       return
     }
@@ -75,21 +78,21 @@ export default function OptimizeResumePage({
 
         if (!response.ok) {
           const data = await response.json()
-          throw new Error(data.error || '优化失败')
+          throw new Error(data.error || t('optimizeFailed'))
         }
 
         const data = await response.json()
         setResult(data)
       } catch (err) {
         console.error('Optimization error:', err)
-        setError(err instanceof Error ? err.message : '优化失败')
+        setError(err instanceof Error ? err.message : t('optimizeFailed'))
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchOptimization()
-  }, [params.id, resumeId, sessionId])
+  }, [params.id, resumeId, sessionId, t])
 
   const handleApply = async () => {
     if (!result || !resumeId) return
@@ -104,14 +107,14 @@ export default function OptimizeResumePage({
       })
 
       if (!response.ok) {
-        throw new Error('保存失败')
+        throw new Error(t('saveFailed'))
       }
 
       // Redirect back to analysis page
       router.push(`/jobs/${params.id}/analysis?resumeId=${resumeId}`)
     } catch (err) {
       console.error('Save error:', err)
-      setError(err instanceof Error ? err.message : '保存失败')
+      setError(err instanceof Error ? err.message : t('saveFailed'))
     } finally {
       setIsSaving(false)
     }
@@ -123,9 +126,9 @@ export default function OptimizeResumePage({
         <Card className="w-96">
           <CardContent className="py-12 text-center">
             <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">AI正在优化简历</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('optimizing')}</h3>
             <p className="text-sm text-gray-600">
-              正在分析岗位要求并优化简历内容，请稍候...
+              {t('optimizingDesc')}
             </p>
           </CardContent>
         </Card>
@@ -139,10 +142,10 @@ export default function OptimizeResumePage({
         <Card className="w-96">
           <CardContent className="py-12 text-center">
             <X className="w-12 h-12 text-error-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">优化失败</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('optimizeFailed')}</h3>
             <p className="text-sm text-gray-600 mb-4">{error}</p>
             <Link href={`/jobs/${params.id}/analysis?resumeId=${resumeId}`}>
-              <Button variant="primary">返回分析页面</Button>
+              <Button variant="primary">{t('backToAnalysis')}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -161,16 +164,16 @@ export default function OptimizeResumePage({
             <Link href={`/jobs/${params.id}/analysis?resumeId=${resumeId}`}>
               <Button variant="ghost" className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                返回分析
+                {t('backToAnalysis')}
               </Button>
             </Link>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary-600" />
-                <h1 className="text-xl font-bold text-gray-900">AI简历优化</h1>
+                <h1 className="text-xl font-bold text-gray-900">{t('title')}</h1>
               </div>
               <p className="text-sm text-gray-600 mt-1">
-                预览AI优化后的简历，确认后应用更改
+                {t('subtitle')}
               </p>
             </div>
           </div>
@@ -184,7 +187,7 @@ export default function OptimizeResumePage({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Check className="w-5 h-5 text-success-600" />
-              主要优化内容
+              {t('mainChanges')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -204,10 +207,10 @@ export default function OptimizeResumePage({
           {/* Original */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-gray-500">原始简历</CardTitle>
+              <CardTitle className="text-gray-500">{t('originalResume')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResumePreview content={result.originalContent} />
+              <ResumePreview content={result.originalContent} t={t} />
             </CardContent>
           </Card>
 
@@ -216,11 +219,11 @@ export default function OptimizeResumePage({
             <CardHeader>
               <CardTitle className="text-primary-700 flex items-center gap-2">
                 <Sparkles className="w-4 h-4" />
-                优化后简历
+                {t('optimizedResume')}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResumePreview content={result.optimizedContent} isOptimized />
+              <ResumePreview content={result.optimizedContent} isOptimized t={t} />
             </CardContent>
           </Card>
         </div>
@@ -228,7 +231,7 @@ export default function OptimizeResumePage({
         {/* Action Buttons */}
         <div className="flex gap-4 justify-end">
           <Link href={`/jobs/${params.id}/analysis?resumeId=${resumeId}`}>
-            <Button variant="secondary">取消</Button>
+            <Button variant="secondary">{tCommon('cancel')}</Button>
           </Link>
           <Button
             variant="primary"
@@ -239,12 +242,12 @@ export default function OptimizeResumePage({
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                保存中...
+                {t('saving')}
               </>
             ) : (
               <>
                 <Check className="w-4 h-4" />
-                应用优化
+                {t('applyOptimization')}
               </>
             )}
           </Button>
@@ -260,9 +263,11 @@ export default function OptimizeResumePage({
 function ResumePreview({
   content,
   isOptimized = false,
+  t,
 }: {
   content: ResumeContent
   isOptimized?: boolean
+  t: any
 }) {
   const highlightClass = isOptimized ? 'bg-primary-100/50' : ''
 
@@ -272,7 +277,7 @@ function ResumePreview({
       {content.personal_info && (
         <div className={`p-3 rounded ${highlightClass}`}>
           <h4 className="font-semibold text-gray-900">
-            {content.personal_info.fullName || '姓名未填写'}
+            {content.personal_info.fullName || t('preview.nameNotProvided')}
           </h4>
           <p className="text-gray-600">
             {content.personal_info.email} | {content.personal_info.phone}
@@ -286,7 +291,7 @@ function ResumePreview({
       {/* Career Objective */}
       {content.careerObjective && (
         <div className={`p-3 rounded ${highlightClass}`}>
-          <h5 className="font-medium text-gray-700 mb-1">求职目标</h5>
+          <h5 className="font-medium text-gray-700 mb-1">{t('preview.careerObjective')}</h5>
           <p className="text-gray-600">{content.careerObjective}</p>
         </div>
       )}
@@ -294,7 +299,7 @@ function ResumePreview({
       {/* Skills */}
       {content.skills && content.skills.length > 0 && (
         <div className={`p-3 rounded ${highlightClass}`}>
-          <h5 className="font-medium text-gray-700 mb-2">技能</h5>
+          <h5 className="font-medium text-gray-700 mb-2">{t('preview.skills')}</h5>
           <div className="flex flex-wrap gap-1">
             {content.skills.map((skill, i) => (
               <span
@@ -312,12 +317,12 @@ function ResumePreview({
       {/* Work Experience */}
       {content.workExperience && content.workExperience.length > 0 && (
         <div className={`p-3 rounded ${highlightClass}`}>
-          <h5 className="font-medium text-gray-700 mb-2">工作经历</h5>
+          <h5 className="font-medium text-gray-700 mb-2">{t('preview.workExperience')}</h5>
           {content.workExperience.map((exp, i) => (
             <div key={i} className="mb-3 last:mb-0">
               <p className="font-medium text-gray-800">{exp.position}</p>
               <p className="text-gray-600">
-                {exp.company} | {exp.startDate} - {exp.endDate || '至今'}
+                {exp.company} | {exp.startDate} - {exp.endDate || t('preview.present')}
               </p>
               {exp.description && (
                 <p className="text-gray-500 mt-1">{exp.description}</p>
@@ -337,7 +342,7 @@ function ResumePreview({
       {/* Projects */}
       {content.projects && content.projects.length > 0 && (
         <div className={`p-3 rounded ${highlightClass}`}>
-          <h5 className="font-medium text-gray-700 mb-2">项目经验</h5>
+          <h5 className="font-medium text-gray-700 mb-2">{t('preview.projects')}</h5>
           {content.projects.map((proj, i) => (
             <div key={i} className="mb-2 last:mb-0">
               <p className="font-medium text-gray-800">{proj.name}</p>
@@ -346,7 +351,7 @@ function ResumePreview({
               )}
               {proj.technologies && proj.technologies.length > 0 && (
                 <p className="text-xs text-gray-400 mt-1">
-                  技术栈: {proj.technologies.join(', ')}
+                  {t('preview.techStack')}: {proj.technologies.join(', ')}
                 </p>
               )}
             </div>
@@ -357,12 +362,12 @@ function ResumePreview({
       {/* Education */}
       {content.education && content.education.length > 0 && (
         <div className={`p-3 rounded ${highlightClass}`}>
-          <h5 className="font-medium text-gray-700 mb-2">教育背景</h5>
+          <h5 className="font-medium text-gray-700 mb-2">{t('preview.education')}</h5>
           {content.education.map((edu, i) => (
             <div key={i} className="mb-2 last:mb-0">
               <p className="font-medium text-gray-800">{edu.school}</p>
               <p className="text-gray-600">
-                {edu.degree} {edu.field} | {edu.startDate} - {edu.endDate || '至今'}
+                {edu.degree} {edu.field} | {edu.startDate} - {edu.endDate || t('preview.present')}
               </p>
             </div>
           ))}

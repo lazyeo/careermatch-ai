@@ -9,6 +9,8 @@ import { createClient, getCurrentUser } from '@/lib/supabase-server'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@careermatch/ui'
 import Link from 'next/link'
 import type { FullProfile, ProfileCompleteness } from '@careermatch/shared'
+import { AppHeader } from '@/components/AppHeader'
+import { getTranslations } from 'next-intl/server'
 
 // 完成度进度条组件
 function ProgressBar({ percentage }: { percentage: number }) {
@@ -29,12 +31,14 @@ function ProfileSectionCard({
   isComplete,
   href,
   icon,
+  recordsLabel,
 }: {
   title: string
   count?: number
   isComplete: boolean
   href: string
   icon: React.ReactNode
+  recordsLabel?: string
 }) {
   return (
     <Link href={href}>
@@ -47,8 +51,8 @@ function ProfileSectionCard({
               </div>
               <div>
                 <h3 className="font-medium text-neutral-900">{title}</h3>
-                {count !== undefined && (
-                  <p className="text-sm text-neutral-500">{count} 条记录</p>
+                {count !== undefined && recordsLabel && (
+                  <p className="text-sm text-neutral-500">{count} {recordsLabel}</p>
                 )}
               </div>
             </div>
@@ -80,6 +84,8 @@ export default async function ProfilePage() {
   if (!user) {
     redirect('/login')
   }
+
+  const t = await getTranslations('profile')
 
   const supabase = await createClient()
 
@@ -119,46 +125,24 @@ export default async function ProfilePage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* 顶部导航栏 */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="text-2xl font-bold text-primary-600">
-                CareerMatch AI
-              </Link>
-              <span className="text-neutral-300">/</span>
-              <span className="text-neutral-600">个人资料</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-neutral-600">
-                {profile?.full_name || user.email}
-              </span>
-              <Link href="/dashboard">
-                <Button variant="outline" size="sm">
-                  返回仪表盘
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader user={{ email: user.email, name: profile?.full_name }} />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 完成度卡片 */}
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>资料完成度</CardTitle>
+              <CardTitle>{t('completeness')}</CardTitle>
               <span className="text-2xl font-bold text-primary-600">{score}%</span>
             </div>
           </CardHeader>
           <CardContent>
             <ProgressBar percentage={score} />
             <p className="mt-3 text-sm text-neutral-600">
-              {score < 50 && '完善您的资料以获得更好的岗位匹配效果'}
-              {score >= 50 && score < 80 && '资料已较完整，继续完善以提升竞争力'}
-              {score >= 80 && score < 100 && '资料接近完整，再补充一些信息吧'}
-              {score === 100 && '太棒了！您的资料已完整'}
+              {score < 50 && t('completeHintLow')}
+              {score >= 50 && score < 80 && t('completeHintMedium')}
+              {score >= 80 && score < 100 && t('completeHintHigh')}
+              {score === 100 && t('completeHintFull')}
             </p>
           </CardContent>
         </Card>
@@ -170,7 +154,7 @@ export default async function ProfilePage() {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              编辑资料
+              {t('editProfile')}
             </Button>
           </Link>
           <Link href="/profile/upload" className="flex-1">
@@ -178,16 +162,16 @@ export default async function ProfilePage() {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
-              上传简历
+              {t('uploadResume')}
             </Button>
           </Link>
         </div>
 
         {/* 资料模块概览 */}
-        <h2 className="text-lg font-semibold text-neutral-900 mb-4">资料模块</h2>
+        <h2 className="text-lg font-semibold text-neutral-900 mb-4">{t('profileModules')}</h2>
         <div className="grid gap-4">
           <ProfileSectionCard
-            title="基本信息"
+            title={t('basicInfo')}
             isComplete={hasProfile}
             href="/profile/edit#basic"
             icon={
@@ -198,7 +182,7 @@ export default async function ProfilePage() {
           />
 
           <ProfileSectionCard
-            title="职业摘要"
+            title={t('professionalSummary')}
             isComplete={hasSummary}
             href="/profile/edit#summary"
             icon={
@@ -209,10 +193,11 @@ export default async function ProfilePage() {
           />
 
           <ProfileSectionCard
-            title="工作经历"
+            title={t('workExperience')}
             count={workCount}
             isComplete={hasWork}
             href="/profile/edit#work"
+            recordsLabel={t('records')}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -221,10 +206,11 @@ export default async function ProfilePage() {
           />
 
           <ProfileSectionCard
-            title="教育背景"
+            title={t('education')}
             count={educationCount}
             isComplete={hasEducation}
             href="/profile/edit#education"
+            recordsLabel={t('records')}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M12 14l9-5-9-5-9 5 9 5z" />
@@ -235,10 +221,11 @@ export default async function ProfilePage() {
           />
 
           <ProfileSectionCard
-            title="技能"
+            title={t('skills')}
             count={skillsCount}
             isComplete={hasSkills}
             href="/profile/edit#skills"
+            recordsLabel={t('records')}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -247,10 +234,11 @@ export default async function ProfilePage() {
           />
 
           <ProfileSectionCard
-            title="项目经历"
+            title={t('projects')}
             count={projectsCount}
             isComplete={hasProjects}
             href="/profile/edit#projects"
+            recordsLabel={t('records')}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -259,10 +247,11 @@ export default async function ProfilePage() {
           />
 
           <ProfileSectionCard
-            title="证书"
+            title={t('certifications')}
             count={certificationsCount}
             isComplete={certificationsCount > 0}
             href="/profile/edit#certifications"
+            recordsLabel={t('records')}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />

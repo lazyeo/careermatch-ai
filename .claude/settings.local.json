@@ -38,7 +38,12 @@
       "Bash(do echo \"Testing $model...\" curl -s -X POST 'https://relay.a-dobe.club/api/v1/chat/completions' -H 'Authorization: Bearer cr_5d8aed6af03dff73b87ad0198fb1e98d67267cff77480197172f7c9c08359c06' -H 'Content-Type: application/json' -d \"{\"\"model\"\":\"\"$model\"\",\"\"messages\"\":[{\"\"role\"\":\"\"user\"\",\"\"content\"\":\"\"Hi\"\"}],\"\"max_tokens\"\":10}\")",
       "Bash(git -C /Users/flash/Claude/projects/project-resume-optimizer log --oneline)",
       "Bash(npx supabase:*)",
-      "mcp__chrome-devtools__upload_file"
+      "mcp__chrome-devtools__upload_file",
+      "Bash(git restore:*)",
+      "Bash(pnpm next lint:*)",
+      "Bash(npx next lint:*)",
+      "Bash(pnpm run type-check)",
+      "Bash(pnpm tsc:*)"
     ],
     "deny": [],
     "ask": []

@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { DeleteJobButton } from './components/DeleteJobButton'
+import { AppHeader } from '@/components/AppHeader'
+import { getTranslations, getLocale } from 'next-intl/server'
 
 export default async function JobsPage() {
   const user = await getCurrentUser()
@@ -11,7 +13,17 @@ export default async function JobsPage() {
     redirect('/login?redirect=/jobs')
   }
 
+  const t = await getTranslations('jobs')
+  const locale = await getLocale()
+
   const supabase = await createClient()
+
+  // Fetch user profile for header
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .single()
 
   // Fetch user's jobs
   const { data: jobs, error } = await supabase
@@ -31,27 +43,29 @@ export default async function JobsPage() {
 
   // Helper function to display job type
   const getJobTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      'full-time': '全职',
-      'part-time': '兼职',
-      'contract': '合同',
-      'internship': '实习',
-      'casual': '临时',
+    const typeMap: Record<string, string> = {
+      'full-time': 'fullTime',
+      'part-time': 'partTime',
+      'contract': 'contract',
+      'internship': 'internship',
+      'casual': 'casual',
     }
-    return labels[type] || type
+    const key = typeMap[type]
+    return key ? t(key as keyof typeof t) : type
   }
 
   // Helper function to display status
   const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      'saved': '已保存',
-      'applied': '已申请',
-      'interview': '面试中',
-      'rejected': '已拒绝',
-      'offer': '已录用',
-      'withdrawn': '已撤回',
+    const statusMap: Record<string, string> = {
+      'saved': 'saved',
+      'applied': 'applied',
+      'interview': 'interviewing',
+      'rejected': 'rejected',
+      'offer': 'offered',
+      'withdrawn': 'notApplied',
     }
-    return labels[status] || status
+    const key = statusMap[status]
+    return key ? t(key as keyof typeof t) : status
   }
 
   // Helper function for status badge color
@@ -70,21 +84,7 @@ export default async function JobsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">岗位管理</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                保存和追踪您感兴趣的岗位
-              </p>
-            </div>
-            <Link href="/dashboard">
-              <Button variant="outline">返回仪表盘</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <AppHeader user={{ email: user.email, name: profile?.full_name }} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -94,7 +94,7 @@ export default async function JobsPage() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary-600">{jobCount}</div>
-                <div className="text-sm text-gray-600 mt-1">岗位总数</div>
+                <div className="text-sm text-gray-600 mt-1">{t('totalJobs')}</div>
               </div>
             </CardContent>
           </Card>
@@ -103,7 +103,7 @@ export default async function JobsPage() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-neutral-600">{savedCount}</div>
-                <div className="text-sm text-gray-600 mt-1">已保存</div>
+                <div className="text-sm text-gray-600 mt-1">{t('saved')}</div>
               </div>
             </CardContent>
           </Card>
@@ -112,7 +112,7 @@ export default async function JobsPage() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-accent-600">{appliedCount}</div>
-                <div className="text-sm text-gray-600 mt-1">已申请</div>
+                <div className="text-sm text-gray-600 mt-1">{t('applied')}</div>
               </div>
             </CardContent>
           </Card>
@@ -121,7 +121,7 @@ export default async function JobsPage() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-warning-600">{interviewCount}</div>
-                <div className="text-sm text-gray-600 mt-1">面试中</div>
+                <div className="text-sm text-gray-600 mt-1">{t('interviewing')}</div>
               </div>
             </CardContent>
           </Card>
@@ -129,16 +129,16 @@ export default async function JobsPage() {
 
         {/* Action Bar */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">我的岗位</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('myJobs')}</h2>
           <div className="flex gap-3">
             <Link href="/jobs/import">
               <Button variant="outline">
-                🔗 智能导入
+                🔗 {t('smartImport')}
               </Button>
             </Link>
             <Link href="/jobs/new">
               <Button variant="primary">
-                + 手动创建
+                + {t('manualCreate')}
               </Button>
             </Link>
           </div>
@@ -163,19 +163,19 @@ export default async function JobsPage() {
                     d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">暂无岗位</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">{t('noJobsTitle')}</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  添加您感兴趣的岗位，开始智能匹配分析
+                  {t('noJobsDesc')}
                 </p>
                 <div className="mt-6 flex gap-3 justify-center">
                   <Link href="/jobs/import">
                     <Button variant="outline">
-                      🔗 智能导入
+                      🔗 {t('smartImport')}
                     </Button>
                   </Link>
                   <Link href="/jobs/new">
                     <Button variant="primary">
-                      + 手动创建
+                      + {t('manualCreate')}
                     </Button>
                   </Link>
                 </div>
@@ -231,19 +231,19 @@ export default async function JobsPage() {
                     )}
 
                     <div className="text-xs text-gray-500 pt-2">
-                      更新于 {new Date(job.updated_at).toLocaleDateString('zh-CN')}
+                      {t('updatedAt')} {new Date(job.updated_at).toLocaleDateString(locale)}
                     </div>
                   </div>
 
                   <div className="flex gap-2">
                     <Link href={`/jobs/${job.id}`} className="flex-1">
                       <Button variant="outline" className="w-full" size="sm">
-                        查看
+                        {t('view')}
                       </Button>
                     </Link>
                     <Link href={`/jobs/${job.id}/edit`} className="flex-1">
                       <Button variant="primary" className="w-full" size="sm">
-                        编辑
+                        {t('edit')}
                       </Button>
                     </Link>
                     <DeleteJobButton jobId={job.id} />

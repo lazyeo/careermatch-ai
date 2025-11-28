@@ -182,8 +182,20 @@ export function formatContextForChat(context: PromptContext): string {
     if (context.activeJob.location) {
       lines.push(`- 地点: ${context.activeJob.location}`)
     }
+    if (context.activeJob.jobType) {
+      lines.push(`- 类型: ${context.activeJob.jobType}`)
+    }
+    if (context.activeJob.salaryMin || context.activeJob.salaryMax) {
+      const currency = context.activeJob.salaryCurrency || ''
+      const min = context.activeJob.salaryMin ? context.activeJob.salaryMin.toLocaleString() : '面议'
+      const max = context.activeJob.salaryMax ? context.activeJob.salaryMax.toLocaleString() : '面议'
+      lines.push(`- 薪资范围: ${currency} ${min} - ${max}`)
+    }
     if (context.activeJob.description) {
-      lines.push(`- 描述: ${context.activeJob.description.substring(0, 200)}...`)
+      lines.push(`- 描述: ${context.activeJob.description.substring(0, 300)}${context.activeJob.description.length > 300 ? '...' : ''}`)
+    }
+    if (context.activeJob.requirements) {
+      lines.push(`- 要求: ${context.activeJob.requirements.substring(0, 300)}${context.activeJob.requirements.length > 300 ? '...' : ''}`)
     }
   }
 

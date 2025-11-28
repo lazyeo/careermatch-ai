@@ -3,12 +3,15 @@
 import { useState } from 'react'
 import { Button } from '@careermatch/ui'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 interface DeleteApplicationButtonProps {
   applicationId: string
 }
 
 export function DeleteApplicationButton({ applicationId }: DeleteApplicationButtonProps) {
+  const t = useTranslations('forms.deleteApplication')
+  const tCommon = useTranslations('common')
   const [showConfirm, setShowConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
@@ -22,7 +25,7 @@ export function DeleteApplicationButton({ applicationId }: DeleteApplicationButt
       })
 
       if (!response.ok) {
-        throw new Error('删除失败')
+        throw new Error(t('deleteFailed'))
       }
 
       // Redirect to applications list
@@ -30,7 +33,7 @@ export function DeleteApplicationButton({ applicationId }: DeleteApplicationButt
       router.refresh()
     } catch (error) {
       console.error('Error deleting application:', error)
-      alert('删除失败，请重试')
+      alert(t('deleteFailed'))
       setIsDeleting(false)
       setShowConfirm(false)
     }
@@ -43,14 +46,14 @@ export function DeleteApplicationButton({ applicationId }: DeleteApplicationButt
         onClick={() => setShowConfirm(true)}
         className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
       >
-        删除申请
+        {t('deleteButton')}
       </Button>
     )
   }
 
   return (
     <div className="space-y-2">
-      <div className="text-sm text-red-600 font-medium">确认删除此申请？</div>
+      <div className="text-sm text-red-600 font-medium">{t('confirmMessage')}</div>
       <div className="flex gap-2">
         <Button
           variant="outline"
@@ -58,7 +61,7 @@ export function DeleteApplicationButton({ applicationId }: DeleteApplicationButt
           disabled={isDeleting}
           className="flex-1"
         >
-          取消
+          {tCommon('cancel')}
         </Button>
         <Button
           variant="primary"
@@ -66,7 +69,7 @@ export function DeleteApplicationButton({ applicationId }: DeleteApplicationButt
           disabled={isDeleting}
           className="flex-1 bg-red-600 hover:bg-red-700 text-white"
         >
-          {isDeleting ? '删除中...' : '确认删除'}
+          {isDeleting ? t('deleting') : t('confirmDelete')}
         </Button>
       </div>
     </div>

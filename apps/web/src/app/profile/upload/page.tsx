@@ -9,6 +9,7 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@careermatch/ui'
 import type { ParsedResumeData } from '@careermatch/shared'
 
@@ -24,6 +25,7 @@ function ParsedDataPreview({
   onCancel: () => void
   isApplying: boolean
 }) {
+  const t = useTranslations('profile.upload.preview')
   const [selectedSections, setSelectedSections] = useState({
     personal_info: true,
     work_experiences: true,
@@ -40,8 +42,8 @@ function ParsedDataPreview({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-neutral-900">解析结果预览</h2>
-        <p className="text-sm text-neutral-500">选择要导入的部分</p>
+        <h2 className="text-xl font-semibold text-neutral-900">{t('title')}</h2>
+        <p className="text-sm text-neutral-500">{t('selectSections')}</p>
       </div>
 
       {/* 基本信息 */}
@@ -59,7 +61,7 @@ function ParsedDataPreview({
               onChange={() => toggleSection('personal_info')}
               className="w-4 h-4 text-primary-600"
             />
-            <span className="font-medium">基本信息</span>
+            <span className="font-medium">{t('basicInfo')}</span>
           </div>
         </div>
         {selectedSections.personal_info && data.personal_info && (
@@ -67,32 +69,32 @@ function ParsedDataPreview({
             <dl className="grid grid-cols-2 gap-2 text-sm">
               {data.personal_info.full_name && (
                 <>
-                  <dt className="text-neutral-500">姓名</dt>
+                  <dt className="text-neutral-500">{t('fields.name')}</dt>
                   <dd>{data.personal_info.full_name}</dd>
                 </>
               )}
               {data.personal_info.email && (
                 <>
-                  <dt className="text-neutral-500">邮箱</dt>
+                  <dt className="text-neutral-500">{t('fields.email')}</dt>
                   <dd>{data.personal_info.email}</dd>
                 </>
               )}
               {data.personal_info.phone && (
                 <>
-                  <dt className="text-neutral-500">电话</dt>
+                  <dt className="text-neutral-500">{t('fields.phone')}</dt>
                   <dd>{data.personal_info.phone}</dd>
                 </>
               )}
               {data.personal_info.location && (
                 <>
-                  <dt className="text-neutral-500">地点</dt>
+                  <dt className="text-neutral-500">{t('fields.location')}</dt>
                   <dd>{data.personal_info.location}</dd>
                 </>
               )}
             </dl>
             {data.personal_info.professional_summary && (
               <div className="mt-3">
-                <dt className="text-sm text-neutral-500 mb-1">职业摘要</dt>
+                <dt className="text-sm text-neutral-500 mb-1">{t('fields.professionalSummary')}</dt>
                 <dd className="text-sm bg-neutral-50 p-2 rounded">
                   {data.personal_info.professional_summary}
                 </dd>
@@ -118,7 +120,9 @@ function ParsedDataPreview({
                 onChange={() => toggleSection('work_experiences')}
                 className="w-4 h-4 text-primary-600"
               />
-              <span className="font-medium">工作经历 ({data.work_experiences.length})</span>
+              <span className="font-medium">
+                {t('workExperience')} {t('sectionCount', { count: data.work_experiences.length })}
+              </span>
             </div>
           </div>
           {selectedSections.work_experiences && (
@@ -128,7 +132,7 @@ function ParsedDataPreview({
                   <div className="font-medium">{work.position}</div>
                   <div className="text-sm text-neutral-600">{work.company}</div>
                   <div className="text-xs text-neutral-500">
-                    {work.start_date} - {work.is_current ? '至今' : work.end_date}
+                    {work.start_date} - {work.is_current ? t('present') : work.end_date}
                   </div>
                   {work.description && (
                     <p className="mt-2 text-sm text-neutral-700">{work.description}</p>
@@ -156,7 +160,9 @@ function ParsedDataPreview({
                 onChange={() => toggleSection('education')}
                 className="w-4 h-4 text-primary-600"
               />
-              <span className="font-medium">教育背景 ({data.education.length})</span>
+              <span className="font-medium">
+                {t('education')} {t('sectionCount', { count: data.education.length })}
+              </span>
             </div>
           </div>
           {selectedSections.education && (
@@ -168,7 +174,7 @@ function ParsedDataPreview({
                     {edu.degree} · {edu.major}
                   </div>
                   <div className="text-xs text-neutral-500">
-                    {edu.start_date} - {edu.is_current ? '至今' : edu.end_date}
+                    {edu.start_date} - {edu.is_current ? t('present') : edu.end_date}
                   </div>
                 </div>
               ))}
@@ -193,7 +199,9 @@ function ParsedDataPreview({
                 onChange={() => toggleSection('skills')}
                 className="w-4 h-4 text-primary-600"
               />
-              <span className="font-medium">技能 ({data.skills.length})</span>
+              <span className="font-medium">
+                {t('skills')} {t('sectionCount', { count: data.skills.length })}
+              </span>
             </div>
           </div>
           {selectedSections.skills && (
@@ -234,7 +242,9 @@ function ParsedDataPreview({
                 onChange={() => toggleSection('projects')}
                 className="w-4 h-4 text-primary-600"
               />
-              <span className="font-medium">项目 ({data.projects.length})</span>
+              <span className="font-medium">
+                {t('projects')} {t('sectionCount', { count: data.projects.length })}
+              </span>
             </div>
           </div>
           {selectedSections.projects && (
@@ -269,7 +279,9 @@ function ParsedDataPreview({
                 onChange={() => toggleSection('certifications')}
                 className="w-4 h-4 text-primary-600"
               />
-              <span className="font-medium">证书 ({data.certifications.length})</span>
+              <span className="font-medium">
+                {t('certifications')} {t('sectionCount', { count: data.certifications.length })}
+              </span>
             </div>
           </div>
           {selectedSections.certifications && (
@@ -293,10 +305,10 @@ function ParsedDataPreview({
           disabled={isApplying}
           className="flex-1"
         >
-          {isApplying ? '导入中...' : '导入到资料'}
+          {isApplying ? t('importing') : t('importToProfile')}
         </Button>
         <Button variant="outline" onClick={onCancel} disabled={isApplying}>
-          取消
+          {useTranslations('common')('cancel')}
         </Button>
       </div>
     </div>
@@ -305,6 +317,10 @@ function ParsedDataPreview({
 
 export default function ResumeUploadPage() {
   const router = useRouter()
+  const t = useTranslations('profile.upload')
+  const tCommon = useTranslations('common')
+  const tExtraction = useTranslations('profile.upload.extractionItems')
+
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [applying, setApplying] = useState(false)
@@ -354,12 +370,12 @@ export default function ResumeUploadPage() {
     const maxSize = 10 * 1024 * 1024 // 10MB
 
     if (!allowedTypes.includes(file.type)) {
-      setError('请上传 PDF、Word 或 TXT 格式的文件')
+      setError(t('fileTypeError'))
       return
     }
 
     if (file.size > maxSize) {
-      setError('文件大小不能超过 10MB')
+      setError(t('fileSizeError'))
       return
     }
 
@@ -388,14 +404,14 @@ export default function ResumeUploadPage() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || '上传失败')
+        throw new Error(data.error || t('uploadError'))
       }
 
       const data = await response.json()
       setUploadId(data.id)
       setParsedData(data.parsed_data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '上传失败，请重试')
+      setError(err instanceof Error ? err.message : t('uploadError'))
       console.error(err)
     } finally {
       setUploading(false)
@@ -421,13 +437,13 @@ export default function ResumeUploadPage() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || '导入失败')
+        throw new Error(data.error || t('importError'))
       }
 
       // 成功后跳转到资料页
       router.push('/profile?imported=true')
     } catch (err) {
-      setError(err instanceof Error ? err.message : '导入失败，请重试')
+      setError(err instanceof Error ? err.message : t('importError'))
       console.error(err)
     } finally {
       setApplying(false)
@@ -465,10 +481,10 @@ export default function ResumeUploadPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link href="/profile" className="text-neutral-600 hover:text-neutral-900">
-                ← 返回资料中心
+                ← {t('backToProfile')}
               </Link>
             </div>
-            <h1 className="text-lg font-semibold text-neutral-900">上传简历</h1>
+            <h1 className="text-lg font-semibold text-neutral-900">{t('pageTitle')}</h1>
           </div>
         </div>
       </header>
@@ -490,12 +506,11 @@ export default function ResumeUploadPage() {
           // 显示上传界面
           <Card>
             <CardHeader>
-              <CardTitle>从现有简历导入</CardTitle>
+              <CardTitle>{t('importTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-neutral-600 mb-6">
-                上传您的简历文件，AI 将自动提取信息并填充到您的个人资料中。
-                您可以在导入前预览和修改提取的内容。
+                {t('importDescription')}
               </p>
 
               {/* 文件上传区域 */}
@@ -533,7 +548,7 @@ export default function ResumeUploadPage() {
                       }}
                       className="mt-2 text-sm text-red-600 hover:text-red-700"
                     >
-                      移除文件
+                      {t('removeFile')}
                     </button>
                   </div>
                 ) : (
@@ -552,10 +567,10 @@ export default function ResumeUploadPage() {
                       />
                     </svg>
                     <p className="mt-2 text-sm text-neutral-600">
-                      <span className="font-medium text-primary-600">点击上传</span> 或将文件拖拽到此处
+                      <span className="font-medium text-primary-600">{t('dragDropHint')}</span> {t('dragDropOr')}
                     </p>
                     <p className="mt-1 text-xs text-neutral-500">
-                      支持 PDF、Word、TXT 格式，最大 10MB
+                      {t('fileTypeHint')}
                     </p>
                   </div>
                 )}
@@ -594,10 +609,10 @@ export default function ResumeUploadPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                         />
                       </svg>
-                      AI 解析中...
+                      {t('parsing')}
                     </>
                   ) : (
-                    '上传并解析'
+                    t('uploadAndParse')
                   )}
                 </Button>
               </div>
@@ -605,16 +620,16 @@ export default function ResumeUploadPage() {
               {/* 提示信息 */}
               <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                 <h4 className="text-sm font-medium text-blue-900 mb-2">
-                  AI 将主动挖掘以下信息：
+                  {t('aiExtractionHint')}
                 </h4>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• 基本信息（姓名、联系方式、社交链接等）</li>
-                  <li>• 工作经历（公司、职位、时间、成就、技术栈）</li>
-                  <li>• 教育背景（学校、学位、专业、荣誉）</li>
-                  <li>• 技能清单（技术技能、软技能、语言能力）</li>
-                  <li>• 项目经历（项目、角色、亮点）</li>
-                  <li>• 证书资质</li>
-                  <li>• 其他有价值信息（志愿者经历、发表内容等）</li>
+                  <li>• {tExtraction('basicInfo')}</li>
+                  <li>• {tExtraction('workExperience')}</li>
+                  <li>• {tExtraction('education')}</li>
+                  <li>• {tExtraction('skills')}</li>
+                  <li>• {tExtraction('projects')}</li>
+                  <li>• {tExtraction('certifications')}</li>
+                  <li>• {tExtraction('other')}</li>
                 </ul>
               </div>
             </CardContent>
@@ -625,9 +640,9 @@ export default function ResumeUploadPage() {
         {!parsedData && (
           <div className="mt-6 text-center">
             <p className="text-sm text-neutral-500">
-              没有现成的简历？
+              {t('noResumePrompt')}
               <Link href="/profile/edit" className="text-primary-600 hover:text-primary-700 ml-1">
-                手动填写资料
+                {t('manualEntry')}
               </Link>
             </p>
           </div>

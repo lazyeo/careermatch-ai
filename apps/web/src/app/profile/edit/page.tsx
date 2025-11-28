@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@careermatch/ui'
 import type {
   FullProfile,
@@ -30,6 +31,9 @@ function BasicInfoForm({
   onSave: (data: Partial<UserProfile>) => void
   isSaving: boolean
 }) {
+  const t = useTranslations('profile')
+  const tc = useTranslations('common')
+
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     email: profile?.email || '',
@@ -50,7 +54,7 @@ function BasicInfoForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
-            姓名 <span className="text-red-500">*</span>
+            {t('fullName')} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -62,7 +66,7 @@ function BasicInfoForm({
         </div>
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
-            邮箱 <span className="text-red-500">*</span>
+            {t('email')} <span className="text-red-500">*</span>
           </label>
           <input
             type="email"
@@ -73,7 +77,7 @@ function BasicInfoForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">电话</label>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('phone')}</label>
           <input
             type="tel"
             value={formData.phone}
@@ -82,49 +86,49 @@ function BasicInfoForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">所在地</label>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('location')}</label>
           <input
             type="text"
             value={formData.location}
             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="例如：上海"
+            placeholder={t('edit.placeholders.location')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">LinkedIn</label>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('linkedin')}</label>
           <input
             type="url"
             value={formData.linkedin_url}
             onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="https://linkedin.com/in/..."
+            placeholder={t('edit.placeholders.linkedinUrl')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">GitHub</label>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('github')}</label>
           <input
             type="url"
             value={formData.github_url}
             onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="https://github.com/..."
+            placeholder={t('edit.placeholders.githubUrl')}
           />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-neutral-700 mb-1">个人网站</label>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('website')}</label>
           <input
             type="url"
             value={formData.website_url}
             onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="https://..."
+            placeholder={t('edit.placeholders.websiteUrl')}
           />
         </div>
       </div>
       <div className="mt-4 flex justify-end">
         <Button type="submit" disabled={isSaving}>
-          {isSaving ? '保存中...' : '保存基本信息'}
+          {isSaving ? t('edit.savingStatus') : t('edit.saveBasicInfo')}
         </Button>
       </div>
     </form>
@@ -141,6 +145,8 @@ function SummaryForm({
   onSave: (data: Partial<UserProfile>) => void
   isSaving: boolean
 }) {
+  const t = useTranslations('profile')
+
   const [summary, setSummary] = useState(profile?.professional_summary || '')
   const [targetRoles, setTargetRoles] = useState(profile?.target_roles?.join(', ') || '')
 
@@ -156,29 +162,29 @@ function SummaryForm({
     <form onSubmit={handleSubmit}>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">职业摘要</label>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('professionalSummary')}</label>
           <textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             rows={4}
             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="简要描述您的职业背景、核心技能和职业目标..."
+            placeholder={t('edit.placeholders.professionalSummary')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">目标岗位</label>
+          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('targetRoles')}</label>
           <input
             type="text"
             value={targetRoles}
             onChange={(e) => setTargetRoles(e.target.value)}
             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="用逗号分隔，如：前端工程师, 全栈开发, 技术经理"
+            placeholder={t('edit.placeholders.targetRoles')}
           />
         </div>
       </div>
       <div className="mt-4 flex justify-end">
         <Button type="submit" disabled={isSaving}>
-          {isSaving ? '保存中...' : '保存摘要'}
+          {isSaving ? t('edit.savingStatus') : t('edit.saveSummary')}
         </Button>
       </div>
     </form>
@@ -197,6 +203,8 @@ function WorkExperienceList({
   onEdit: (item: ProfileWorkExperience) => void
   onDelete: (id: string) => void
 }) {
+  const t = useTranslations('profile.edit')
+
   return (
     <div className="space-y-4">
       {items.map((item) => (
@@ -206,7 +214,7 @@ function WorkExperienceList({
               <h4 className="font-medium text-neutral-900">{item.position}</h4>
               <p className="text-sm text-neutral-600">{item.company}</p>
               <p className="text-xs text-neutral-500">
-                {item.start_date} - {item.is_current ? '至今' : item.end_date}
+                {item.start_date} - {item.is_current ? t('work.current') : item.end_date}
                 {item.location && ` · ${item.location}`}
               </p>
               {item.description && (
@@ -218,20 +226,20 @@ function WorkExperienceList({
                 onClick={() => onEdit(item)}
                 className="text-primary-600 hover:text-primary-700 text-sm"
               >
-                编辑
+                {t('work.editWork')}
               </button>
               <button
                 onClick={() => onDelete(item.id)}
                 className="text-red-600 hover:text-red-700 text-sm"
               >
-                删除
+                {t('work.deleteWork')}
               </button>
             </div>
           </div>
         </div>
       ))}
       <Button variant="outline" onClick={onAdd} className="w-full">
-        + 添加工作经历
+        + {t('work.addWork')}
       </Button>
     </div>
   )
@@ -249,6 +257,8 @@ function EducationList({
   onEdit: (item: EducationRecord) => void
   onDelete: (id: string) => void
 }) {
+  const t = useTranslations('profile.edit')
+
   return (
     <div className="space-y-4">
       {items.map((item) => (
@@ -258,7 +268,7 @@ function EducationList({
               <h4 className="font-medium text-neutral-900">{item.institution}</h4>
               <p className="text-sm text-neutral-600">{item.degree} · {item.major}</p>
               <p className="text-xs text-neutral-500">
-                {item.start_date} - {item.is_current ? '至今' : item.end_date}
+                {item.start_date} - {item.is_current ? t('education.current') : item.end_date}
                 {item.gpa && ` · GPA: ${item.gpa}`}
               </p>
             </div>
@@ -267,20 +277,20 @@ function EducationList({
                 onClick={() => onEdit(item)}
                 className="text-primary-600 hover:text-primary-700 text-sm"
               >
-                编辑
+                {t('education.editEducation')}
               </button>
               <button
                 onClick={() => onDelete(item.id)}
                 className="text-red-600 hover:text-red-700 text-sm"
               >
-                删除
+                {t('education.deleteEducation')}
               </button>
             </div>
           </div>
         </div>
       ))}
       <Button variant="outline" onClick={onAdd} className="w-full">
-        + 添加教育背景
+        + {t('education.addEducation')}
       </Button>
     </div>
   )
@@ -296,11 +306,13 @@ function SkillsList({
   onAdd: () => void
   onDelete: (id: string) => void
 }) {
+  const t = useTranslations('profile.edit')
+
   const levelLabels: Record<string, string> = {
-    beginner: '入门',
-    intermediate: '中级',
-    advanced: '高级',
-    expert: '精通',
+    beginner: t('skills.levels.beginner'),
+    intermediate: t('skills.levels.intermediate'),
+    advanced: t('skills.levels.advanced'),
+    expert: t('skills.levels.expert'),
   }
 
   return (
@@ -325,7 +337,7 @@ function SkillsList({
         ))}
       </div>
       <Button variant="outline" onClick={onAdd} size="sm">
-        + 添加技能
+        + {t('skills.addSkill')}
       </Button>
     </div>
   )
@@ -343,6 +355,8 @@ function ProjectsList({
   onEdit: (item: UserProject) => void
   onDelete: (id: string) => void
 }) {
+  const t = useTranslations('profile.edit')
+
   return (
     <div className="space-y-4">
       {items.map((item) => (
@@ -367,20 +381,20 @@ function ProjectsList({
                 onClick={() => onEdit(item)}
                 className="text-primary-600 hover:text-primary-700 text-sm"
               >
-                编辑
+                {t('projects.editProject')}
               </button>
               <button
                 onClick={() => onDelete(item.id)}
                 className="text-red-600 hover:text-red-700 text-sm"
               >
-                删除
+                {t('projects.deleteProject')}
               </button>
             </div>
           </div>
         </div>
       ))}
       <Button variant="outline" onClick={onAdd} className="w-full">
-        + 添加项目
+        + {t('projects.addProject')}
       </Button>
     </div>
   )
@@ -396,6 +410,8 @@ function CertificationsList({
   onAdd: () => void
   onDelete: (id: string) => void
 }) {
+  const t = useTranslations('profile.edit')
+
   return (
     <div className="space-y-4">
       {items.map((item) => (
@@ -405,21 +421,21 @@ function CertificationsList({
               <h4 className="font-medium text-neutral-900">{item.name}</h4>
               <p className="text-sm text-neutral-600">{item.issuer}</p>
               <p className="text-xs text-neutral-500">
-                获取时间: {item.issue_date}
-                {item.expiry_date && ` · 有效期至: ${item.expiry_date}`}
+                {t('certifications.issueDate')}: {item.issue_date}
+                {item.expiry_date && ` · ${t('certifications.expiryDate')}: ${item.expiry_date}`}
               </p>
             </div>
             <button
               onClick={() => onDelete(item.id)}
               className="text-red-600 hover:text-red-700 text-sm"
             >
-              删除
+              {t('certifications.deleteCertification')}
             </button>
           </div>
         </div>
       ))}
       <Button variant="outline" onClick={onAdd} className="w-full">
-        + 添加证书
+        + {t('certifications.addCertification')}
       </Button>
     </div>
   )
@@ -427,6 +443,9 @@ function CertificationsList({
 
 export default function ProfileEditPage() {
   const router = useRouter()
+  const t = useTranslations('profile.edit')
+  const tc = useTranslations('common')
+
   const [profile, setProfile] = useState<FullProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -441,14 +460,14 @@ export default function ProfileEditPage() {
         const data = await res.json()
         setProfile(data)
       } catch (err) {
-        setError('加载资料失败')
+        setError(t('loadingError'))
         console.error(err)
       } finally {
         setLoading(false)
       }
     }
     fetchProfile()
-  }, [])
+  }, [t])
 
   // 保存基本信息
   const handleSaveBasic = async (data: Partial<UserProfile>) => {
@@ -463,7 +482,7 @@ export default function ProfileEditPage() {
       const updated = await res.json()
       setProfile((prev) => prev ? { ...prev, profile: updated } : null)
     } catch (err) {
-      setError('保存失败')
+      setError(t('saveError'))
       console.error(err)
     } finally {
       setSaving(false)
@@ -472,7 +491,7 @@ export default function ProfileEditPage() {
 
   // 删除工作经历
   const handleDeleteWork = async (id: string) => {
-    if (!confirm('确定要删除这条工作经历吗？')) return
+    if (!confirm(t('work.confirmDelete'))) return
     try {
       const res = await fetch(`/api/profile/work/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')
@@ -480,14 +499,14 @@ export default function ProfileEditPage() {
         prev ? { ...prev, work_experiences: prev.work_experiences?.filter((w) => w.id !== id) || [] } : null
       )
     } catch (err) {
-      setError('删除失败')
+      setError(t('deleteError'))
       console.error(err)
     }
   }
 
   // 删除教育背景
   const handleDeleteEducation = async (id: string) => {
-    if (!confirm('确定要删除这条教育背景吗？')) return
+    if (!confirm(t('education.confirmDelete'))) return
     try {
       const res = await fetch(`/api/profile/education/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')
@@ -495,7 +514,7 @@ export default function ProfileEditPage() {
         prev ? { ...prev, education_records: prev.education_records?.filter((e) => e.id !== id) || [] } : null
       )
     } catch (err) {
-      setError('删除失败')
+      setError(t('deleteError'))
       console.error(err)
     }
   }
@@ -509,14 +528,14 @@ export default function ProfileEditPage() {
         prev ? { ...prev, skills: prev.skills?.filter((s) => s.id !== id) || [] } : null
       )
     } catch (err) {
-      setError('删除失败')
+      setError(t('deleteError'))
       console.error(err)
     }
   }
 
   // 删除项目
   const handleDeleteProject = async (id: string) => {
-    if (!confirm('确定要删除这个项目吗？')) return
+    if (!confirm(t('projects.confirmDelete'))) return
     try {
       const res = await fetch(`/api/profile/projects/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')
@@ -524,14 +543,14 @@ export default function ProfileEditPage() {
         prev ? { ...prev, projects: prev.projects?.filter((p) => p.id !== id) || [] } : null
       )
     } catch (err) {
-      setError('删除失败')
+      setError(t('deleteError'))
       console.error(err)
     }
   }
 
   // 删除证书
   const handleDeleteCertification = async (id: string) => {
-    if (!confirm('确定要删除这个证书吗？')) return
+    if (!confirm(t('certifications.confirmDelete'))) return
     try {
       const res = await fetch(`/api/profile/certifications/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')
@@ -539,27 +558,27 @@ export default function ProfileEditPage() {
         prev ? { ...prev, certifications: prev.certifications?.filter((c) => c.id !== id) || [] } : null
       )
     } catch (err) {
-      setError('删除失败')
+      setError(t('deleteError'))
       console.error(err)
     }
   }
 
   // 添加占位函数（后续可实现弹窗表单）
-  const handleAddWork = () => alert('添加工作经历功能开发中...')
-  const handleEditWork = (item: ProfileWorkExperience) => alert(`编辑工作经历: ${item.position}`)
-  const handleAddEducation = () => alert('添加教育背景功能开发中...')
-  const handleEditEducation = (item: EducationRecord) => alert(`编辑教育背景: ${item.institution}`)
-  const handleAddSkill = () => alert('添加技能功能开发中...')
-  const handleAddProject = () => alert('添加项目功能开发中...')
-  const handleEditProject = (item: UserProject) => alert(`编辑项目: ${item.name}`)
-  const handleAddCertification = () => alert('添加证书功能开发中...')
+  const handleAddWork = () => alert(t('developingFeatures.addWork'))
+  const handleEditWork = (item: ProfileWorkExperience) => alert(t('developingFeatures.editWork', { position: item.position }))
+  const handleAddEducation = () => alert(t('developingFeatures.addEducation'))
+  const handleEditEducation = (item: EducationRecord) => alert(t('developingFeatures.editEducation', { institution: item.institution }))
+  const handleAddSkill = () => alert(t('developingFeatures.addSkill'))
+  const handleAddProject = () => alert(t('developingFeatures.addProject'))
+  const handleEditProject = (item: UserProject) => alert(t('developingFeatures.editProject', { name: item.name }))
+  const handleAddCertification = () => alert(t('developingFeatures.addCertification'))
 
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-          <p className="mt-4 text-neutral-600">加载中...</p>
+          <p className="mt-4 text-neutral-600">{tc('loading')}</p>
         </div>
       </div>
     )
@@ -573,10 +592,10 @@ export default function ProfileEditPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link href="/profile" className="text-neutral-600 hover:text-neutral-900">
-                ← 返回资料中心
+                ← {t('backToProfile')}
               </Link>
             </div>
-            <h1 className="text-lg font-semibold text-neutral-900">编辑个人资料</h1>
+            <h1 className="text-lg font-semibold text-neutral-900">{t('title')}</h1>
           </div>
         </div>
       </header>
@@ -593,7 +612,7 @@ export default function ProfileEditPage() {
           {/* 基本信息 */}
           <Card id="basic">
             <CardHeader>
-              <CardTitle>基本信息</CardTitle>
+              <CardTitle>{t('sections.basicInfo')}</CardTitle>
             </CardHeader>
             <CardContent>
               <BasicInfoForm
@@ -607,7 +626,7 @@ export default function ProfileEditPage() {
           {/* 职业摘要 */}
           <Card id="summary">
             <CardHeader>
-              <CardTitle>职业摘要</CardTitle>
+              <CardTitle>{t('sections.summary')}</CardTitle>
             </CardHeader>
             <CardContent>
               <SummaryForm
@@ -621,7 +640,7 @@ export default function ProfileEditPage() {
           {/* 工作经历 */}
           <Card id="work">
             <CardHeader>
-              <CardTitle>工作经历</CardTitle>
+              <CardTitle>{t('sections.workExperience')}</CardTitle>
             </CardHeader>
             <CardContent>
               <WorkExperienceList
@@ -636,7 +655,7 @@ export default function ProfileEditPage() {
           {/* 教育背景 */}
           <Card id="education">
             <CardHeader>
-              <CardTitle>教育背景</CardTitle>
+              <CardTitle>{t('sections.education')}</CardTitle>
             </CardHeader>
             <CardContent>
               <EducationList
@@ -651,7 +670,7 @@ export default function ProfileEditPage() {
           {/* 技能 */}
           <Card id="skills">
             <CardHeader>
-              <CardTitle>技能</CardTitle>
+              <CardTitle>{t('sections.skills')}</CardTitle>
             </CardHeader>
             <CardContent>
               <SkillsList
@@ -665,7 +684,7 @@ export default function ProfileEditPage() {
           {/* 项目经历 */}
           <Card id="projects">
             <CardHeader>
-              <CardTitle>项目经历</CardTitle>
+              <CardTitle>{t('sections.projects')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ProjectsList
@@ -680,7 +699,7 @@ export default function ProfileEditPage() {
           {/* 证书 */}
           <Card id="certifications">
             <CardHeader>
-              <CardTitle>证书</CardTitle>
+              <CardTitle>{t('sections.certifications')}</CardTitle>
             </CardHeader>
             <CardContent>
               <CertificationsList

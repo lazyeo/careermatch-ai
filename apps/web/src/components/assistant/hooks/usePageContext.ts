@@ -42,23 +42,31 @@ export function usePageContext(): PageContextState {
   const fetchJobData = useCallback(async (jobId: string): Promise<JobContext | null> => {
     try {
       const response = await fetch(`/api/jobs/${jobId}`)
-      if (!response.ok) return null
+      if (!response.ok) {
+        return null
+      }
 
       const data = await response.json()
-      if (!data.job) return null
 
-      return {
-        id: data.job.id,
-        title: data.job.title,
-        company: data.job.company,
-        location: data.job.location || undefined,
-        jobType: data.job.job_type || undefined,
-        description: data.job.description || undefined,
-        requirements: data.job.requirements || undefined,
-        salaryMin: data.job.salary_min || undefined,
-        salaryMax: data.job.salary_max || undefined,
-        salaryCurrency: data.job.salary_currency || undefined,
+      // API直接返回job对象，不是包在{ job: ... }里
+      if (!data || !data.id) {
+        return null
       }
+
+      const jobContext: JobContext = {
+        id: data.id,
+        title: data.title,
+        company: data.company,
+        location: data.location || undefined,
+        jobType: data.job_type || data.jobType || undefined,
+        description: data.description || undefined,
+        requirements: data.requirements || undefined,
+        salaryMin: data.salary_min || data.salaryMin || undefined,
+        salaryMax: data.salary_max || data.salaryMax || undefined,
+        salaryCurrency: data.salary_currency || data.salaryCurrency || undefined,
+      }
+
+      return jobContext
     } catch (error) {
       console.error('Failed to fetch job data:', error)
       return null
@@ -98,7 +106,9 @@ export function usePageContext(): PageContextState {
 
     // 防止重复请求
     const fetchKey = `${pathname}-${JSON.stringify(params)}`
-    if (fetchingRef.current === fetchKey) return
+    if (fetchingRef.current === fetchKey) {
+      return
+    }
     fetchingRef.current = fetchKey
 
     try {

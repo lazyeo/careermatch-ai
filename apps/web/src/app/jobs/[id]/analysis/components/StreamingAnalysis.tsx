@@ -124,6 +124,9 @@ export function StreamingAnalysis({
 
               if (data.done) {
                 setState('completed')
+                const finalScore = data.score !== undefined ? data.score : score
+                const finalRecommendation = data.recommendation || recommendation
+
                 if (data.sessionId) {
                   setSessionId(data.sessionId)
                   onComplete?.(data.sessionId)
@@ -133,6 +136,21 @@ export function StreamingAnalysis({
                 }
                 if (data.recommendation) {
                   setRecommendation(data.recommendation)
+                }
+
+                // 发送结果到localStorage，通知对话框更新卡片
+                try {
+                  localStorage.setItem(
+                    `analysis-result-${jobId}`,
+                    JSON.stringify({
+                      score: finalScore,
+                      recommendation: finalRecommendation,
+                      sessionId: data.sessionId,
+                      summary: analysisContent.substring(0, 100) + '...',
+                    })
+                  )
+                } catch (e) {
+                  console.warn('Failed to store analysis result:', e)
                 }
               }
             } catch (e) {

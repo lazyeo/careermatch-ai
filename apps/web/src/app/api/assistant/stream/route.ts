@@ -69,11 +69,14 @@ export async function POST(request: NextRequest) {
 
     console.log('🤖 Processing assistant stream request...')
     console.log(`📝 Message: ${message.substring(0, 100)}...`)
+    console.log(`📦 Context received:`, JSON.stringify(context, null, 2))
 
     // 构建上下文字符串
     const contextStr = context
       ? formatContextForChat(context as PromptContext)
       : '无上下文信息'
+
+    console.log(`📋 Formatted context: ${contextStr.substring(0, 500)}...`)
 
     // 构建用户提示
     const userPrompt = `## 当前上下文

@@ -5,6 +5,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/u
 import { Timeline } from '../components/Timeline'
 import { StatusUpdater } from '../components/StatusUpdater'
 import { DeleteApplicationButton } from '../components/DeleteApplicationButton'
+import { getTranslations, getLocale } from 'next-intl/server'
 
 interface PageProps {
   params: {
@@ -18,6 +19,10 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
   if (!user) {
     redirect('/login?redirect=/applications')
   }
+
+  const t = await getTranslations('applications')
+  const tJobs = await getTranslations('jobs')
+  const locale = await getLocale()
 
   const supabase = await createClient()
 
@@ -61,14 +66,14 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
   const resume = application.resumes
 
   const STATUS_CONFIG = {
-    draft: { label: '草稿', color: 'bg-gray-100 text-gray-800' },
-    submitted: { label: '已提交', color: 'bg-blue-100 text-blue-800' },
-    under_review: { label: '审核中', color: 'bg-yellow-100 text-yellow-800' },
-    interview_scheduled: { label: '面试安排', color: 'bg-purple-100 text-purple-800' },
-    offer_received: { label: '已录取', color: 'bg-green-100 text-green-800' },
-    rejected: { label: '已拒绝', color: 'bg-red-100 text-red-800' },
-    withdrawn: { label: '已撤回', color: 'bg-gray-100 text-gray-800' },
-    accepted: { label: '已接受', color: 'bg-teal-100 text-teal-800' },
+    draft: { label: t('draft'), color: 'bg-gray-100 text-gray-800' },
+    submitted: { label: t('submitted'), color: 'bg-blue-100 text-blue-800' },
+    under_review: { label: t('underReview'), color: 'bg-yellow-100 text-yellow-800' },
+    interview_scheduled: { label: t('interviewScheduled'), color: 'bg-purple-100 text-purple-800' },
+    offer_received: { label: t('offerReceived'), color: 'bg-green-100 text-green-800' },
+    rejected: { label: t('rejected'), color: 'bg-red-100 text-red-800' },
+    withdrawn: { label: t('withdrawn'), color: 'bg-gray-100 text-gray-800' },
+    accepted: { label: t('accepted'), color: 'bg-teal-100 text-teal-800' },
   }
 
   const statusConfig = STATUS_CONFIG[application.status as keyof typeof STATUS_CONFIG] || {
@@ -85,7 +90,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {job?.title || '申请详情'}
+                  {job?.title || t('applicationDetail')}
                 </h1>
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusConfig.color}`}
@@ -94,16 +99,16 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                 </span>
               </div>
               <p className="text-sm text-gray-600 mt-1">
-                {job?.company || '未知公司'}
+                {job?.company || t('unknownCompany')}
                 {job?.location && ` · ${job.location}`}
               </p>
             </div>
             <div className="flex gap-2">
               <Link href={`/jobs/${job?.id}`}>
-                <Button variant="outline">查看岗位</Button>
+                <Button variant="outline">{t('viewJob')}</Button>
               </Link>
               <Link href="/applications">
-                <Button variant="outline">返回列表</Button>
+                <Button variant="outline">{t('backToList')}</Button>
               </Link>
             </div>
           </div>
@@ -118,7 +123,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
             {/* Status Management */}
             <Card>
               <CardHeader>
-                <CardTitle>申请状态管理</CardTitle>
+                <CardTitle>{t('statusManagement')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <StatusUpdater applicationId={application.id} currentStatus={application.status} />
@@ -128,7 +133,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
             {/* Timeline */}
             <Card>
               <CardHeader>
-                <CardTitle>申请时间线</CardTitle>
+                <CardTitle>{t('timeline')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Timeline events={application.timeline || []} />
@@ -138,13 +143,13 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
             {/* Notes */}
             <Card>
               <CardHeader>
-                <CardTitle>申请备注</CardTitle>
+                <CardTitle>{t('notes')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {application.notes ? (
                   <p className="text-gray-700 whitespace-pre-wrap">{application.notes}</p>
                 ) : (
-                  <p className="text-gray-500 italic">暂无备注</p>
+                  <p className="text-gray-500 italic">{t('noNotes')}</p>
                 )}
               </CardContent>
             </Card>
@@ -155,7 +160,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                 {job.description && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>岗位描述</CardTitle>
+                      <CardTitle>{tJobs('description')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-700 whitespace-pre-wrap">{job.description}</p>
@@ -166,7 +171,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                 {job.requirements && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>岗位要求</CardTitle>
+                      <CardTitle>{tJobs('requirements')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-700 whitespace-pre-wrap">{job.requirements}</p>
@@ -177,7 +182,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                 {job.benefits && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>福利待遇</CardTitle>
+                      <CardTitle>{tJobs('benefits')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-700 whitespace-pre-wrap">{job.benefits}</p>
@@ -193,25 +198,25 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
             {/* Application Info */}
             <Card>
               <CardHeader>
-                <CardTitle>申请信息</CardTitle>
+                <CardTitle>{t('applicationInfo')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="text-sm text-gray-500">申请时间</div>
+                  <div className="text-sm text-gray-500">{t('applicationTime')}</div>
                   <div className="font-medium text-gray-900">
-                    {new Date(application.created_at).toLocaleString('zh-CN')}
+                    {new Date(application.created_at).toLocaleString(locale)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">最后更新</div>
+                  <div className="text-sm text-gray-500">{t('lastUpdate')}</div>
                   <div className="font-medium text-gray-900">
-                    {new Date(application.updated_at).toLocaleString('zh-CN')}
+                    {new Date(application.updated_at).toLocaleString(locale)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">时间线事件</div>
+                  <div className="text-sm text-gray-500">{t('timelineEvents')}</div>
                   <div className="font-medium text-gray-900">
-                    {application.timeline?.length || 0} 个事件
+                    {t('eventsCount', { count: application.timeline?.length || 0 })}
                   </div>
                 </div>
               </CardContent>
@@ -221,12 +226,12 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
             {resume && (
               <Card>
                 <CardHeader>
-                  <CardTitle>使用的简历</CardTitle>
+                  <CardTitle>{t('resumeUsed')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
                     <div className="font-medium text-gray-900">
-                      {resume.title || resume.content?.personal_info?.full_name || '未命名简历'}
+                      {resume.title || resume.content?.personal_info?.full_name || t('unnamedResume')}
                     </div>
                     {resume.content?.personal_info?.full_name && (
                       <div className="text-sm text-gray-600 mt-1">{resume.content.personal_info.full_name}</div>
@@ -246,7 +251,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                   </div>
                   <Link href={`/resumes/${resume.id}`}>
                     <Button variant="outline" className="w-full mt-2">
-                      查看简历
+                      {t('viewResume')}
                     </Button>
                   </Link>
                 </CardContent>
@@ -257,22 +262,22 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
             {job && (
               <Card>
                 <CardHeader>
-                  <CardTitle>岗位信息</CardTitle>
+                  <CardTitle>{t('jobInfo')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <div className="text-sm text-gray-500">岗位类型</div>
+                    <div className="text-sm text-gray-500">{tJobs('jobType')}</div>
                     <div className="font-medium text-gray-900">
-                      {job.job_type === 'full_time' && '全职'}
-                      {job.job_type === 'part_time' && '兼职'}
-                      {job.job_type === 'contract' && '合同'}
-                      {job.job_type === 'internship' && '实习'}
+                      {job.job_type === 'full_time' && tJobs('fullTime')}
+                      {job.job_type === 'part_time' && tJobs('partTime')}
+                      {job.job_type === 'contract' && tJobs('contract')}
+                      {job.job_type === 'internship' && tJobs('internship')}
                       {!job.job_type && '-'}
                     </div>
                   </div>
                   {(job.salary_min || job.salary_max) && (
                     <div>
-                      <div className="text-sm text-gray-500">薪资范围</div>
+                      <div className="text-sm text-gray-500">{t('salaryRange')}</div>
                       <div className="font-medium text-gray-900">
                         {job.salary_currency || 'NZD'} {job.salary_min?.toLocaleString()} -{' '}
                         {job.salary_max?.toLocaleString()}
@@ -281,17 +286,17 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                   )}
                   {job.posted_date && (
                     <div>
-                      <div className="text-sm text-gray-500">发布日期</div>
+                      <div className="text-sm text-gray-500">{t('postedDate')}</div>
                       <div className="font-medium text-gray-900">
-                        {new Date(job.posted_date).toLocaleDateString('zh-CN')}
+                        {new Date(job.posted_date).toLocaleDateString(locale)}
                       </div>
                     </div>
                   )}
                   {job.deadline && (
                     <div>
-                      <div className="text-sm text-gray-500">申请截止</div>
+                      <div className="text-sm text-gray-500">{t('applicationDeadline')}</div>
                       <div className="font-medium text-gray-900">
-                        {new Date(job.deadline).toLocaleDateString('zh-CN')}
+                        {new Date(job.deadline).toLocaleDateString(locale)}
                       </div>
                     </div>
                   )}
@@ -303,7 +308,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                         rel="noopener noreferrer"
                         className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
                       >
-                        🔗 查看原始链接
+                        🔗 {t('viewOriginalLink')}
                         <svg
                           className="w-3 h-3"
                           fill="none"
@@ -327,12 +332,12 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
             {/* Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>操作</CardTitle>
+                <CardTitle>{t('actions')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Link href={`/jobs/${job?.id}/analysis`} className="block">
                   <Button variant="outline" className="w-full">
-                    查看AI分析
+                    {t('viewAIAnalysis')}
                   </Button>
                 </Link>
                 <DeleteApplicationButton applicationId={application.id} />

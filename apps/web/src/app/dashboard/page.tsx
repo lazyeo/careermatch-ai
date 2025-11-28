@@ -9,6 +9,8 @@ import { redirect } from 'next/navigation'
 import { createClient, getCurrentUser } from '@/lib/supabase-server'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@careermatch/ui'
 import Link from 'next/link'
+import { AppHeader } from '@/components/AppHeader'
+import { getTranslations } from 'next-intl/server'
 
 export default async function DashboardPage() {
   const user = await getCurrentUser()
@@ -17,6 +19,8 @@ export default async function DashboardPage() {
   if (!user) {
     redirect('/login')
   }
+
+  const t = await getTranslations('dashboard')
 
   // 获取用户profile信息和统计数据
   const supabase = await createClient()
@@ -67,37 +71,19 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* 顶部导航栏 */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-primary-600">
-                CareerMatch AI
-              </h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-neutral-600">
-                {profile?.full_name || user.email}
-              </span>
-              <form action="/auth/signout" method="post">
-                <Button type="submit" variant="outline" size="sm">
-                  退出登录
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader user={{ email: user.email, name: profile?.full_name }} />
 
       {/* 主要内容区域 */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 欢迎区域 */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-neutral-900 mb-2">
-            欢迎回来，{profile?.full_name || '求职者'}！
+            {profile?.full_name
+              ? t('welcomeBack', { name: profile.full_name })
+              : t('welcomeGuest')}
           </h2>
           <p className="text-neutral-600">
-            开始管理您的简历和求职申请
+            {t('subtitle')}
           </p>
         </div>
 
@@ -109,15 +95,15 @@ export default async function DashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="text-2xl">📝</span>
-                  简历管理
+                  {t('resumeManagement')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-neutral-600 mb-4">
-                  创建、编辑和管理您的简历
+                  {t('resumeManagementDesc')}
                 </p>
                 <Button variant="primary" size="sm" className="w-full">
-                  管理简历
+                  {t('manageResumes')}
                 </Button>
               </CardContent>
             </Card>
@@ -129,15 +115,15 @@ export default async function DashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="text-2xl">💼</span>
-                  岗位管理
+                  {t('jobManagement')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-neutral-600 mb-4">
-                  浏览和保存感兴趣的岗位
+                  {t('jobManagementDesc')}
                 </p>
                 <Button variant="primary" size="sm" className="w-full">
-                  管理岗位
+                  {t('manageJobs')}
                 </Button>
               </CardContent>
             </Card>
@@ -149,15 +135,15 @@ export default async function DashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="text-2xl">📊</span>
-                  申请追踪
+                  {t('applicationTracking')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-neutral-600 mb-4">
-                  追踪您的申请进度和面试安排
+                  {t('applicationTrackingDesc')}
                 </p>
                 <Button variant="primary" size="sm" className="w-full">
-                  管理申请
+                  {t('manageApplications')}
                 </Button>
               </CardContent>
             </Card>
@@ -172,7 +158,7 @@ export default async function DashboardPage() {
                 <div className="text-3xl font-bold text-primary-600 mb-1">
                   {resumeCount || 0}
                 </div>
-                <div className="text-sm text-neutral-600">简历数量</div>
+                <div className="text-sm text-neutral-600">{t('resumeCount')}</div>
               </CardContent>
             </Card>
           </Link>
@@ -182,7 +168,7 @@ export default async function DashboardPage() {
                 <div className="text-3xl font-bold text-accent-600 mb-1">
                   {jobCount || 0}
                 </div>
-                <div className="text-sm text-neutral-600">保存的岗位</div>
+                <div className="text-sm text-neutral-600">{t('savedJobs')}</div>
               </CardContent>
             </Card>
           </Link>
@@ -192,7 +178,7 @@ export default async function DashboardPage() {
                 <div className="text-3xl font-bold text-success-600 mb-1">
                   {applicationCount || 0}
                 </div>
-                <div className="text-sm text-neutral-600">总申请数</div>
+                <div className="text-sm text-neutral-600">{t('totalApplications')}</div>
               </CardContent>
             </Card>
           </Link>
@@ -202,7 +188,7 @@ export default async function DashboardPage() {
                 <div className="text-3xl font-bold text-warning-600 mb-1">
                   {interviewScheduledCount}
                 </div>
-                <div className="text-sm text-neutral-600">面试安排</div>
+                <div className="text-sm text-neutral-600">{t('interviewScheduled')}</div>
               </CardContent>
             </Card>
           </Link>
@@ -212,7 +198,7 @@ export default async function DashboardPage() {
         {(applicationCount || 0) > 0 && (
           <Card className="mt-8 border-blue-200">
             <CardHeader>
-              <CardTitle className="text-blue-900">申请状态概览</CardTitle>
+              <CardTitle className="text-blue-900">{t('applicationOverview')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -220,25 +206,25 @@ export default async function DashboardPage() {
                   <div className="text-2xl font-bold text-blue-600">
                     {applications?.filter((a) => a.status === 'submitted').length || 0}
                   </div>
-                  <div className="text-xs text-blue-700 mt-1">已提交</div>
+                  <div className="text-xs text-blue-700 mt-1">{t('submitted')}</div>
                 </div>
                 <div className="text-center p-3 bg-yellow-50 rounded-lg">
                   <div className="text-2xl font-bold text-yellow-600">
                     {applications?.filter((a) => a.status === 'under_review').length || 0}
                   </div>
-                  <div className="text-xs text-yellow-700 mt-1">审核中</div>
+                  <div className="text-xs text-yellow-700 mt-1">{t('underReview')}</div>
                 </div>
                 <div className="text-center p-3 bg-purple-50 rounded-lg">
                   <div className="text-2xl font-bold text-purple-600">
                     {interviewScheduledCount}
                   </div>
-                  <div className="text-xs text-purple-700 mt-1">面试安排</div>
+                  <div className="text-xs text-purple-700 mt-1">{t('interviewScheduled')}</div>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
                   <div className="text-2xl font-bold text-green-600">
                     {offerReceivedCount}
                   </div>
-                  <div className="text-xs text-green-700 mt-1">已获录取</div>
+                  <div className="text-xs text-green-700 mt-1">{t('offerReceived')}</div>
                 </div>
               </div>
             </CardContent>
@@ -248,17 +234,17 @@ export default async function DashboardPage() {
         {/* 开发提示 */}
         <Card className="mt-8 bg-success-50 border-success-200">
           <CardHeader>
-            <CardTitle className="text-success-700">🚀 Sprint 5 开发中</CardTitle>
+            <CardTitle className="text-success-700">🚀 {t('sprintNotice')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-neutral-700">
-              <strong>已完成：</strong>简历管理 + 岗位管理 + AI智能匹配 + 申请追踪系统
+              <strong>{t('completedFeatures')}</strong>{t('completedFeaturesDesc')}
             </p>
             <p className="text-sm text-neutral-700 mt-2">
-              <strong>新功能：</strong>申请列表、申请详情、时间线可视化、状态管理
+              <strong>{t('newFeatures')}</strong>{t('newFeaturesDesc')}
             </p>
             <p className="text-xs text-neutral-500 mt-2">
-              当前状态：<strong>Sprint 5 - 申请追踪系统（前端完成）</strong> ✅
+              {t('currentStatus')}<strong>{t('currentStatusDesc')}</strong> ✅
             </p>
           </CardContent>
         </Card>

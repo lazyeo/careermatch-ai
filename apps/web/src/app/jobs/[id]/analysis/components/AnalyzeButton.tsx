@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@careermatch/ui'
 import { Loader2, Sparkles } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export type AIProviderType = 'openai' | 'codex' | 'claude' | 'gemini'
 
@@ -15,10 +16,13 @@ interface AnalyzeButtonProps {
   force?: boolean  // Force re-analysis, skip cache
 }
 
-export function AnalyzeButton({ jobId, resumeId, label = '开始AI分析', provider, force = false }: AnalyzeButtonProps) {
+export function AnalyzeButton({ jobId, resumeId, label, provider, force = false }: AnalyzeButtonProps) {
+  const t = useTranslations('forms.analyzeButton')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  const buttonLabel = label || t('defaultLabel')
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true)
@@ -35,14 +39,14 @@ export function AnalyzeButton({ jobId, resumeId, label = '开始AI分析', provi
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || '分析失败')
+        throw new Error(data.error || t('analysisFailed'))
       }
 
       // Refresh the page to show results
       router.refresh()
     } catch (err) {
       console.error('Error analyzing:', err)
-      setError(err instanceof Error ? err.message : '分析失败，请重试')
+      setError(err instanceof Error ? err.message : t('retryFailed'))
     } finally {
       setIsAnalyzing(false)
     }
@@ -59,12 +63,12 @@ export function AnalyzeButton({ jobId, resumeId, label = '开始AI分析', provi
         {isAnalyzing ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            分析中...
+            {t('analyzing')}
           </>
         ) : (
           <>
             <Sparkles className="w-4 h-4" />
-            {label}
+            {buttonLabel}
           </>
         )}
       </Button>

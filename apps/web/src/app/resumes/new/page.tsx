@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/supabase-server'
 import { ResumeForm } from '../components/ResumeForm'
 import Link from 'next/link'
 import { Button } from '@careermatch/ui'
+import { getTranslations } from 'next-intl/server'
 
 export default async function NewResumePage() {
   const user = await getCurrentUser()
@@ -11,6 +12,8 @@ export default async function NewResumePage() {
     redirect('/login?redirect=/resumes/new')
   }
 
+  const t = await getTranslations('resumes')
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -18,13 +21,13 @@ export default async function NewResumePage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">创建新简历</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('createNewResume')}</h1>
               <p className="text-sm text-gray-600 mt-1">
-                填写您的个人信息和工作经历，创建专业的简历
+                {t('createResumeDesc')}
               </p>
             </div>
             <Link href="/resumes">
-              <Button variant="outline">返回列表</Button>
+              <Button variant="outline">{t('backToList')}</Button>
             </Link>
           </div>
         </div>

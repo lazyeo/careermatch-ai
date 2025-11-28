@@ -4,10 +4,12 @@
  * AI 助手聊天组件
  *
  * 消息列表和输入区域
+ * 支持分析意图识别和卡片显示
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Send, Loader2, RefreshCw } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Send, Loader2, RefreshCw, Square } from 'lucide-react'
 import { Button } from '@careermatch/ui'
 import {
   useAssistantStore,
@@ -19,17 +21,59 @@ import {
 } from '@/stores/assistant-store'
 import { MessageBubble } from './MessageBubble'
 
+// 分析意图关键词
+const ANALYSIS_KEYWORDS = [
+  '分析',
+  '匹配',
+  '匹配度',
+  '评估',
+  '看看',
+  '帮我看',
+  '这个岗位',
+  '这份工作',
+  '合适吗',
+  '适合吗',
+  '能申请吗',
+  'analyze',
+  'analysis',
+  'match',
+]
+
+/**
+ * 检测是否是分析意图
+ */
+function isAnalysisIntent(message: string, hasActiveJob: boolean): boolean {
+  if (!hasActiveJob) return false
+
+  const lowerMessage = message.toLowerCase()
+  return ANALYSIS_KEYWORDS.some((keyword) =>
+    lowerMessage.includes(keyword.toLowerCase())
+  )
+}
+
 export function AssistantChat() {
+  const router = useRouter()
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const messages = useAssistantMessages()
   const isLoading = useAssistantIsLoading()
   const isStreaming = useAssistantIsStreaming()
   const streamingContent = useAssistantStreamingContent()
   const error = useAssistantError()
-  const { addMessage, setLoading, setError, clearError, currentSession } = useAssistantStore()
+  const {
+    addMessage,
+    addAnalysisMessage,
+    updateAnalysisCard,
+    setLoading,
+    setError,
+    clearError,
+    currentSession,
+    currentContext,
+    close: closeAssistant,
+  } = useAssistantStore()
 
   // 自动滚动到底部
   const scrollToBottom = useCallback(() => {
@@ -45,6 +89,95 @@ export function AssistantChat() {
     inputRef.current?.focus()
   }, [])
 
+  // 处理分析请求
+  const handleAnalysisRequest = useCallback(async (userMessage: string) => {
+    const activeJob = currentContext?.activeJob
+    if (!activeJob) return false
+
+    // 添加用户消息
+    addMessage({
+      sessionId: currentSession?.id || '',
+      role: 'user',
+      content: userMessage,
+    })
+
+    // 添加分析卡片消息（加载状态）
+    const messageId = addAnalysisMessage(
+      activeJob.id,
+      activeJob.title,
+      activeJob.company
+    )
+
+    // 检查用户是否有简历，决定分析模式
+    let analysisUrl = `/jobs/${activeJob.id}/analysis`
+    try {
+      const response = await fetch('/api/resumes')
+      if (response.ok) {
+        const resumes = await response.json()
+        const hasResumes = Array.isArray(resumes) && resumes.length > 0
+        if (!hasResumes) {
+          // 没有简历，使用Profile模式
+          analysisUrl = `/jobs/${activeJob.id}/analysis?mode=profile`
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to check resumes:', e)
+      // 出错时默认使用Profile模式，更友好
+      analysisUrl = `/jobs/${activeJob.id}/analysis?mode=profile`
+    }
+
+    // 跳转到分析页面
+    router.push(analysisUrl)
+
+    // 监听分析结果（通过localStorage事件）
+    const handleAnalysisComplete = (event: StorageEvent) => {
+      if (event.key === `analysis-result-${activeJob.id}`) {
+        try {
+          const result = JSON.parse(event.newValue || '{}')
+          updateAnalysisCard(messageId, {
+            status: result.error ? 'failed' : 'completed',
+            score: result.score,
+            recommendation: result.recommendation,
+            summary: result.summary,
+            sessionId: result.sessionId,
+            error: result.error,
+          })
+          // 清理
+          localStorage.removeItem(`analysis-result-${activeJob.id}`)
+        } catch (e) {
+          console.error('Failed to parse analysis result:', e)
+        }
+        window.removeEventListener('storage', handleAnalysisComplete)
+      }
+    }
+
+    window.addEventListener('storage', handleAnalysisComplete)
+
+    // 5分钟超时自动清理
+    setTimeout(() => {
+      window.removeEventListener('storage', handleAnalysisComplete)
+    }, 5 * 60 * 1000)
+
+    return true
+  }, [currentContext, currentSession, addMessage, addAnalysisMessage, updateAnalysisCard, router])
+
+  // 停止生成
+  const handleStop = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    // 保存当前已生成的内容
+    const currentContent = useAssistantStore.getState().streamingContent
+    if (currentContent) {
+      useAssistantStore.getState().finalizeStream(undefined, undefined, undefined)
+    } else {
+      useAssistantStore.getState().setStreaming(false)
+      useAssistantStore.getState().clearStreamContent()
+    }
+    setLoading(false)
+  }, [])
+
   // 发送消息（支持流式响应）
   const handleSend = async () => {
     if (!input.trim() || isLoading || isStreaming) return
@@ -52,6 +185,13 @@ export function AssistantChat() {
     const userMessage = input.trim()
     setInput('')
     clearError()
+
+    // 检查是否是分析意图
+    const hasActiveJob = !!currentContext?.activeJob
+    if (isAnalysisIntent(userMessage, hasActiveJob)) {
+      const handled = await handleAnalysisRequest(userMessage)
+      if (handled) return
+    }
 
     // 添加用户消息
     addMessage({
@@ -62,16 +202,20 @@ export function AssistantChat() {
 
     setLoading(true)
 
+    // 创建新的 AbortController
+    abortControllerRef.current = new AbortController()
+
     try {
-      // 使用流式 API
+      // 使用流式 API - 使用store级别的currentContext（由usePageContext更新）
       const response = await fetch('/api/assistant/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
           sessionId: currentSession?.id,
-          context: currentSession?.currentContext,
+          context: currentContext,
         }),
+        signal: abortControllerRef.current.signal,
       })
 
       if (!response.ok) {
@@ -129,11 +273,17 @@ export function AssistantChat() {
         undefined
       )
     } catch (err) {
+      // 处理用户主动中断
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('Stream aborted by user')
+        return
+      }
       setError(err instanceof Error ? err.message : '发送失败，请重试')
       useAssistantStore.getState().setStreaming(false)
       useAssistantStore.getState().clearStreamContent()
     } finally {
       setLoading(false)
+      abortControllerRef.current = null
     }
   }
 
@@ -149,6 +299,12 @@ export function AssistantChat() {
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion)
     inputRef.current?.focus()
+  }
+
+  // 处理分析卡片导航（可选：关闭侧栏）
+  const handleAnalysisNavigate = () => {
+    // 可以选择关闭助手侧栏
+    // closeAssistant()
   }
 
   // 获取最后一条助手消息的建议
@@ -187,6 +343,7 @@ export function AssistantChat() {
             key={message.id}
             message={message}
             onSuggestionClick={handleSuggestionClick}
+            onAnalysisNavigate={handleAnalysisNavigate}
           />
         ))}
 
@@ -261,18 +418,29 @@ export function AssistantChat() {
             rows={1}
             disabled={isLoading || isStreaming}
           />
-          <Button
-            variant="primary"
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading || isStreaming}
-            className="w-10 h-10 p-0 flex-shrink-0"
-          >
-            {isLoading || isStreaming ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
-          </Button>
+          {isStreaming ? (
+            <Button
+              variant="secondary"
+              onClick={handleStop}
+              className="w-10 h-10 p-0 flex-shrink-0 bg-red-50 hover:bg-red-100 border-red-200"
+              title="停止生成"
+            >
+              <Square className="w-4 h-4 text-red-600 fill-red-600" />
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              className="w-10 h-10 p-0 flex-shrink-0"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          )}
         </div>
         <p className="text-xs text-gray-400 mt-2 text-center">
           按 Enter 发送，Shift + Enter 换行

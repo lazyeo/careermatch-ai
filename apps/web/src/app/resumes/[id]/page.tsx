@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import type { ResumeContent } from '@careermatch/shared'
 import { ExportPDFButton } from '@/components/ExportPDFButton'
+import { getTranslations, getLocale } from 'next-intl/server'
 
 export default async function ResumeDetailPage({
   params,
@@ -15,6 +16,9 @@ export default async function ResumeDetailPage({
   if (!user) {
     redirect('/login?redirect=/resumes/' + params.id)
   }
+
+  const t = await getTranslations('resumes')
+  const locale = await getLocale()
 
   const supabase = await createClient()
 
@@ -64,17 +68,17 @@ export default async function ResumeDetailPage({
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{resume.title}</h1>
               <p className="text-sm text-gray-600 mt-1">
-                版本 v{resume.version} · 最后更新于{' '}
-                {new Date(resume.updated_at).toLocaleDateString('zh-CN')}
+                {t('version')} {t('versionPrefix')}{resume.version} · {t('lastUpdatedAt')}{' '}
+                {new Date(resume.updated_at).toLocaleDateString(locale)}
               </p>
             </div>
             <div className="flex gap-2">
               <ExportPDFButton resumeId={params.id} resumeTitle={resume.title} />
               <Link href={`/resumes/${params.id}/edit`}>
-                <Button variant="primary">编辑</Button>
+                <Button variant="primary">{t('edit')}</Button>
               </Link>
               <Link href="/resumes">
-                <Button variant="outline">返回列表</Button>
+                <Button variant="outline">{t('backToList')}</Button>
               </Link>
             </div>
           </div>
@@ -86,27 +90,27 @@ export default async function ResumeDetailPage({
         {/* Personal Info */}
         <Card>
           <CardHeader>
-            <CardTitle>个人信息</CardTitle>
+            <CardTitle>{t('personalInfo')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex">
-                <span className="font-medium w-24">姓名:</span>
+                <span className="font-medium w-24">{t('fullName')}:</span>
                 <span>{content.personalInfo.fullName}</span>
               </div>
               <div className="flex">
-                <span className="font-medium w-24">邮箱:</span>
+                <span className="font-medium w-24">{t('email')}:</span>
                 <span>{content.personalInfo.email}</span>
               </div>
               {content.personalInfo.phone && (
                 <div className="flex">
-                  <span className="font-medium w-24">电话:</span>
+                  <span className="font-medium w-24">{t('phone')}:</span>
                   <span>{content.personalInfo.phone}</span>
                 </div>
               )}
               {content.personalInfo.location && (
                 <div className="flex">
-                  <span className="font-medium w-24">地点:</span>
+                  <span className="font-medium w-24">{t('location')}:</span>
                   <span>{content.personalInfo.location}</span>
                 </div>
               )}
@@ -144,7 +148,7 @@ export default async function ResumeDetailPage({
         {content.careerObjective && (
           <Card>
             <CardHeader>
-              <CardTitle>职业目标</CardTitle>
+              <CardTitle>{t('careerObjective')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 whitespace-pre-wrap">
@@ -158,7 +162,7 @@ export default async function ResumeDetailPage({
         {content.skills && content.skills.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>技能</CardTitle>
+              <CardTitle>{t('skills')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
@@ -170,9 +174,9 @@ export default async function ResumeDetailPage({
                     {skill.name}
                     {skill.level && (
                       <span className="ml-2 text-xs">
-                        {skill.level === 'beginner' && '初级'}
-                        {skill.level === 'intermediate' && '中级'}
-                        {skill.level === 'expert' && '精通'}
+                        {skill.level === 'beginner' && t('skillLevels.beginner')}
+                        {skill.level === 'intermediate' && t('skillLevels.intermediate')}
+                        {skill.level === 'expert' && t('skillLevels.expert')}
                       </span>
                     )}
                   </span>
@@ -186,7 +190,7 @@ export default async function ResumeDetailPage({
         {content.workExperience && content.workExperience.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>工作经历</CardTitle>
+              <CardTitle>{t('workExperience')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {content.workExperience.map((work) => (
@@ -196,7 +200,7 @@ export default async function ResumeDetailPage({
                   </h3>
                   <p className="text-gray-600 font-medium">{work.company}</p>
                   <p className="text-sm text-gray-500 mt-1">
-                    {work.startDate} - {work.isCurrent ? '至今' : work.endDate}
+                    {work.startDate} - {work.isCurrent ? t('present') : work.endDate}
                     {work.location && ` · ${work.location}`}
                   </p>
                   {work.description && (
@@ -233,7 +237,7 @@ export default async function ResumeDetailPage({
         {content.projects && content.projects.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>项目经历</CardTitle>
+              <CardTitle>{t('projects')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {content.projects.map((project) => (
@@ -246,7 +250,7 @@ export default async function ResumeDetailPage({
                   )}
                   {(project.startDate || project.endDate) && (
                     <p className="text-sm text-gray-500 mt-1">
-                      {project.startDate} - {project.endDate || '至今'}
+                      {project.startDate} - {project.endDate || t('present')}
                     </p>
                   )}
                   <p className="mt-3 text-gray-700 whitespace-pre-wrap">
@@ -278,7 +282,7 @@ export default async function ResumeDetailPage({
                       rel="noopener noreferrer"
                       className="text-primary-600 hover:underline text-sm mt-2 inline-block"
                     >
-                      查看项目 →
+                      {t('viewProject')} →
                     </a>
                   )}
                 </div>
@@ -291,7 +295,7 @@ export default async function ResumeDetailPage({
         {content.education && content.education.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>教育背景</CardTitle>
+              <CardTitle>{t('education')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {content.education.map((edu) => (
@@ -324,7 +328,7 @@ export default async function ResumeDetailPage({
         {content.certifications && content.certifications.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>证书</CardTitle>
+              <CardTitle>{t('certifications')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {content.certifications.map((cert) => (
@@ -332,12 +336,12 @@ export default async function ResumeDetailPage({
                   <h3 className="text-lg font-semibold text-gray-900">{cert.name}</h3>
                   <p className="text-gray-600">{cert.issuer}</p>
                   <p className="text-sm text-gray-500 mt-1">
-                    颁发日期: {cert.issueDate}
-                    {cert.expiryDate && ` · 过期日期: ${cert.expiryDate}`}
+                    {t('issueDate')}: {cert.issueDate}
+                    {cert.expiryDate && ` · ${t('expiryDate')}: ${cert.expiryDate}`}
                   </p>
                   {cert.credentialId && (
                     <p className="text-sm text-gray-600 mt-1">
-                      证书编号: {cert.credentialId}
+                      {t('credentialId')}: {cert.credentialId}
                     </p>
                   )}
                   {cert.url && (
@@ -347,7 +351,7 @@ export default async function ResumeDetailPage({
                       rel="noopener noreferrer"
                       className="text-primary-600 hover:underline text-sm mt-1 inline-block"
                     >
-                      验证证书 →
+                      {t('verifyCertificate')} →
                     </a>
                   )}
                 </div>
@@ -360,7 +364,7 @@ export default async function ResumeDetailPage({
         {content.interests && content.interests.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>兴趣爱好</CardTitle>
+              <CardTitle>{t('interests')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
