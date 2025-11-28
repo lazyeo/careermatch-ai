@@ -34,6 +34,33 @@ export default async function JobDetailPage({
     notFound()
   }
 
+  // Fetch related analysis sessions, resumes, and cover letters
+  const [analysisResult, resumesResult, coverLettersResult] = await Promise.all([
+    supabase
+      .from('analysis_sessions')
+      .select('id, score, recommendation, created_at')
+      .eq('job_id', params.id)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1),
+    supabase
+      .from('resumes')
+      .select('id, title, created_at, source')
+      .eq('job_id', params.id)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('cover_letters')
+      .select('id, title, created_at, source')
+      .eq('job_id', params.id)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+  ])
+
+  const latestAnalysis = analysisResult.data?.[0]
+  const resumes = resumesResult.data || []
+  const coverLetters = coverLettersResult.data || []
+
   // Helper functions
   const getJobTypeLabel = (type: string | null) => {
     if (!type) return t('notSpecified')
@@ -248,17 +275,44 @@ export default async function JobDetailPage({
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {t('aiMatchAnalysis')}
                 </h3>
-                <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-                  {t('aiMatchAnalysisDesc')}
-                </p>
-                <Link href={`/jobs/${params.id}/analysis`}>
-                  <Button variant="primary" className="gap-2">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    {t('startAnalysis')}
-                  </Button>
-                </Link>
+                {latestAnalysis ? (
+                  <>
+                    <div className="mb-4">
+                      <div className="text-3xl font-bold text-primary-600 mb-1">
+                        {latestAnalysis.score}/100
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(latestAnalysis.created_at).toLocaleDateString(locale)}
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
+                      已分析完成，查看详细报告
+                    </p>
+                    <Link href={`/jobs/${params.id}/analysis?mode=profile`}>
+                      <Button variant="primary" className="gap-2">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        查看分析
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
+                      {t('aiMatchAnalysisDesc')}
+                    </p>
+                    <Link href={`/jobs/${params.id}/analysis`}>
+                      <Button variant="primary" className="gap-2">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        {t('startAnalysis')}
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -290,6 +344,80 @@ export default async function JobDetailPage({
             </CardContent>
           </Card>
         </div>
+
+        {/* Generated Documents Section */}
+        {(resumes.length > 0 || coverLetters.length > 0) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>已生成的求职材料</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Resumes */}
+              {resumes.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    简历 ({resumes.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {resumes.map((resume) => (
+                      <Link
+                        key={resume.id}
+                        href={`/resumes/preview/${resume.id}`}
+                        className="block p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">{resume.title}</div>
+                            <div className="text-sm text-gray-500 mt-1">
+                              {new Date(resume.created_at).toLocaleDateString(locale)} · {' '}
+                              {resume.source === 'ai_generated' ? 'AI生成' : '手动创建'}
+                            </div>
+                          </div>
+                          <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Cover Letters */}
+              {coverLetters.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    求职信 ({coverLetters.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {coverLetters.map((letter) => (
+                      <div
+                        key={letter.id}
+                        className="block p-3 border border-gray-200 rounded-lg"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">{letter.title}</div>
+                            <div className="text-sm text-gray-500 mt-1">
+                              {new Date(letter.created_at).toLocaleDateString(locale)} · {' '}
+                              {letter.source === 'ai_generated' ? 'AI生成' : '手动创建'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   )
