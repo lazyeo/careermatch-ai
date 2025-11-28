@@ -5,9 +5,9 @@ import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import { ResumePDFTemplate } from '@/components/ResumePDFTemplate'
 import type { ResumeContent } from '@careermatch/shared'
 
-export async function GET(
+async function generatePDF(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  params: { id: string }
 ) {
   try {
     // 验证用户身份
@@ -97,4 +97,20 @@ export async function GET(
       { status: 500 }
     )
   }
+}
+
+// 支持GET方法
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return generatePDF(request, params)
+}
+
+// 支持POST方法（前端调用的是POST）
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return generatePDF(request, params)
 }
