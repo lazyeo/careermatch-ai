@@ -17,7 +17,8 @@ export default async function JobAnalysisPage({
   searchParams: { resumeId?: string; mode?: 'profile' | 'resume' }
 }) {
   const t = await getTranslations('analysis')
-  const tCommon = await getTranslations('common')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _tCommon = await getTranslations('common')
   const user = await getCurrentUser()
 
   if (!user) {
@@ -75,7 +76,7 @@ export default async function JobAnalysisPage({
     }
   }
 
-  const hasResumes = resumes && resumes.length > 0
+  const hasResumes = !!(resumes && resumes.length > 0)
   const isProfileMode = searchParams.mode === 'profile' || !hasResumes
 
   return (

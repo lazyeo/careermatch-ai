@@ -8,7 +8,8 @@ import { redirect } from 'next/navigation'
 import { createClient, getCurrentUser } from '@/lib/supabase-server'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@careermatch/ui'
 import Link from 'next/link'
-import type { FullProfile, ProfileCompleteness } from '@careermatch/shared'
+// Types imported for documentation purposes
+// import type { FullProfile, ProfileCompleteness } from '@careermatch/shared'
 import { AppHeader } from '@/components/AppHeader'
 import { getTranslations } from 'next-intl/server'
 

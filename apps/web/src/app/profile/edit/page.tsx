@@ -32,7 +32,8 @@ function BasicInfoForm({
   isSaving: boolean
 }) {
   const t = useTranslations('profile')
-  const tc = useTranslations('common')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _tc = useTranslations('common')
 
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
@@ -442,7 +443,8 @@ function CertificationsList({
 }
 
 export default function ProfileEditPage() {
-  const router = useRouter()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _router = useRouter()
   const t = useTranslations('profile.edit')
   const tc = useTranslations('common')
 

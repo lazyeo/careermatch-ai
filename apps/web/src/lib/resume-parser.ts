@@ -400,7 +400,9 @@ function getEmptyParsedData(): ParsedResumeData {
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   // 动态导入pdf-parse以避免打包问题
   try {
-    const pdfParse = (await import('pdf-parse')).default
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pdfParseModule = await import('pdf-parse') as any
+    const pdfParse = pdfParseModule.default || pdfParseModule
     const data = await pdfParse(buffer)
     return data.text
   } catch (error) {

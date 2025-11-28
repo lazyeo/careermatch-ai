@@ -137,7 +137,7 @@ export function AIProviderSelector({ selectedProvider, onSelect }: AIProviderSel
         {availableProviders.length > 1 && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-xs text-blue-800">
-              💡 提示：不同AI模型可能产生不同的分析结果。建议首次使用"自动选择"模式。
+              💡 提示：不同AI模型可能产生不同的分析结果。建议首次使用「自动选择」模式。
             </p>
           </div>
         )}

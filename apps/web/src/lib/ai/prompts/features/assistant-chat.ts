@@ -227,7 +227,7 @@ export function formatContextForChat(context: PromptContext): string {
 // 构建助手对话Prompt
 // ============================================
 
-export function buildAssistantChatPrompt(context: PromptContext, message: string): string {
+export function buildAssistantChatUserPrompt(context: PromptContext, message: string): string {
   const contextStr = formatContextForChat(context)
   return ASSISTANT_CHAT_USER_PROMPT
     .replace('{{context}}', contextStr)

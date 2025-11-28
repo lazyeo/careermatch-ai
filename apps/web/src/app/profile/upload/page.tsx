@@ -318,7 +318,8 @@ function ParsedDataPreview({
 export default function ResumeUploadPage() {
   const router = useRouter()
   const t = useTranslations('profile.upload')
-  const tCommon = useTranslations('common')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _tCommon = useTranslations('common')
   const tExtraction = useTranslations('profile.upload.extractionItems')
 
   const [file, setFile] = useState<File | null>(null)

@@ -32,7 +32,8 @@ interface PageContextState {
  */
 export function usePageContext(): PageContextState {
   const pathname = usePathname()
-  const { updateContext, currentContext } = useAssistantStore()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { updateContext, currentContext: _currentContext } = useAssistantStore()
   const fetchingRef = useRef<string | null>(null)
 
   // 创建页面上下文

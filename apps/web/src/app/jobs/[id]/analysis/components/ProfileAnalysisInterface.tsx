@@ -22,7 +22,8 @@ export function ProfileAnalysisInterface({ jobId, hasResumes = false }: ProfileA
   const [selectedProvider, setSelectedProvider] = useState<AIProviderType | undefined>(undefined)
   const [state, setState] = useState<AnalysisState>('intro')
 
-  const handleComplete = (sessionId: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleComplete = (_sessionId: string) => {
     // Refresh to show updated state
     router.refresh()
   }

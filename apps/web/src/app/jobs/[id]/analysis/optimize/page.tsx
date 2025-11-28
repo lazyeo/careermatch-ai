@@ -231,7 +231,7 @@ export default function OptimizeResumePage({
         {/* Action Buttons */}
         <div className="flex gap-4 justify-end">
           <Link href={`/jobs/${params.id}/analysis?resumeId=${resumeId}`}>
-            <Button variant="secondary">{tCommon('cancel')}</Button>
+            <Button variant="outline">{tCommon('cancel')}</Button>
           </Link>
           <Button
             variant="primary"
@@ -267,6 +267,7 @@ function ResumePreview({
 }: {
   content: ResumeContent
   isOptimized?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t: any
 }) {
   const highlightClass = isOptimized ? 'bg-primary-100/50' : ''

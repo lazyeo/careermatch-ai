@@ -7,7 +7,7 @@
 import type { PromptTemplate } from '../types'
 import { PERSONAS } from '../templates/system-personas'
 import { OUTPUT_FORMAT_INSTRUCTIONS } from '../templates/output-formats'
-import { ANALYSIS_PRINCIPLES } from '../templates/common-sections'
+// import { ANALYSIS_PRINCIPLES } from '../templates/common-sections'
 
 // ============================================
 // 求职信生成 System Prompt

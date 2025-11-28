@@ -24,7 +24,8 @@ interface MessageBubbleProps {
 export function MessageBubble({
   message,
   isStreaming = false,
-  onSuggestionClick,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onSuggestionClick: _onSuggestionClick,
   onAnalysisNavigate,
 }: MessageBubbleProps) {
   const router = useRouter()

@@ -22,7 +22,8 @@ export function AnalysisInterface({ jobId, resumeId }: AnalysisInterfaceProps) {
   const [selectedProvider, setSelectedProvider] = useState<AIProviderType | undefined>(undefined)
   const [mode, setMode] = useState<AnalysisMode>('select')
 
-  const handleStreamingComplete = (sessionId: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleStreamingComplete = (_sessionId: string) => {
     // Refresh the page to show the completed analysis
     router.refresh()
   }

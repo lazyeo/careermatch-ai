@@ -24,7 +24,8 @@ export function StreamingAnalysis({
   onComplete,
 }: StreamingAnalysisProps) {
   const [state, setState] = useState<StreamState>('idle')
-  const [content, setContent] = useState('')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_content, setContent] = useState('')
   const [analysisContent, setAnalysisContent] = useState('')
   const [score, setScore] = useState<number | null>(null)
   const [recommendation, setRecommendation] = useState<AnalysisRecommendation | null>(null)
@@ -283,7 +284,7 @@ export function StreamingAnalysis({
       {/* Actions */}
       {state === 'completed' && (
         <div className="flex gap-3 justify-end">
-          <Button variant="secondary" onClick={startStreaming}>
+          <Button variant="outline" onClick={startStreaming}>
             重新分析
           </Button>
           {sessionId && (

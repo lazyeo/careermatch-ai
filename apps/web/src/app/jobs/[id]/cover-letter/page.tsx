@@ -32,7 +32,8 @@ export default function CoverLetterPage({
 }: {
   params: { id: string }
 }) {
-  const router = useRouter()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _router = useRouter()
   const t = useTranslations('coverLetter')
   const tCommon = useTranslations('common')
   const [isLoading, setIsLoading] = useState(false)

@@ -51,6 +51,8 @@ export const TEMPERATURE_PRESETS = {
   BALANCED: 0.7,
   /** For creative tasks */
   CREATIVE: 1.0,
+  /** For conversational tasks */
+  CONVERSATIONAL: 0.7,
 } as const
 
 /**

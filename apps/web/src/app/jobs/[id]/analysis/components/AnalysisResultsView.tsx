@@ -113,7 +113,7 @@ export function AnalysisResultsView({
       {/* 操作按钮 */}
       <div className="flex gap-3 justify-end">
         <Button
-          variant="secondary"
+          variant="outline"
           onClick={() => setShowReanalysis(true)}
           className="gap-2"
         >

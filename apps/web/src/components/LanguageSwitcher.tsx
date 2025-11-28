@@ -69,7 +69,7 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
   return (
     <div className="relative">
       <Button
-        variant="secondary"
+        variant="outline"
         onClick={() => setIsOpen(!isOpen)}
         className="gap-2"
         disabled={isPending}

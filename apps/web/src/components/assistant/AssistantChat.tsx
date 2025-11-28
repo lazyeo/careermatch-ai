@@ -72,7 +72,8 @@ export function AssistantChat() {
     clearError,
     currentSession,
     currentContext,
-    close: closeAssistant,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    close: _closeAssistant,
   } = useAssistantStore()
 
   // 自动滚动到底部
@@ -420,7 +421,7 @@ export function AssistantChat() {
           />
           {isStreaming ? (
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={handleStop}
               className="w-10 h-10 p-0 flex-shrink-0 bg-red-50 hover:bg-red-100 border-red-200"
               title="停止生成"

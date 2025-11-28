@@ -13,5 +13,5 @@ export * from './templates'
 // 功能 Prompts
 export * from './features'
 
-// 构建工具
-export * from './builders'
+// 注意：builders中的构建函数与features中的同名函数有冲突
+// 需要从builders直接导入: import { ... } from '@/lib/ai/prompts/builders'

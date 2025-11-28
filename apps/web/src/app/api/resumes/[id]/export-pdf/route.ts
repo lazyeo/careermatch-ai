@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { renderToStream } from '@react-pdf/renderer'
+import { renderToStream, DocumentProps } from '@react-pdf/renderer'
+import type { ReactElement } from 'react'
 import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import { ResumePDFTemplate } from '@/components/ResumePDFTemplate'
 import type { ResumeContent } from '@careermatch/shared'
@@ -64,13 +65,13 @@ export async function GET(
 
     // 生成PDF
     const stream = await renderToStream(
-      ResumePDFTemplate({ resume: resumeData })
+      ResumePDFTemplate({ resume: resumeData }) as ReactElement<DocumentProps>
     )
 
     // 将stream转换为Buffer
-    const chunks: Uint8Array[] = []
+    const chunks: Buffer[] = []
     for await (const chunk of stream) {
-      chunks.push(chunk)
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
     }
     const buffer = Buffer.concat(chunks)
 
