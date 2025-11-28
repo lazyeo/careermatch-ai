@@ -113,9 +113,31 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     console.log(`📝 Generating cover letter for job: ${job.title}`)
     const coverLetter = await generateCoverLetter(input)
 
+    // 保存求职信到数据库
+    const coverLetterTitle = `求职信 - ${job.title} at ${job.company}`
+    const { data: savedCoverLetter, error: saveError } = await supabase
+      .from('cover_letters')
+      .insert({
+        user_id: user.id,
+        job_id: jobId,
+        title: coverLetterTitle,
+        content: coverLetter.content,
+        source: 'ai_generated',
+      })
+      .select()
+      .single()
+
+    if (saveError) {
+      console.error('Error saving cover letter:', saveError)
+      // 不影响返回，继续返回生成的求职信
+    } else {
+      console.log('✅ Cover letter saved:', savedCoverLetter.id)
+    }
+
     return NextResponse.json({
       success: true,
       coverLetter,
+      coverLetterId: savedCoverLetter?.id,
       job: {
         id: job.id,
         title: job.title,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@careermatch/ui'
 import { ArrowLeft, Loader2, FileText, Copy, Download, Check } from 'lucide-react'
+import { createClient } from '@/lib/supabase'
 
 interface CoverLetterResult {
   success: boolean
@@ -36,7 +37,7 @@ export default function CoverLetterPage({
   const _router = useRouter()
   const t = useTranslations('coverLetter')
   const tCommon = useTranslations('common')
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // 初始为loading状态
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<CoverLetterResult | null>(null)
   const [copied, setCopied] = useState(false)
@@ -44,6 +45,62 @@ export default function CoverLetterPage({
     'professional'
   )
   const [language, setLanguage] = useState<'en' | 'zh'>('en')
+  const [existingCoverLetter, setExistingCoverLetter] = useState<{
+    id: string
+    content: string
+    created_at: string
+  } | null>(null)
+
+  // 加载时检查是否已有求职信
+  useEffect(() => {
+    const loadExistingCoverLetter = async () => {
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('cover_letters')
+          .select('id, content, created_at, title')
+          .eq('job_id', params.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (data && !error) {
+          setExistingCoverLetter(data)
+          // 将已有的求职信格式化为result格式
+          // 注意：已保存的求职信可能没有highlights和wordCount
+          const wordCount = data.content.split(/\s+/).length
+          // 获取job信息用于显示
+          const { data: jobData } = await supabase
+            .from('jobs')
+            .select('id, title, company')
+            .eq('id', params.id)
+            .single()
+
+          if (jobData) {
+            setResult({
+              success: true,
+              coverLetter: {
+                content: data.content,
+                highlights: [], // 已保存的没有highlights
+                wordCount,
+              },
+              job: {
+                id: jobData.id,
+                title: jobData.title,
+                company: jobData.company,
+              },
+            })
+          }
+        }
+      } catch (err) {
+        console.error('Error loading existing cover letter:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadExistingCoverLetter()
+  }, [params.id])
 
   const handleGenerate = async () => {
     setIsLoading(true)
@@ -63,6 +120,15 @@ export default function CoverLetterPage({
       }
 
       setResult(data)
+
+      // 更新existingCoverLetter状态
+      if (data.coverLetterId) {
+        setExistingCoverLetter({
+          id: data.coverLetterId,
+          content: data.coverLetter.content,
+          created_at: new Date().toISOString(),
+        })
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('generationFailed'))
     } finally {
@@ -125,7 +191,16 @@ export default function CoverLetterPage({
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!result ? (
+        {isLoading && !result ? (
+          <Card>
+            <CardContent className="py-12">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary-600 mb-4" />
+                <p className="text-gray-600">加载中...</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : !result ? (
           <Card>
             <CardHeader>
               <CardTitle>{t('generateOptions')}</CardTitle>
@@ -222,6 +297,23 @@ export default function CoverLetterPage({
           </Card>
         ) : (
           <div className="space-y-6">
+            {/* 已保存提示 */}
+            {existingCoverLetter && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+                <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm text-blue-900">
+                    <span className="font-medium">已保存的求职信</span>
+                    {' - '}
+                    生成于 {new Date(existingCoverLetter.created_at).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    点击"重新生成"可以创建新的版本
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Job Info */}
             <Card>
               <CardContent className="py-4">
