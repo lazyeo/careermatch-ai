@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, Button } from '@careermatch/ui'
@@ -12,23 +12,42 @@ import { useTranslations } from 'next-intl'
 interface ProfileAnalysisInterfaceProps {
   jobId: string
   hasResumes?: boolean
+  autoStart?: boolean
+  existingSession?: {
+    id: string
+    score: number
+    recommendation: string
+    analysis: string
+    provider: string
+    model: string
+  } | null
 }
 
 type AnalysisState = 'intro' | 'analyzing'
 
-export function ProfileAnalysisInterface({ jobId, hasResumes = false }: ProfileAnalysisInterfaceProps) {
+export function ProfileAnalysisInterface({
+  jobId,
+  hasResumes = false,
+  autoStart = false,
+  existingSession = null
+}: ProfileAnalysisInterfaceProps) {
   const router = useRouter()
   const t = useTranslations('analysis')
   const [selectedProvider, setSelectedProvider] = useState<AIProviderType | undefined>(undefined)
-  const [state, setState] = useState<AnalysisState>('intro')
+  // If there's existing session, start in analyzing state to show results
+  // Otherwise, use autoStart prop
+  const [state, setState] = useState<AnalysisState>(() => {
+    if (existingSession) return 'analyzing'
+    return autoStart ? 'analyzing' : 'intro'
+  })
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleComplete = (_sessionId: string) => {
+  const handleComplete = useCallback((_sessionId: string) => {
     // Refresh to show updated state
     router.refresh()
-  }
+  }, [router])
 
-  // Analyzing state - show streaming analysis
+  // Analyzing state - show streaming analysis or existing results
   if (state === 'analyzing') {
     return (
       <div className="space-y-6">
@@ -37,6 +56,8 @@ export function ProfileAnalysisInterface({ jobId, hasResumes = false }: ProfileA
           jobId={jobId}
           provider={selectedProvider}
           onComplete={handleComplete}
+          autoStart={autoStart && !existingSession} // Only autoStart if no existing session
+          existingSession={existingSession}
         />
       </div>
     )

@@ -8,10 +8,22 @@ import { ScoreCard } from './ScoreCard'
 import type { AnalysisRecommendation } from '@careermatch/shared'
 import type { AIProviderType } from '@/lib/ai-providers'
 
+// Track which jobs have auto-started to prevent duplicate requests in React Strict Mode
+const autoStartedJobs = new Set<string>()
+
 interface ProfileStreamingAnalysisProps {
   jobId: string
   provider?: AIProviderType
   onComplete?: (sessionId: string) => void
+  autoStart?: boolean
+  existingSession?: {
+    id: string
+    score: number
+    recommendation: string
+    analysis: string
+    provider: string
+    model: string
+  } | null
 }
 
 type StreamState = 'idle' | 'streaming' | 'completed' | 'error'
@@ -20,15 +32,23 @@ export function ProfileStreamingAnalysis({
   jobId,
   provider,
   onComplete,
+  autoStart = false,
+  existingSession = null,
 }: ProfileStreamingAnalysisProps) {
-  const [state, setState] = useState<StreamState>('idle')
+  // Initialize state: if existingSession, start with completed state
+  const [state, setState] = useState<StreamState>(() => existingSession ? 'completed' : 'idle')
+  const hasAutoStarted = useRef(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_content, setContent] = useState('')
-  const [analysisContent, setAnalysisContent] = useState('')
-  const [score, setScore] = useState<number | null>(null)
-  const [recommendation, setRecommendation] = useState<AnalysisRecommendation | null>(null)
+  const [analysisContent, setAnalysisContent] = useState(() => existingSession?.analysis || '')
+  const [score, setScore] = useState<number | null>(() => existingSession?.score ?? null)
+  const [recommendation, setRecommendation] = useState<AnalysisRecommendation | null>(() =>
+    (existingSession?.recommendation as AnalysisRecommendation) ?? null
+  )
   const [error, setError] = useState<string | null>(null)
-  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(() => existingSession?.id ?? null)
+  const [isGeneratingResume, setIsGeneratingResume] = useState(false)
+  const [tokenCount, setTokenCount] = useState(0)
   const abortControllerRef = useRef<AbortController | null>(null)
 
   // Parse streaming content to extract analysis section
@@ -60,11 +80,13 @@ export function ProfileStreamingAnalysis({
   }, [])
 
   const startStreaming = useCallback(async () => {
-    // Cancel any existing stream
+    // Prevent starting if already streaming
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
+      console.log('[ProfileStreamingAnalysis] Already streaming, skipping...')
+      return
     }
 
+    console.log('[ProfileStreamingAnalysis] Starting new stream...')
     abortControllerRef.current = new AbortController()
     setState('streaming')
     setContent('')
@@ -73,6 +95,7 @@ export function ProfileStreamingAnalysis({
     setRecommendation(null)
     setError(null)
     setSessionId(null)
+    setTokenCount(0)
 
     try {
       const response = await fetch(`/api/jobs/${jobId}/analyze/profile-stream`, {
@@ -119,12 +142,16 @@ export function ProfileStreamingAnalysis({
                 fullContent += data.content
                 setContent(fullContent)
                 parseStreamingContent(fullContent)
+
+                // Estimate token count (rough: ~4 chars per token for Chinese/English mix)
+                setTokenCount(Math.ceil(fullContent.length / 4))
               }
 
               if (data.done) {
                 setState('completed')
-                const finalScore = data.score !== undefined ? data.score : score
-                const finalRecommendation = data.recommendation || recommendation
+                // Use server-provided values, with defaults
+                const finalScore = data.score !== undefined ? data.score : 50
+                const finalRecommendation = data.recommendation || 'moderate'
 
                 if (data.sessionId) {
                   setSessionId(data.sessionId)
@@ -139,16 +166,22 @@ export function ProfileStreamingAnalysis({
 
                 // 发送结果到localStorage，通知对话框更新卡片
                 try {
-                  localStorage.setItem(
-                    `analysis-result-${jobId}`,
-                    JSON.stringify({
-                      score: finalScore,
-                      recommendation: finalRecommendation,
-                      sessionId: data.sessionId,
-                      summary: analysisContent.substring(0, 100) + '...',
-                      analysisType: 'profile_based',
-                    })
-                  )
+                  const resultData = JSON.stringify({
+                    score: finalScore,
+                    recommendation: finalRecommendation,
+                    sessionId: data.sessionId,
+                    summary: analysisContent.substring(0, 100) + '...',
+                    analysisType: 'profile_based',
+                  })
+                  const storageKey = `analysis-result-${jobId}`
+                  localStorage.setItem(storageKey, resultData)
+
+                  // 手动触发 storage 事件（同标签页内 localStorage 变化不会自动触发）
+                  window.dispatchEvent(new StorageEvent('storage', {
+                    key: storageKey,
+                    newValue: resultData,
+                    storageArea: localStorage
+                  }))
                 } catch (e) {
                   console.warn('Failed to store analysis result:', e)
                 }
@@ -174,13 +207,37 @@ export function ProfileStreamingAnalysis({
     }
   }, [jobId, provider, parseStreamingContent, onComplete])
 
-  // Cleanup on unmount
+  // Cleanup on unmount - but don't abort if streaming was auto-started
+  // This prevents React Strict Mode from aborting legitimate requests
   useEffect(() => {
     return () => {
-      if (abortControllerRef.current) {
+      // Only abort if this job wasn't auto-started (manual start can be safely aborted)
+      // Auto-started streams should complete even if component unmounts temporarily (Strict Mode)
+      if (abortControllerRef.current && !autoStartedJobs.has(jobId)) {
+        console.log('[ProfileStreamingAnalysis] Cleanup: aborting manual stream')
         abortControllerRef.current.abort()
+      } else if (abortControllerRef.current && autoStartedJobs.has(jobId)) {
+        console.log('[ProfileStreamingAnalysis] Cleanup: preserving auto-started stream')
       }
     }
+  }, [jobId])
+
+  // Auto-start streaming if autoStart prop is true
+  // Use module-level Set to track started jobs and prevent React Strict Mode double-mount issues
+  useEffect(() => {
+    console.log('[ProfileStreamingAnalysis] autoStart useEffect:', {
+      autoStart,
+      hasAutoStarted: hasAutoStarted.current,
+      alreadyStarted: autoStartedJobs.has(jobId),
+      state
+    })
+    if (autoStart && !hasAutoStarted.current && !autoStartedJobs.has(jobId)) {
+      console.log('[ProfileStreamingAnalysis] Starting streaming automatically...')
+      hasAutoStarted.current = true
+      autoStartedJobs.add(jobId)
+      startStreaming()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Auto-scroll to bottom while streaming
@@ -274,9 +331,14 @@ export function ProfileStreamingAnalysis({
               )}
             </CardTitle>
             {state === 'streaming' && (
-              <span className="text-xs text-gray-500 animate-pulse">
-                实时生成中
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-500 animate-pulse">
+                  实时生成中
+                </span>
+                <span className="text-xs font-mono text-primary-600 bg-primary-50 px-2 py-1 rounded">
+                  ~{tokenCount} tokens
+                </span>
+              </div>
             )}
           </div>
         </CardHeader>
@@ -305,12 +367,50 @@ export function ProfileStreamingAnalysis({
           </Button>
           <Button
             variant="primary"
-            onClick={() => {
-              // Navigate to create resume page with analysis context
-              window.location.href = `/resumes/new?fromAnalysis=${sessionId}&jobId=${jobId}`
+            onClick={async () => {
+              if (!sessionId) {
+                alert('会话ID不存在，无法生成简历')
+                return
+              }
+
+              setIsGeneratingResume(true)
+              try {
+                // 调用AI生成简历API
+                const response = await fetch('/api/resumes/generate-from-analysis', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    sessionId: sessionId,
+                    provider: provider,
+                  }),
+                })
+
+                if (!response.ok) {
+                  const data = await response.json()
+                  throw new Error(data.error || '生成简历失败')
+                }
+
+                const result = await response.json()
+
+                // 跳转到简历预览页面
+                window.location.href = `/resumes/preview/${result.resumeId}`
+              } catch (err) {
+                console.error('Error generating resume:', err)
+                alert(err instanceof Error ? err.message : '生成简历失败，请重试')
+              } finally {
+                setIsGeneratingResume(false)
+              }
             }}
+            disabled={isGeneratingResume}
           >
-            根据建议创建简历
+            {isGeneratingResume ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                AI正在生成简历...
+              </>
+            ) : (
+              '根据建议创建简历'
+            )}
           </Button>
         </div>
       )}

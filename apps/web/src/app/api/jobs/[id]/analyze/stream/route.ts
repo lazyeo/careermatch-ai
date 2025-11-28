@@ -148,9 +148,15 @@ export async function POST(
             if (content) {
               fullResponse += content
 
-              // Send SSE formatted data
-              const data = JSON.stringify({ content, done: false })
-              controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+              // Send SSE formatted data - check if controller is still open
+              try {
+                const data = JSON.stringify({ content, done: false })
+                controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+              } catch (enqueueError) {
+                // Client disconnected, stop streaming
+                console.log('Client disconnected during streaming')
+                return
+              }
             }
           }
 
@@ -180,23 +186,34 @@ export async function POST(
             console.log('✅ Streaming analysis completed and saved')
           }
 
-          // Send final message with session info
-          const finalData = JSON.stringify({
-            done: true,
-            sessionId: savedSession?.id,
-            score: parsed?.score || 50,
-            recommendation: parsed?.recommendation || 'moderate',
-          })
-          controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
-          controller.close()
+          // Send final message with session info - check if controller is still open
+          try {
+            const finalData = JSON.stringify({
+              done: true,
+              sessionId: savedSession?.id,
+              score: parsed?.score || 50,
+              recommendation: parsed?.recommendation || 'moderate',
+            })
+            controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
+            controller.close()
+          } catch (enqueueError) {
+            // Client disconnected, but we already saved to DB, so it's okay
+            console.log('Client disconnected before receiving final message')
+          }
         } catch (error) {
           console.error('Stream error:', error)
-          const errorData = JSON.stringify({
-            error: 'Stream error',
-            done: true,
-          })
-          controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
-          controller.close()
+          // Try to send error message, but don't throw if controller is closed
+          try {
+            const errorData = JSON.stringify({
+              error: 'Stream error',
+              done: true,
+            })
+            controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
+            controller.close()
+          } catch (enqueueError) {
+            // Controller already closed, nothing we can do
+            console.log('Controller already closed, cannot send error message')
+          }
         }
       },
     })

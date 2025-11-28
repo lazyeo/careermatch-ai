@@ -184,9 +184,15 @@ export async function POST(
             if (content) {
               fullResponse += content
 
-              // Send SSE formatted data
-              const data = JSON.stringify({ content, done: false })
-              controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+              // Send SSE formatted data - check if controller is still open
+              try {
+                const data = JSON.stringify({ content, done: false })
+                controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+              } catch (enqueueError) {
+                // Client disconnected, stop streaming
+                console.log('Client disconnected during streaming')
+                return
+              }
             }
           }
 
@@ -194,11 +200,11 @@ export async function POST(
           const parsed = parseDelimiterFormat(fullResponse)
 
           // Save to database (with null resume_id to indicate profile-based analysis)
-          const { data: savedSession, error: saveError } = await supabase
+          const { data: savedSession, error: saveError} = await supabase
             .from('analysis_sessions')
             .insert({
               job_id: params.id,
-              resume_id: null, // Profile-based analysis has no resume
+              resume_id: null, // Profile-based analysis has no resume (null indicates profile-based)
               user_id: user.id,
               status: 'active',
               score: parsed?.score || 50,
@@ -206,8 +212,6 @@ export async function POST(
               analysis: parsed?.analysis || fullResponse,
               provider: providerName,
               model: model,
-              // Store metadata to indicate this is profile-based
-              metadata: { type: 'profile_based' },
             })
             .select()
             .single()
@@ -218,24 +222,35 @@ export async function POST(
             console.log('✅ Profile-based streaming analysis completed and saved')
           }
 
-          // Send final message with session info
-          const finalData = JSON.stringify({
-            done: true,
-            sessionId: savedSession?.id,
-            score: parsed?.score || 50,
-            recommendation: parsed?.recommendation || 'moderate',
-            analysisType: 'profile_based',
-          })
-          controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
-          controller.close()
+          // Send final message with session info - check if controller is still open
+          try {
+            const finalData = JSON.stringify({
+              done: true,
+              sessionId: savedSession?.id,
+              score: parsed?.score || 50,
+              recommendation: parsed?.recommendation || 'moderate',
+              analysisType: 'profile_based',
+            })
+            controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
+            controller.close()
+          } catch (enqueueError) {
+            // Client disconnected, but we already saved to DB, so it's okay
+            console.log('Client disconnected before receiving final message')
+          }
         } catch (error) {
           console.error('Stream error:', error)
-          const errorData = JSON.stringify({
-            error: 'Stream error',
-            done: true,
-          })
-          controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
-          controller.close()
+          // Try to send error message, but don't throw if controller is closed
+          try {
+            const errorData = JSON.stringify({
+              error: 'Stream error',
+              done: true,
+            })
+            controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
+            controller.close()
+          } catch (enqueueError) {
+            // Controller already closed, nothing we can do
+            console.log('Controller already closed, cannot send error message')
+          }
         }
       },
     })
@@ -410,51 +425,40 @@ ${JSON.stringify(certificationsFormatted, null, 2)}
 
 ---
 
+## ⚠️ 字数限制
+**重要**：请将分析报告控制在 **1000字左右**（±100字），保持精炼高效。
+
 ## 分析要求
 
-请从以下角度进行分析：
+请从以下角度进行**简明扼要**的分析（每部分都要精炼）：
 
-### 1. 匹配度评估
-- 评估用户背景与岗位要求的整体匹配程度
-- 识别关键匹配点和不匹配点
-- 给出0-100的匹配分数
+### 1. 匹配度评估（~100字）
+- 整体匹配程度（核心观点1-2句）
+- 关键匹配点和不匹配点
+- 0-100分数
 
-### 2. 优势分析
-- 用户在哪些方面具有竞争优势
-- 哪些经历/技能最能打动招聘方
-- 哪些成就值得重点突出
+### 2. 核心优势（~150字）
+- 2-3个最突出的竞争优势
+- 能打动招聘方的关键点
 
-### 3. 差距分析
-- 用户与岗位要求之间的差距
-- 哪些技能/经验是岗位期望但用户缺少的
-- 如何在简历中处理这些差距
+### 3. 主要差距（~150字）
+- 2-3个关键gap
+- 如何在简历中应对
 
-### 4. 简历撰写建议（重点！）
-请给出详细的简历撰写建议，包括：
+### 4. 简历撰写建议（~400字，重点）
+简明给出：
+- **格式选择**：1句话推荐格式和原因
+- **结构顺序**：建议的section排列
+- **个人简介**：1-2句话模板或要点
+- **工作经历**：如何突出相关性（1-2个具体示例）
+- **关键词**：必须包含的5-7个关键词
+- **一个具体优化示例**：选一段经历给出前后对比
 
-#### 4.1 简历结构建议
-- 推荐的简历格式（时间倒序/功能型/混合型）
-- 各部分的排列顺序
-- 建议的页数和篇幅
+### 5. 行动建议（~150字）
+- 2-3个最重要的准备事项
+- 1-2个可能的面试问题
 
-#### 4.2 内容撰写建议
-- **个人简介**：应该如何撰写，突出什么
-- **工作经历**：每段经历应该强调什么，如何量化成就
-- **技能展示**：如何组织和展示技能
-- **项目经验**：哪些项目值得写入简历，如何描述
-
-#### 4.3 关键词优化
-- 简历应该包含哪些关键词（来自岗位描述）
-- 如何自然地融入这些关键词
-
-#### 4.4 具体措辞建议
-- 针对用户的某段具体经历，给出优化后的描述示例
-- 提供可以直接使用的成就描述模板
-
-### 5. 行动建议
-- 申请前还需要做什么准备
-- 是否需要补充某些技能或获取某些证书
-- 面试可能会问到的问题
+**提示**：每个部分都要简洁有力，避免冗长说明，直击要点。
 
 ---
 
@@ -479,8 +483,13 @@ ${JSON.stringify(certificationsFormatted, null, 2)}
   - moderate (65-84): 值得尝试，有一定匹配度
   - weak (40-64): 有差距但可以尝试
   - not_recommended (0-39): 差距较大，建议先提升
-- ANALYSIS: Markdown格式的完整分析报告，**务必包含详细的简历撰写建议**
+- ANALYSIS: Markdown格式的分析报告，**控制在1000字左右，精炼高效**
 
-**重要**：由于用户还没有针对此岗位的简历，请在分析中重点给出简历撰写建议，帮助用户创建一份针对性的简历。
+**重要约束**：
+1. 总字数控制在1000字左右（±100字）
+2. 用户还没有针对此岗位的简历，重点给出简历撰写建议
+3. 每个部分都要简明扼要，避免冗长
+4. 使用清晰的Markdown格式（标题、列表、加粗）
+5. 直击要点，删除不必要的解释
 `
 }

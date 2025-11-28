@@ -14,7 +14,7 @@ export default async function JobAnalysisPage({
   searchParams,
 }: {
   params: { id: string }
-  searchParams: { resumeId?: string; mode?: 'profile' | 'resume' }
+  searchParams: { resumeId?: string; mode?: 'profile' | 'resume'; autoStart?: string }
 }) {
   const t = await getTranslations('analysis')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -46,12 +46,12 @@ export default async function JobAnalysisPage({
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
 
-  // Fetch existing analysis session if resumeId is provided
+  // Fetch existing analysis session
   let session = null
   let messages: Array<{ id: string; role: string; content: string; created_at: string }> = []
 
   if (searchParams.resumeId) {
-    // Try new analysis_sessions table first
+    // Resume-based analysis session
     const { data: sessionData } = await supabase
       .from('analysis_sessions')
       .select('*')
@@ -74,10 +74,26 @@ export default async function JobAnalysisPage({
 
       messages = messagesData || []
     }
+  } else if (searchParams.mode === 'profile') {
+    // Profile-based analysis session (resume_id is null)
+    const { data: sessionData } = await supabase
+      .from('analysis_sessions')
+      .select('*')
+      .eq('job_id', params.id)
+      .is('resume_id', null)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (sessionData) {
+      session = sessionData
+    }
   }
 
   const hasResumes = !!(resumes && resumes.length > 0)
   const isProfileMode = searchParams.mode === 'profile' || !hasResumes
+  const autoStart = searchParams.autoStart === 'true'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -108,7 +124,12 @@ export default async function JobAnalysisPage({
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isProfileMode && !searchParams.resumeId ? (
           /* Profile-based analysis (no resume needed) */
-          <ProfileAnalysisInterface jobId={params.id} hasResumes={hasResumes} />
+          <ProfileAnalysisInterface
+            jobId={params.id}
+            hasResumes={hasResumes}
+            autoStart={autoStart}
+            existingSession={session}
+          />
         ) : !searchParams.resumeId ? (
           /* Resume selection - with profile option */
           <div className="space-y-6">

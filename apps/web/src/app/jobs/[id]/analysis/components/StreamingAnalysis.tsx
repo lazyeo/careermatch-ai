@@ -141,15 +141,22 @@ export function StreamingAnalysis({
 
                 // 发送结果到localStorage，通知对话框更新卡片
                 try {
-                  localStorage.setItem(
-                    `analysis-result-${jobId}`,
-                    JSON.stringify({
-                      score: finalScore,
-                      recommendation: finalRecommendation,
-                      sessionId: data.sessionId,
-                      summary: analysisContent.substring(0, 100) + '...',
-                    })
-                  )
+                  const resultData = JSON.stringify({
+                    score: finalScore,
+                    recommendation: finalRecommendation,
+                    sessionId: data.sessionId,
+                    summary: analysisContent.substring(0, 100) + '...',
+                    analysisType: 'resume_based',
+                  })
+                  const storageKey = `analysis-result-${jobId}`
+                  localStorage.setItem(storageKey, resultData)
+
+                  // 手动触发 storage 事件（同标签页内 localStorage 变化不会自动触发）
+                  window.dispatchEvent(new StorageEvent('storage', {
+                    key: storageKey,
+                    newValue: resultData,
+                    storageArea: localStorage
+                  }))
                 } catch (e) {
                   console.warn('Failed to store analysis result:', e)
                 }
