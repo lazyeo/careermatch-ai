@@ -237,20 +237,24 @@ export function parseDelimiterResponse(response: string): Record<string, string>
  */
 export function safeParseJSON<T>(response: string): T | null {
   try {
-    // 尝试直接解析
     return JSON.parse(response) as T
-  } catch {
-    // 尝试提取JSON块
-    const jsonMatch = response.match(/```(?:json)?\s*([\s\S]*?)```/)
-    if (jsonMatch) {
-      try {
-        return JSON.parse(jsonMatch[1].trim()) as T
-      } catch {
-        return null
-      }
-    }
-    return null
+  } catch {}
+
+  try {
+    // Clean common AI wrappers (```json ... ```), slice outer braces
+    const { cleanJsonResponse } = require('@/lib/json-utils') as typeof import('@/lib/json-utils')
+    const cleaned = cleanJsonResponse(response)
+    return JSON.parse(cleaned) as T
+  } catch {}
+
+  // Legacy regex fallback
+  const jsonMatch = response.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (jsonMatch) {
+    try {
+      return JSON.parse(jsonMatch[1].trim()) as T
+    } catch {}
   }
+  return null
 }
 
 // ============================================

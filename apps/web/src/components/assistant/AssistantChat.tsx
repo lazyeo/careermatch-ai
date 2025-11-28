@@ -90,6 +90,37 @@ export function AssistantChat() {
     inputRef.current?.focus()
   }, [])
 
+  // 检查待处理的分析结果（组件挂载或 messages 变化时）
+  // 这解决了页面导航后 storage 事件监听器丢失的问题
+  useEffect(() => {
+    const checkPendingResults = () => {
+      messages.forEach(msg => {
+        if (msg.metadata?.analysisCard?.status === 'loading') {
+          const jobId = msg.metadata.analysisCard.jobId
+          const result = localStorage.getItem(`analysis-result-${jobId}`)
+          if (result) {
+            try {
+              const parsed = JSON.parse(result)
+              updateAnalysisCard(msg.id, {
+                status: parsed.error ? 'failed' : 'completed',
+                score: parsed.score,
+                recommendation: parsed.recommendation,
+                summary: parsed.summary,
+                sessionId: parsed.sessionId,
+                error: parsed.error,
+              })
+              localStorage.removeItem(`analysis-result-${jobId}`)
+            } catch (e) {
+              console.error('Failed to parse pending analysis result:', e)
+            }
+          }
+        }
+      })
+    }
+
+    checkPendingResults()
+  }, [messages, updateAnalysisCard])
+
   // 处理分析请求
   const handleAnalysisRequest = useCallback(async (userMessage: string) => {
     const activeJob = currentContext?.activeJob
@@ -109,23 +140,10 @@ export function AssistantChat() {
       activeJob.company
     )
 
-    // 检查用户是否有简历，决定分析模式
-    let analysisUrl = `/jobs/${activeJob.id}/analysis`
-    try {
-      const response = await fetch('/api/resumes')
-      if (response.ok) {
-        const resumes = await response.json()
-        const hasResumes = Array.isArray(resumes) && resumes.length > 0
-        if (!hasResumes) {
-          // 没有简历，使用Profile模式
-          analysisUrl = `/jobs/${activeJob.id}/analysis?mode=profile`
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to check resumes:', e)
-      // 出错时默认使用Profile模式，更友好
-      analysisUrl = `/jobs/${activeJob.id}/analysis?mode=profile`
-    }
+    // 从AI助手触发分析时，统一使用Profile模式并自动开始
+    // 这样用户无需选择简历，可以直接看到分析结果
+    // 用户可以在分析完成后选择使用简历进行更精确的匹配
+    const analysisUrl = `/jobs/${activeJob.id}/analysis?mode=profile&autoStart=true`
 
     // 跳转到分析页面
     router.push(analysisUrl)

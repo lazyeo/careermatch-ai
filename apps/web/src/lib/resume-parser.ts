@@ -206,15 +206,8 @@ export async function parseResumeContent(
 
   // 尝试解析JSON
   try {
-    // 提取JSON部分（处理可能的markdown代码块）
-    let jsonStr = responseText
-    const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1]
-    }
-
-    // 尝试直接解析
-    const parsed = JSON.parse(jsonStr.trim()) as ParsedResumeData
+    const { parseJsonFromAI } = await import('@/lib/json-utils')
+    const parsed = parseJsonFromAI<ParsedResumeData>(responseText)
     console.log('✅ Successfully parsed resume data')
 
     // 验证和清理数据
@@ -225,6 +218,7 @@ export async function parseResumeContent(
 
     // 尝试修复常见JSON问题
     try {
+      const { tryFixJson } = await import('@/lib/json-utils')
       const fixedJson = tryFixJson(responseText)
       const parsed = JSON.parse(fixedJson) as ParsedResumeData
       console.log('✅ Successfully parsed resume data after fix')
@@ -240,24 +234,7 @@ export async function parseResumeContent(
 /**
  * 尝试修复常见的JSON格式问题
  */
-function tryFixJson(text: string): string {
-  // 移除markdown代码块
-  let json = text.replace(/```(?:json)?\s*/g, '').replace(/\s*```/g, '')
-
-  // 尝试提取JSON对象
-  const match = json.match(/\{[\s\S]*\}/)
-  if (match) {
-    json = match[0]
-  }
-
-  // 移除注释
-  json = json.replace(/\/\/[^\n]*/g, '')
-
-  // 移除尾随逗号
-  json = json.replace(/,\s*([\]}])/g, '$1')
-
-  return json.trim()
-}
+// Local fixer removed; using shared tryFixJson from json-utils
 
 /**
  * 清理和验证解析的数据

@@ -194,35 +194,14 @@ export function buildCoverLetterPrompt(input: CoverLetterInput): string {
 
 export function parseCoverLetterOutput(responseText: string): CoverLetterOutput | null {
   try {
-    // 尝试直接解析JSON
-    let jsonStr = responseText
-    const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1]
-    }
-
-    const parsed = JSON.parse(jsonStr.trim()) as CoverLetterOutput
+    const { parseJsonFromAI } = require('@/lib/json-utils') as typeof import('@/lib/json-utils')
+    const parsed = parseJsonFromAI<CoverLetterOutput>(responseText)
     return {
       content: parsed.content || '',
       highlights: parsed.highlights || [],
       wordCount: parsed.wordCount || parsed.content?.length || 0,
     }
   } catch {
-    // 尝试提取JSON
-    try {
-      const match = responseText.match(/\{[\s\S]*\}/)
-      if (match) {
-        const parsed = JSON.parse(match[0]) as CoverLetterOutput
-        return {
-          content: parsed.content || '',
-          highlights: parsed.highlights || [],
-          wordCount: parsed.wordCount || parsed.content?.length || 0,
-        }
-      }
-    } catch {
-      // 如果还是失败，返回原始文本
-    }
-
     // 回退：将响应作为内容返回
     return {
       content: responseText,

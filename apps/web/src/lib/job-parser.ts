@@ -179,13 +179,8 @@ export async function parseJobContent(content: string): Promise<ParsedJobData> {
 
   // 解析JSON
   try {
-    let jsonStr = responseText
-    const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1]
-    }
-
-    const parsed = JSON.parse(jsonStr.trim()) as ParsedJobData
+    const { parseJsonFromAI } = await import('@/lib/json-utils')
+    const parsed = parseJsonFromAI<ParsedJobData>(responseText)
     console.log('✅ Successfully parsed job data')
 
     return sanitizeJobData(parsed)
@@ -195,6 +190,7 @@ export async function parseJobContent(content: string): Promise<ParsedJobData> {
 
     // 尝试修复JSON
     try {
+      const { tryFixJson } = await import('@/lib/json-utils')
       const fixedJson = tryFixJson(responseText)
       const parsed = JSON.parse(fixedJson) as ParsedJobData
       console.log('✅ Successfully parsed job data after fix')
@@ -221,22 +217,7 @@ export async function parseJobFromUrl(url: string): Promise<ParsedJobData> {
 /**
  * 尝试修复常见的JSON格式问题
  */
-function tryFixJson(text: string): string {
-  let json = text.replace(/```(?:json)?\s*/g, '').replace(/\s*```/g, '')
-
-  const match = json.match(/\{[\s\S]*\}/)
-  if (match) {
-    json = match[0]
-  }
-
-  // 移除注释
-  json = json.replace(/\/\/[^\n]*/g, '')
-
-  // 移除尾随逗号
-  json = json.replace(/,\s*([\]}])/g, '$1')
-
-  return json.trim()
-}
+// Keeping local name removed; use shared tryFixJson from json-utils when needed
 
 /**
  * 清理和验证解析的岗位数据

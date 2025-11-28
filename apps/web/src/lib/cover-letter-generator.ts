@@ -188,13 +188,8 @@ export async function generateCoverLetter(
 
   // 解析JSON
   try {
-    let jsonStr = responseText
-    const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1]
-    }
-
-    const parsed = JSON.parse(jsonStr.trim()) as GeneratedCoverLetter
+    const { parseJsonFromAI } = await import('@/lib/json-utils')
+    const parsed = parseJsonFromAI<GeneratedCoverLetter>(responseText)
     console.log('✅ Successfully generated cover letter')
 
     return {
@@ -205,21 +200,7 @@ export async function generateCoverLetter(
   } catch (error) {
     console.error('❌ Failed to parse AI response:', error)
 
-    // 尝试提取JSON
-    try {
-      const match = responseText.match(/\{[\s\S]*\}/)
-      if (match) {
-        const parsed = JSON.parse(match[0]) as GeneratedCoverLetter
-        return {
-          content: parsed.content || '',
-          highlights: parsed.highlights || [],
-          wordCount: parsed.wordCount || parsed.content?.length || 0,
-        }
-      }
-    } catch {
-      // 如果还是失败，返回原始文本
-      console.error('❌ Failed to extract JSON, returning raw text')
-    }
+    console.error('❌ Returning raw text due to JSON parse failure')
 
     // 回退：将响应作为内容返回
     return {
