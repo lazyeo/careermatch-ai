@@ -577,6 +577,151 @@ git commit -m "[配置] 添加Supabase项目配置
 
 ---
 
+## 🗄️ 数据库管理规范（Supabase）
+
+### 核心原则
+**所有Supabase数据库操作必须使用CLI命令执行，禁止手动在Dashboard执行SQL。**
+
+### 理由
+1. ✅ **版本控制**: CLI操作可追溯，保留完整历史记录
+2. ✅ **可重复性**: 团队成员可复现相同的数据库状态
+3. ✅ **自动化**: 支持CI/CD流程集成
+4. ✅ **安全性**: 避免手动操作带来的人为错误
+5. ✅ **文档化**: Migration文件本身就是文档
+
+### 强制规则
+
+#### ✅ 正确做法（使用CLI）
+```bash
+# 创建新migration
+npx supabase migration new <migration_name>
+
+# 应用所有pending migrations
+npx supabase db push
+
+# 直接执行SQL（从文件读取）
+cat supabase/migrations/<file>.sql | npx supabase db execute
+
+# 重置数据库（开发环境，谨慎使用）
+npx supabase db reset
+
+# 查看migration状态
+npx supabase migration list
+
+# 生成TypeScript类型
+npx supabase gen types typescript --local > types/supabase.ts
+```
+
+#### ❌ 禁止做法（手动操作）
+```bash
+# ❌ 不要在Supabase Dashboard手动执行SQL
+# ❌ 不要在SQL Editor中直接运行DDL语句
+# ❌ 不要绕过migration系统直接修改表结构
+```
+
+### 常见场景
+
+#### 场景1: 修改表结构
+```bash
+# 1. 创建migration文件
+npx supabase migration new allow_null_resume_id
+
+# 2. 编辑migration文件
+# 在 supabase/migrations/xxxxx_allow_null_resume_id.sql 中写SQL
+
+# 3. 应用migration
+npx supabase db push
+```
+
+#### 场景2: 添加新表
+```bash
+# 1. 创建migration
+npx supabase migration new add_new_table
+
+# 2. 编写CREATE TABLE语句
+
+# 3. 应用
+npx supabase db push
+```
+
+#### 场景3: 数据修复
+```bash
+# 1. 创建data migration
+npx supabase migration new fix_data_issue
+
+# 2. 编写UPDATE/INSERT语句
+
+# 3. 应用
+npx supabase db push
+```
+
+#### 场景4: 紧急修复（当db push失败时）
+```bash
+# 如果某个migration有问题，可以临时绕过
+# 1. 备份有问题的migration
+mv supabase/migrations/xxx.sql supabase/migrations/xxx.sql.bak
+
+# 2. 应用其他migrations
+npx supabase db push
+
+# 3. 修复migration文件后恢复
+mv supabase/migrations/xxx.sql.bak supabase/migrations/xxx.sql
+
+# 4. 重新应用
+npx supabase db push
+```
+
+### 检查清单
+
+**每次修改数据库前**:
+- [ ] 已创建migration文件
+- [ ] Migration文件命名清晰（格式: YYYYMMDDHHMMSS_description.sql）
+- [ ] SQL语句已测试（可在本地先测试）
+- [ ] 了解当前数据库状态
+
+**应用migration后**:
+- [ ] 检查CLI输出，确认成功
+- [ ] 验证数据库结构（使用SELECT查询）
+- [ ] 测试相关功能
+- [ ] 提交migration文件到Git
+
+### 故障排查
+
+#### 问题1: Migration应用失败
+```bash
+# 查看详细错误信息
+npx supabase db push --debug
+
+# 查看当前migration状态
+npx supabase migration list
+```
+
+#### 问题2: Migration顺序问题
+```bash
+# 如果有依赖关系，确保migration文件名的时间戳正确排序
+# 文件名格式: 20251128120000_description.sql
+# 数字越大越晚执行
+```
+
+#### 问题3: 远程数据库不同步
+```bash
+# 方式1: 使用cat + execute（更可靠）
+cat supabase/migrations/xxxxx.sql | npx supabase db execute
+
+# 方式2: 重置并重新应用（仅开发环境！）
+npx supabase db reset  # 会删除所有数据！
+```
+
+### 最佳实践
+
+1. **一个Migration一个目的**: 不要在一个migration中做太多事情
+2. **可逆性**: 尽量让migration可回滚（提供DOWN migration）
+3. **测试先行**: 在本地测试migration成功后再应用到生产
+4. **命名规范**: 使用描述性名称，如 `add_user_avatar_column` 而不是 `update_table`
+5. **注释**: 在migration中添加注释说明变更原因
+
+---
+
 ## 📌 快速参考
 
 ### TodoWrite何时使用

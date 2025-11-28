@@ -63,3 +63,4 @@ temp/
 
 # Keep original Paraflow files reference
 workspace/paraflow/product-index.json
+AGENTS.md

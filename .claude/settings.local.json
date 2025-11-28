@@ -43,7 +43,9 @@
       "Bash(pnpm next lint:*)",
       "Bash(npx next lint:*)",
       "Bash(pnpm run type-check)",
-      "Bash(pnpm tsc:*)"
+      "Bash(pnpm tsc:*)",
+      "Bash(pkill:*)",
+      "mcp__chrome-devtools__get_console_message"
     ],
     "deny": [],
     "ask": []
