@@ -151,10 +151,14 @@ export default function RegisterPage() {
       setIsLoading(true)
       setErrorMessage(null)
 
+      // 使用当前origin作为redirect URL
+      const redirectUrl = `${window.location.origin}/auth/callback`
+      console.log('OAuth redirect URL:', redirectUrl)
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
         },
       })
 
