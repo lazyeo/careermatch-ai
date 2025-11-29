@@ -6,7 +6,7 @@
  * 检测当前页面类型，加载相关数据，并更新助手上下文
  */
 
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAssistantStore } from '@/stores/assistant-store'
 import {
@@ -36,8 +36,8 @@ export function usePageContext(): PageContextState {
   const { updateContext, currentContext: _currentContext } = useAssistantStore()
   const fetchingRef = useRef<string | null>(null)
 
-  // 创建页面上下文
-  const pageContext = createPageContext(pathname)
+  // 创建页面上下文（使用useMemo避免无限循环）
+  const pageContext = useMemo(() => createPageContext(pathname), [pathname])
 
   // 加载岗位数据
   const fetchJobData = useCallback(async (jobId: string): Promise<JobContext | null> => {
