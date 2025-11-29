@@ -386,6 +386,40 @@ function getEmptyParsedData(): ParsedResumeData {
 }
 
 /**
+ * 清理PDF提取的文本
+ * - 去除重复行
+ * - 去除过短的行（<3字符）
+ * - 去除多余空白
+ * - 合并连续空行
+ */
+function cleanPDFText(text: string): string {
+  const lines = text.split('\n')
+  const seenLines = new Set<string>()
+  const cleanedLines: string[] = []
+
+  for (const rawLine of lines) {
+    // 清理空白字符
+    const line = rawLine.trim()
+
+    // 跳过空行、过短的行（可能是格式字符）
+    if (line.length < 3) continue
+
+    // 跳过纯数字行（可能是页码）
+    if (/^\d+$/.test(line)) continue
+
+    // 去除重复行（常见于PDF格式问题）
+    const normalizedLine = line.toLowerCase()
+    if (seenLines.has(normalizedLine)) continue
+
+    seenLines.add(normalizedLine)
+    cleanedLines.push(line)
+  }
+
+  // 合并成文本，保留段落结构
+  return cleanedLines.join('\n')
+}
+
+/**
  * 从PDF Buffer提取文本
  */
 export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
@@ -395,7 +429,15 @@ export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
     const pdfParseModule = await import('pdf-parse') as any
     const pdfParse = pdfParseModule.default || pdfParseModule
     const data = await pdfParse(buffer)
-    return data.text
+
+    console.log(`📄 Raw PDF text length: ${data.text.length} chars`)
+
+    // 清理提取的文本
+    const cleanedText = cleanPDFText(data.text)
+
+    console.log(`🧹 Cleaned PDF text length: ${cleanedText.length} chars (reduced ${((1 - cleanedText.length / data.text.length) * 100).toFixed(1)}%)`)
+
+    return cleanedText
   } catch (error) {
     console.error('PDF parsing error:', error)
     // 回退方案：尝试提取可读文本
