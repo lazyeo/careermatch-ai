@@ -377,6 +377,7 @@ function getPageTypeLabel(type: PageType): string {
     'resume-detail': '简历详情',
     'resume-edit': '简历编辑',
     profile: '个人档案',
+    'profile-edit': '个人档案编辑',
     'profile-upload': '简历上传',
     applications: '申请记录',
     other: '其他页面',

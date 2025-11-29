@@ -176,6 +176,14 @@ const PAGE_ACTIONS: Record<PageType, SuggestedAction[]> = {
       description: 'AI解析简历填充档案',
     },
   ],
+  'profile-edit': [
+    {
+      id: 'back-to-profile',
+      label: '返回档案',
+      icon: 'User',
+      href: '/profile',
+    },
+  ],
   'profile-upload': [
     {
       id: 'back-to-profile',
