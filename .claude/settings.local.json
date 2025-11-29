@@ -45,7 +45,8 @@
       "Bash(pnpm run type-check)",
       "Bash(pnpm tsc:*)",
       "Bash(pkill:*)",
-      "mcp__chrome-devtools__get_console_message"
+      "mcp__chrome-devtools__get_console_message",
+      "Bash(pnpm web:build:*)"
     ],
     "deny": [],
     "ask": []

@@ -7,6 +7,7 @@
 import type { PromptTemplate } from '../types'
 import { PERSONAS } from '../templates/system-personas'
 import { OUTPUT_FORMAT_INSTRUCTIONS } from '../templates/output-formats'
+import { parseJsonFromAI } from '@/lib/json-utils'
 // import { ANALYSIS_PRINCIPLES } from '../templates/common-sections'
 
 // ============================================
@@ -194,7 +195,6 @@ export function buildCoverLetterPrompt(input: CoverLetterInput): string {
 
 export function parseCoverLetterOutput(responseText: string): CoverLetterOutput | null {
   try {
-    const { parseJsonFromAI } = require('@/lib/json-utils') as typeof import('@/lib/json-utils')
     const parsed = parseJsonFromAI<CoverLetterOutput>(responseText)
     return {
       content: parsed.content || '',

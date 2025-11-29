@@ -4,6 +4,8 @@
  * 定义不同场景下 AI 输出的格式要求
  */
 
+import { cleanJsonResponse } from '@/lib/json-utils'
+
 // ============================================
 // JSON 格式指令
 // ============================================
@@ -242,7 +244,6 @@ export function safeParseJSON<T>(response: string): T | null {
 
   try {
     // Clean common AI wrappers (```json ... ```), slice outer braces
-    const { cleanJsonResponse } = require('@/lib/json-utils') as typeof import('@/lib/json-utils')
     const cleaned = cleanJsonResponse(response)
     return JSON.parse(cleaned) as T
   } catch {}

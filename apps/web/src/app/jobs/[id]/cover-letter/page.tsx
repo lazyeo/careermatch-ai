@@ -308,7 +308,7 @@ export default function CoverLetterPage({
                     生成于 {new Date(existingCoverLetter.created_at).toLocaleString()}
                   </p>
                   <p className="text-xs text-blue-700 mt-1">
-                    点击"重新生成"可以创建新的版本
+                    点击&quot;重新生成&quot;可以创建新的版本
                   </p>
                 </div>
               </div>

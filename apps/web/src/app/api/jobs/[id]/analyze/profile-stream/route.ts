@@ -188,7 +188,7 @@ export async function POST(
               try {
                 const data = JSON.stringify({ content, done: false })
                 controller.enqueue(encoder.encode(`data: ${data}\n\n`))
-              } catch (enqueueError) {
+              } catch {
                 // Client disconnected, stop streaming
                 console.log('Client disconnected during streaming')
                 return
@@ -233,7 +233,7 @@ export async function POST(
             })
             controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
             controller.close()
-          } catch (enqueueError) {
+          } catch {
             // Client disconnected, but we already saved to DB, so it's okay
             console.log('Client disconnected before receiving final message')
           }
@@ -247,7 +247,7 @@ export async function POST(
             })
             controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
             controller.close()
-          } catch (enqueueError) {
+          } catch {
             // Controller already closed, nothing we can do
             console.log('Controller already closed, cannot send error message')
           }

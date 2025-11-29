@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
           content: prompt,
         },
       ],
-      temperature: TEMPERATURE_PRESETS.PRECISE,
+      temperature: TEMPERATURE_PRESETS.ANALYTICAL,
       max_tokens: 4096,
       response_format: { type: 'json_object' },
     })
