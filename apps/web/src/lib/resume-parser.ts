@@ -186,10 +186,22 @@ export async function parseResumeContent(
   // 默认使用Claude Sonnet
   const model = options?.model || 'claude-sonnet-4-5-20250929'
 
-  const prompt = PARSE_PROMPT.replace('{CONTENT}', content)
+  // 限制内容长度，避免超过API token限制
+  // 估算：200k chars ≈ 100-130k tokens (取决于语言混合比例)
+  // 加上prompt本身约5-10k tokens，总共不会超过150k tokens
+  const MAX_CONTENT_LENGTH = 200000 // characters
+  let processedContent = content
+
+  if (content.length > MAX_CONTENT_LENGTH) {
+    console.warn(`⚠️  Resume content too long (${content.length} chars), truncating to ${MAX_CONTENT_LENGTH} chars`)
+    processedContent = content.substring(0, MAX_CONTENT_LENGTH) + '\n\n[Content truncated due to length limit]'
+  }
+
+  const prompt = PARSE_PROMPT.replace('{CONTENT}', processedContent)
 
   console.log('🔍 Parsing resume with AI...')
   console.log(`📊 Using model: ${model}`)
+  console.log(`📏 Content length: ${processedContent.length} chars`)
 
   const response = await client.chat.completions.create({
     model,
