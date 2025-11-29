@@ -46,7 +46,8 @@
       "Bash(pnpm tsc:*)",
       "Bash(pkill:*)",
       "mcp__chrome-devtools__get_console_message",
-      "Bash(pnpm web:build:*)"
+      "Bash(pnpm web:build:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

@@ -130,6 +130,7 @@ export function usePageContext(): PageContextState {
           break
 
         case 'profile':
+        case 'profile-edit':
         case 'profile-upload':
           const profileData = await fetchProfileData()
           if (profileData) {

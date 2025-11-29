@@ -36,6 +36,7 @@ export function detectPageType(pathname: string): PageType {
     { pattern: /^\/resumes\/[^/]+\/edit$/, type: 'resume-edit' },
     { pattern: /^\/resumes\/[^/]+$/, type: 'resume-detail' },
     { pattern: /^\/resumes$/, type: 'resumes' },
+    { pattern: /^\/profile\/edit$/, type: 'profile-edit' },
     { pattern: /^\/profile\/upload$/, type: 'profile-upload' },
     { pattern: /^\/profile$/, type: 'profile' },
     { pattern: /^\/applications$/, type: 'applications' },

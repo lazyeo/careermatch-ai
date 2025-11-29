@@ -69,6 +69,7 @@ export type PageType =
   | 'resume-detail'
   | 'resume-edit'
   | 'profile'
+  | 'profile-edit'
   | 'profile-upload'
   | 'applications'
   | 'other'
