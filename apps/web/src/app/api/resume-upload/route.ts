@@ -182,16 +182,25 @@ export async function POST(request: NextRequest) {
     } catch (parseError) {
       console.error('❌ Error parsing resume:', parseError)
       console.error('❌ Parse error stack:', (parseError as Error)?.stack)
+
+      const errorMessage = (parseError as Error)?.message || 'AI parsing failed'
+      const isConfigError = errorMessage.includes('API_KEY') || errorMessage.includes('not configured')
+
       await supabase
         .from('resume_uploads')
         .update({
           status: 'failed',
-          error_message: 'AI parsing failed',
+          error_message: errorMessage,
         })
         .eq('id', uploadRecord.id)
 
       return NextResponse.json(
-        { error: 'Failed to parse resume content' },
+        {
+          error: isConfigError
+            ? 'AI service not configured. Please contact administrator.'
+            : 'Failed to parse resume content',
+          details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        },
         { status: 500 }
       )
     }

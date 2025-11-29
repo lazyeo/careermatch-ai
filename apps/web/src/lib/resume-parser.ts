@@ -173,8 +173,10 @@ export async function parseResumeContent(
   const baseUrl = process.env.CLAUDE_BASE_URL || 'https://relay.a-dobe.club/api/v1'
 
   if (!apiKey) {
-    throw new Error('CLAUDE_API_KEY is not configured')
+    throw new Error('CLAUDE_API_KEY is not configured. Please add it to your environment variables.')
   }
+
+  console.log('✓ Using CLAUDE_API_KEY:', apiKey.substring(0, 10) + '...')
 
   const client = new OpenAI({
     apiKey: apiKey,
