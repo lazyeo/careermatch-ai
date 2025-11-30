@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
-import { parseResumeContent, extractFileContent } from '@/lib/resume-parser'
+import { parseResumeContent, extractFileContent } from '@careermatch/resume-parser'
 import type { ResumeFileType } from '@careermatch/shared'
 
 // 允许的文件类型和MIME类型映射

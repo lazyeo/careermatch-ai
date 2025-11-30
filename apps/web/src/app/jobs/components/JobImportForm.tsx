@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@careermatch/ui'
-import type { ParsedJobData } from '@/lib/job-parser'
+import type { ParsedJobData } from '@careermatch/job-scraper'
 
 type ImportMode = 'url' | 'text'
 
@@ -124,11 +124,10 @@ export function JobImportForm() {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setMode('url')}
-                className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                  mode === 'url'
+                className={`flex-1 p-4 rounded-lg border-2 transition-all ${mode === 'url'
                     ? 'border-primary-500 bg-primary-50'
                     : 'border-gray-200 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <div className="text-2xl mb-2">🔗</div>
                 <div className="font-medium">URL导入</div>
@@ -138,11 +137,10 @@ export function JobImportForm() {
               </button>
               <button
                 onClick={() => setMode('text')}
-                className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                  mode === 'text'
+                className={`flex-1 p-4 rounded-lg border-2 transition-all ${mode === 'text'
                     ? 'border-primary-500 bg-primary-50'
                     : 'border-gray-200 hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <div className="text-2xl mb-2">📝</div>
                 <div className="font-medium">文本导入</div>
@@ -255,12 +253,12 @@ export function JobImportForm() {
                 <div className="text-gray-900">
                   {parsedData.job_type
                     ? {
-                        'full-time': '全职',
-                        'part-time': '兼职',
-                        contract: '合同',
-                        internship: '实习',
-                        casual: '临时',
-                      }[parsedData.job_type]
+                      'full-time': '全职',
+                      'part-time': '兼职',
+                      contract: '合同',
+                      internship: '实习',
+                      casual: '临时',
+                    }[parsedData.job_type]
                     : '-'}
                 </div>
               </div>

@@ -12,6 +12,9 @@
   },
   "dependencies": {
     "@careermatch/shared": "workspace:*",
+    "@careermatch/resume-parser": "workspace:*",
+    "@careermatch/job-scraper": "workspace:*",
+    "@careermatch/ai-agent": "workspace:*",
     "@careermatch/ui": "workspace:*",
     "@hookform/resolvers": "^3.3.3",
     "@react-pdf/renderer": "^4.3.1",

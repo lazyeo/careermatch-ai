@@ -220,7 +220,7 @@ export async function parseResumeContent(
 
   // 尝试解析JSON
   try {
-    const { parseJsonFromAI } = await import('@/lib/json-utils')
+    const { parseJsonFromAI, tryFixJson } = await import('@careermatch/shared')
     const parsed = parseJsonFromAI<ParsedResumeData>(responseText)
     console.log('✅ Successfully parsed resume data')
 
@@ -232,7 +232,7 @@ export async function parseResumeContent(
 
     // 尝试修复常见JSON问题
     try {
-      const { tryFixJson } = await import('@/lib/json-utils')
+      const { tryFixJson } = await import('@careermatch/shared')
       const fixedJson = tryFixJson(responseText)
       const parsed = JSON.parse(fixedJson) as ParsedResumeData
       console.log('✅ Successfully parsed resume data after fix')

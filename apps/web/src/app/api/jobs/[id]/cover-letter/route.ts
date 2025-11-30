@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   generateCoverLetter,
   type CoverLetterInput,
-} from '@/lib/cover-letter-generator'
+} from '@careermatch/ai-agent'
 
 interface RouteParams {
   params: Promise<{ id: string }>
