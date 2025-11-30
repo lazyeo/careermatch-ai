@@ -1,0 +1,24 @@
+{
+    "name": "@careermatch/ai-agent",
+    "version": "0.1.0",
+    "private": true,
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "scripts": {
+        "build": "tsup && tsc --emitDeclarationOnly --declaration",
+        "lint": "eslint .",
+        "type-check": "tsc --noEmit",
+        "clean": "rm -rf dist .turbo node_modules"
+    },
+    "dependencies": {
+        "@careermatch/shared": "workspace:*",
+        "@supabase/supabase-js": "^2.39.0",
+        "openai": "^4.104.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.0",
+        "eslint": "^8.54.0",
+        "tsup": "^8.0.1",
+        "typescript": "^5.3.3"
+    }
+}
