@@ -47,7 +47,8 @@
       "Bash(pkill:*)",
       "mcp__chrome-devtools__get_console_message",
       "Bash(pnpm web:build:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(pnpm web:lint:*)"
     ],
     "deny": [],
     "ask": []
