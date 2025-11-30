@@ -1,0 +1,10 @@
+name = "careermatch-scraper-api"
+main = "src/index.ts"
+compatibility_date = "2023-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[browser]
+binding = "MYBROWSER"
+
+[vars]
+CLAUDE_BASE_URL = "https://relay.a-dobe.club/api/v1" # Default relay URL, change if needed

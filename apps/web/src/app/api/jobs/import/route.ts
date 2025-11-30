@@ -4,7 +4,7 @@ import {
   parseJobContent,
   parseJobFromUrl,
   type ParsedJobData,
-} from '@/lib/job-parser'
+} from '@careermatch/job-scraper'
 
 /**
  * POST /api/jobs/import
@@ -43,7 +43,10 @@ export async function POST(request: NextRequest) {
       if (url) {
         // 从URL解析
         console.log(`📥 Importing job from URL: ${url}`)
-        parsedData = await parseJobFromUrl(url)
+        // 2. Parse job content (with optional Worker delegation)
+        parsedData = await parseJobFromUrl(url, {
+          scraperUrl: process.env.SCRAPER_API_URL
+        })
         // 保存来源URL
         parsedData.application_url = parsedData.application_url || url
       } else if (content) {
