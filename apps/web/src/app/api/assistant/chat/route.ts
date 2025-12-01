@@ -58,14 +58,30 @@ export async function POST(request: NextRequest) {
     // 初始化 Agent Service
     // 注意：我们直接传入 authenticated supabase client，这样 MemoryManager 会遵循 RLS
     const memoryManager = new MemoryManager(supabase, apiKey, baseUrl)
-    const agentService = new AgentService(apiKey, baseUrl, memoryManager)
+    // 获取用户Profile
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
 
-    // 调用 Agent
-    const response = await agentService.chat(user.id, message, {
-      sessionId: sessionId || 'default', // 如果没有 sessionId，使用 default
-      jobId: context?.jobId,
-      resumeId: context?.resumeId,
-    })
+    const agentService = new AgentService(apiKey, baseUrl, memoryManager, supabase)
+
+    // 4. 调用Agent
+    // 注意：这里我们不等待Agent完成，而是返回流
+    // 但由于AgentService目前不是流式的，我们先等待结果
+    // TODO: Refactor AgentService to support streaming
+    const response = await agentService.chat(
+      user.id,
+      message,
+      {
+        sessionId: sessionId || 'default', // 如果没有 sessionId，使用 default
+        jobId: context?.jobId,
+        resumeId: context?.resumeId,
+        supabase, // Pass supabase client in context
+      },
+      userProfile // Pass user profile
+    )
 
     console.log('✅ Successfully processed agent chat')
 
