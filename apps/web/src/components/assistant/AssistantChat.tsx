@@ -9,8 +9,9 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, Loader2, RefreshCw, Square } from 'lucide-react'
+import { Send, Loader2, RefreshCw, Square, Paperclip, Upload } from 'lucide-react'
 import { Button } from '@careermatch/ui'
+import { MessageBubble } from './MessageBubble'
 import {
   useAssistantStore,
   useAssistantMessages,
@@ -19,7 +20,6 @@ import {
   useAssistantStreamingContent,
   useAssistantError,
 } from '@/stores/assistant-store'
-import { MessageBubble } from './MessageBubble'
 
 // 分析意图关键词
 const ANALYSIS_KEYWORDS = [
@@ -54,8 +54,11 @@ function isAnalysisIntent(message: string, hasActiveJob: boolean): boolean {
 export function AssistantChat() {
   const router = useRouter()
   const [input, setInput] = useState('')
+  const [isDragging, setIsDragging] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const messages = useAssistantMessages()
@@ -90,8 +93,7 @@ export function AssistantChat() {
     inputRef.current?.focus()
   }, [])
 
-  // 检查待处理的分析结果（组件挂载或 messages 变化时）
-  // 这解决了页面导航后 storage 事件监听器丢失的问题
+  // 检查待处理的分析结果
   useEffect(() => {
     const checkPendingResults = () => {
       messages.forEach(msg => {
@@ -121,34 +123,127 @@ export function AssistantChat() {
     checkPendingResults()
   }, [messages, updateAnalysisCard])
 
+  // 处理文件选择
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) await handleUpload(file)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  // 处理文件上传
+  const handleUpload = async (file: File) => {
+    if (isUploading) return
+
+    // 验证文件类型
+    const validTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ]
+    if (!validTypes.includes(file.type)) {
+      setError('不支持的文件类型。请上传 PDF, Word 或 TXT 文件。')
+      return
+    }
+
+    // 确保有会话
+    let sessionId = currentSession?.id
+    if (!sessionId) {
+      useAssistantStore.getState().startNewSession()
+      sessionId = useAssistantStore.getState().currentSession?.id
+    }
+
+    if (!sessionId) {
+      setError('无法创建会话，请刷新页面重试')
+      return
+    }
+
+    setIsUploading(true)
+    setError(null)
+
+    // 添加一个临时的"正在上传"消息
+    addMessage({
+      sessionId,
+      role: 'assistant',
+      content: `正在分析简历 "${file.name}"... (可能需要 30-60 秒)`,
+    })
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/resume-upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('上传失败')
+      }
+
+      const data = await response.json()
+
+      addMessage({
+        sessionId,
+        role: 'assistant',
+        content: `✅ 简历 "${file.name}" 解析成功！\n\n已更新您的个人资料和技能标签。您可以直接问我："我适合什么工作？" 或 "帮我写一封求职信"。`,
+      })
+
+    } catch (err) {
+      console.error('Upload failed:', err)
+      setError('简历上传/解析失败，请重试。')
+      addMessage({
+        sessionId,
+        role: 'assistant',
+        content: `❌ 简历 "${file.name}" 解析失败。请确保文件格式正确且未损坏。`,
+      })
+    } finally {
+      setIsUploading(false)
+      setIsDragging(false)
+    }
+  }
+
+  // 拖拽事件处理
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (e.currentTarget === e.target) {
+      setIsDragging(false)
+    }
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+
+    const file = e.dataTransfer.files?.[0]
+    if (file) await handleUpload(file)
+  }
+
   // 处理分析请求
   const handleAnalysisRequest = useCallback(async (userMessage: string) => {
     const activeJob = currentContext?.activeJob
     if (!activeJob) return false
 
-    // 添加用户消息
     addMessage({
       sessionId: currentSession?.id || '',
       role: 'user',
       content: userMessage,
     })
 
-    // 添加分析卡片消息（加载状态）
     const messageId = addAnalysisMessage(
       activeJob.id,
       activeJob.title,
       activeJob.company
     )
 
-    // 从AI助手触发分析时，统一使用Profile模式并自动开始
-    // 这样用户无需选择简历，可以直接看到分析结果
-    // 用户可以在分析完成后选择使用简历进行更精确的匹配
     const analysisUrl = `/jobs/${activeJob.id}/analysis?mode=profile&autoStart=true`
-
-    // 跳转到分析页面
     router.push(analysisUrl)
 
-    // 监听分析结果（通过localStorage事件）
     const handleAnalysisComplete = (event: StorageEvent) => {
       if (event.key === `analysis-result-${activeJob.id}`) {
         try {
@@ -161,7 +256,6 @@ export function AssistantChat() {
             sessionId: result.sessionId,
             error: result.error,
           })
-          // 清理
           localStorage.removeItem(`analysis-result-${activeJob.id}`)
         } catch (e) {
           console.error('Failed to parse analysis result:', e)
@@ -172,7 +266,6 @@ export function AssistantChat() {
 
     window.addEventListener('storage', handleAnalysisComplete)
 
-    // 5分钟超时自动清理
     setTimeout(() => {
       window.removeEventListener('storage', handleAnalysisComplete)
     }, 5 * 60 * 1000)
@@ -186,7 +279,6 @@ export function AssistantChat() {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
     }
-    // 保存当前已生成的内容
     const currentContent = useAssistantStore.getState().streamingContent
     if (currentContent) {
       useAssistantStore.getState().finalizeStream(undefined, undefined, undefined)
@@ -195,9 +287,9 @@ export function AssistantChat() {
       useAssistantStore.getState().clearStreamContent()
     }
     setLoading(false)
-  }, [])
+  }, [setLoading])
 
-  // 发送消息（支持流式响应）
+  // 发送消息
   const handleSend = async () => {
     if (!input.trim() || isLoading || isStreaming) return
 
@@ -205,14 +297,12 @@ export function AssistantChat() {
     setInput('')
     clearError()
 
-    // 检查是否是分析意图
     const hasActiveJob = !!currentContext?.activeJob
     if (isAnalysisIntent(userMessage, hasActiveJob)) {
       const handled = await handleAnalysisRequest(userMessage)
       if (handled) return
     }
 
-    // 添加用户消息
     addMessage({
       sessionId: currentSession?.id || '',
       role: 'user',
@@ -220,12 +310,9 @@ export function AssistantChat() {
     })
 
     setLoading(true)
-
-    // 创建新的 AbortController
     abortControllerRef.current = new AbortController()
 
     try {
-      // 使用流式 API - 使用store级别的currentContext（由usePageContext更新）
       const response = await fetch('/api/assistant/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -242,7 +329,6 @@ export function AssistantChat() {
         throw new Error(data.error || '请求失败')
       }
 
-      // 处理SSE流
       const reader = response.body?.getReader()
       if (!reader) throw new Error('无法读取响应流')
 
@@ -276,7 +362,6 @@ export function AssistantChat() {
                 throw new Error(data.data.message)
               }
             } catch (parseError) {
-              // 忽略解析错误，可能是不完整的chunk
               if (line.trim() !== 'data: ') {
                 console.warn('Parse error:', parseError)
               }
@@ -285,14 +370,12 @@ export function AssistantChat() {
         }
       }
 
-      // 流结束，添加最终消息
       useAssistantStore.getState().finalizeStream(
         undefined,
         suggestions,
         undefined
       )
     } catch (err) {
-      // 处理用户主动中断
       if (err instanceof Error && err.name === 'AbortError') {
         console.log('Stream aborted by user')
         return
@@ -320,18 +403,32 @@ export function AssistantChat() {
     inputRef.current?.focus()
   }
 
-  // 处理分析卡片导航（可选：关闭侧栏）
+  // 处理分析卡片导航
   const handleAnalysisNavigate = () => {
-    // 可以选择关闭助手侧栏
     // closeAssistant()
   }
 
-  // 获取最后一条助手消息的建议
   const lastAssistantMessage = [...messages].reverse().find((m) => m.role === 'assistant')
   const suggestions = lastAssistantMessage?.metadata?.suggestions || []
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div
+      className="flex-1 flex flex-col min-h-0 relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* 拖拽遮罩层 */}
+      {isDragging && (
+        <div className="absolute inset-0 bg-primary-50/90 z-50 flex items-center justify-center border-2 border-dashed border-primary-500 m-2 rounded-xl">
+          <div className="text-center text-primary-700">
+            <Upload className="w-12 h-12 mx-auto mb-2" />
+            <p className="text-lg font-medium">释放以上传简历</p>
+            <p className="text-sm opacity-75">支持 PDF, Word, TXT</p>
+          </div>
+        </div>
+      )}
+
       {/* 消息列表 */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && !isLoading && (
@@ -354,6 +451,17 @@ export function AssistantChat() {
                 </button>
               ))}
             </div>
+            <div className="mt-8 p-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+              <p className="text-sm text-gray-500 mb-2">或者直接拖入简历文件</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                上传简历
+              </Button>
+            </div>
           </div>
         )}
 
@@ -366,7 +474,6 @@ export function AssistantChat() {
           />
         ))}
 
-        {/* 流式响应显示 */}
         {isStreaming && streamingContent && (
           <MessageBubble
             message={{
@@ -380,7 +487,6 @@ export function AssistantChat() {
           />
         )}
 
-        {/* 加载指示器 */}
         {isLoading && !isStreaming && (
           <div className="flex items-center gap-2 text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -388,7 +494,13 @@ export function AssistantChat() {
           </div>
         )}
 
-        {/* 错误提示 */}
+        {isUploading && (
+          <div className="flex items-center gap-2 text-primary-600 bg-primary-50 p-3 rounded-lg self-start">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">正在分析简历...</span>
+          </div>
+        )}
+
         {error && (
           <div className="p-3 bg-error-50 border border-error-200 rounded-lg">
             <p className="text-sm text-error-700">{error}</p>
@@ -407,7 +519,6 @@ export function AssistantChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 建议问题 */}
       {suggestions.length > 0 && !isLoading && (
         <div className="px-4 pb-2">
           <div className="flex flex-wrap gap-2">
@@ -426,17 +537,36 @@ export function AssistantChat() {
 
       {/* 输入区域 */}
       <div className="p-4 border-t border-gray-200 bg-white">
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept=".pdf,.doc,.docx,.txt"
+          onChange={handleFileSelect}
+        />
+
         <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            className="w-10 h-10 p-0 flex-shrink-0 text-gray-500 hover:text-gray-700"
+            onClick={() => fileInputRef.current?.click()}
+            title="上传简历"
+            disabled={isLoading || isStreaming || isUploading}
+          >
+            <Paperclip className="w-5 h-5" />
+          </Button>
+
           <textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="输入消息..."
+            placeholder="输入消息，或拖入简历..."
             className="flex-1 resize-none border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[40px] max-h-[120px]"
             rows={1}
-            disabled={isLoading || isStreaming}
+            disabled={isLoading || isStreaming || isUploading}
           />
+
           {isStreaming ? (
             <Button
               variant="outline"
@@ -450,7 +580,7 @@ export function AssistantChat() {
             <Button
               variant="primary"
               onClick={handleSend}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || isUploading}
               className="w-10 h-10 p-0 flex-shrink-0"
             >
               {isLoading ? (
