@@ -213,3 +213,8 @@ export async function generateCoverLetter(
 
 export * from './core/MemoryManager'
 export * from './core/AgentService'
+export * from './core/Tool'
+export * from './tools/JobScraperTool'
+export * from './tools/ResumeAnalysisTool'
+export * from './tools/SaveJobTool'
+export * from './core/ResumeSyncService'

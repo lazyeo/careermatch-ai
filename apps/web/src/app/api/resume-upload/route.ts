@@ -62,7 +62,9 @@ export async function POST(request: NextRequest) {
 
     // 生成存储路径
     const timestamp = Date.now()
-    const storagePath = `${user.id}/${timestamp}_${file.name}`
+    // Sanitize filename: remove non-ASCII characters, replace spaces with underscores
+    const safeFileName = file.name.replace(/[^\x00-\x7F]/g, '').replace(/\s+/g, '_') || `resume_${timestamp}.pdf`
+    const storagePath = `${user.id}/${timestamp}_${safeFileName}`
 
     // 创建上传记录
     const { data: uploadRecord, error: insertError } = await supabase
@@ -171,6 +173,25 @@ export async function POST(request: NextRequest) {
           { error: 'Failed to save parsed data' },
           { status: 500 }
         )
+      }
+
+      // 5. Sync to Profile & Agent Memory
+      try {
+        // Initialize services
+        // Note: We reuse the API keys from env
+        const apiKey = process.env.CLAUDE_API_KEY || process.env.OPENAI_API_KEY
+        const baseUrl = process.env.CLAUDE_BASE_URL || process.env.OPENAI_BASE_URL
+
+        if (apiKey) {
+          const { MemoryManager, ResumeSyncService } = await import('@careermatch/ai-agent')
+          const memoryManager = new MemoryManager(supabase, apiKey, baseUrl)
+          const syncService = new ResumeSyncService(supabase, memoryManager)
+
+          await syncService.syncResumeToProfile(user.id, parsedData)
+        }
+      } catch (syncError) {
+        console.error('⚠️ Error syncing resume to profile:', syncError)
+        // We don't fail the upload if sync fails, just log it
       }
 
       return NextResponse.json({
