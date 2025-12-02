@@ -26,6 +26,7 @@ export interface ParsedJobData {
   education_requirement?: string
   company_info?: string
   application_url?: string
+  original_content?: string
 }
 
 // AI解析Prompt
@@ -84,10 +85,62 @@ const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务
 3. 薪资字段必须是数字，不是字符串`
 
 /**
+ * Fetch data specifically from Workable API
+ */
+async function fetchWorkableData(url: string): Promise<string> {
+  // Match URL pattern: https://apply.workable.com/<account>/j/<shortcode>/
+  const match = url.match(/apply\.workable\.com\/([^/]+)\/j\/([^/]+)/)
+  if (!match) return ''
+
+  const [, account, shortcode] = match
+  const apiUrl = `https://apply.workable.com/api/v1/accounts/${account}/jobs/${shortcode}`
+
+  try {
+    const response = await fetch(apiUrl)
+    if (!response.ok) throw new Error(`Workable API returned ${response.status}`)
+
+    const data = await response.json()
+
+    // Construct a rich text representation for the AI
+    return `
+      Title: ${data.title}
+      Company: Orion Health (inferred from URL/Context)
+      Location: ${data.location?.city}, ${data.location?.country}
+      Type: ${data.employment_type}
+      Department: ${data.department}
+      
+      Description:
+      ${data.description}
+      
+      Requirements:
+      ${data.requirements}
+      
+      Benefits:
+      ${data.benefits}
+      
+      Application URL: ${url}
+    `
+  } catch (error) {
+    console.warn('Failed to fetch from Workable API, falling back to standard fetch', error)
+    return ''
+  }
+}
+
+/**
  * 从网页URL抓取内容
  */
 export async function fetchJobPageContent(url: string): Promise<string> {
   try {
+    // 1. Special handling for Workable
+    if (url.includes('apply.workable.com')) {
+      const workableContent = await fetchWorkableData(url)
+      if (workableContent) {
+        console.log('✅ Successfully fetched data from Workable API')
+        return workableContent
+      }
+    }
+
+    // 2. Standard Fetch
     // 使用无头浏览器或简单fetch获取页面内容
     const response = await fetch(url, {
       headers: {
@@ -170,11 +223,49 @@ export async function parseJobContent(
   })
 
   const model = 'claude-sonnet-4-5-20250929'
-  const prompt = PARSE_JOB_PROMPT.replace('{CONTENT}', content)
+
+  // Clean HTML aggressively to avoid token limits
+  console.log(`📝 Original content length: ${content.length} characters`)
+
+  let cleanedContent = content
+    // Remove script tags and their content
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    // Remove style tags and their content
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    // Remove comments
+    .replace(/<!--[\s\S]*?-->/g, '')
+    // Remove SVG tags (can be huge)
+    .replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, '')
+    // Remove all attributes from HTML tags (keeps structure but removes noise)
+    .replace(/<(\w+)[^>]*>/g, '<$1>')
+    // Remove HTML tags but keep content
+    .replace(/<[^>]+>/g, ' ')
+    // Decode HTML entities
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    // Clean up whitespace
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  // Limit to ~50k characters to stay well under 200k token limit
+  // (rough estimate: 1 char ≈ 0.25-0.5 tokens, so 50k chars ≈ 12.5-25k tokens)
+  const MAX_CHARS = 50000
+  if (cleanedContent.length > MAX_CHARS) {
+    console.warn(`⚠️ Content length ${cleanedContent.length} exceeds ${MAX_CHARS}, truncating...`)
+    cleanedContent = cleanedContent.substring(0, MAX_CHARS) + '...[内容已截断]'
+  }
+
+  console.log(`✅ Cleaned content length: ${cleanedContent.length} characters`)
+
+  const prompt = PARSE_JOB_PROMPT.replace('{CONTENT}', cleanedContent)
 
   console.log('🔍 Parsing job posting with AI...')
   console.log(`📊 Using model: ${model}`)
-  console.log(`📝 Content length: ${content.length} characters`)
 
   const response = await client.chat.completions.create({
     model,
@@ -197,7 +288,7 @@ export async function parseJobContent(
     const parsed = parseJsonFromAI<ParsedJobData>(responseText)
     console.log('✅ Successfully parsed job data')
 
-    return sanitizeJobData(parsed)
+    return sanitizeJobData({ ...parsed, original_content: content })
   } catch (error) {
     console.error('❌ Failed to parse AI response:', error)
     console.error('Response text preview:', responseText.substring(0, 500))
@@ -208,7 +299,7 @@ export async function parseJobContent(
       const fixedJson = tryFixJson(responseText)
       const parsed = JSON.parse(fixedJson) as ParsedJobData
       console.log('✅ Successfully parsed job data after fix')
-      return sanitizeJobData(parsed)
+      return sanitizeJobData({ ...parsed, original_content: content })
     } catch {
       console.error('❌ Failed to fix JSON')
       throw new Error('AI返回的数据格式无效')
@@ -303,6 +394,7 @@ function sanitizeJobData(data: ParsedJobData): ParsedJobData {
     education_requirement: data.education_requirement || undefined,
     company_info: data.company_info || undefined,
     application_url: data.application_url || undefined,
+    original_content: data.original_content || undefined,
   }
 }
 
