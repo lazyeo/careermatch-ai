@@ -1,0 +1,49 @@
+{
+    "basics": {
+        "name": "John Doe",
+        "label": "Senior Software Engineer",
+        "email": "john.doe@example.com",
+        "phone": "+64 21 123 4567",
+        "url": "https://johndoe.dev",
+        "summary": "Experienced software engineer with a focus on web technologies. Passionate about building scalable and accessible applications.",
+        "location": {
+            "city": "Auckland",
+            "countryCode": "NZ"
+        }
+    },
+    "work": [
+        {
+            "name": "Previous Corp",
+            "position": "Senior Developer",
+            "startDate": "2020-01-01",
+            "endDate": "2024-12-31",
+            "summary": "Led the frontend team in rebuilding the core product.",
+            "highlights": [
+                "Improved performance by 50%",
+                "Mentored junior developers",
+                "Implemented a new design system"
+            ]
+        }
+    ],
+    "education": [
+        {
+            "institution": "University of Auckland",
+            "area": "Computer Science",
+            "studyType": "Bachelor",
+            "startDate": "2010-01-01",
+            "endDate": "2013-12-31"
+        }
+    ],
+    "skills": [
+        {
+            "name": "Web Development",
+            "keywords": [
+                "React",
+                "TypeScript",
+                "Node.js",
+                "HTML",
+                "CSS"
+            ]
+        }
+    ]
+}

@@ -181,7 +181,7 @@ export function AssistantChat() {
         throw new Error('上传失败')
       }
 
-      const data = await response.json()
+      await response.json()
 
       addMessage({
         sessionId,

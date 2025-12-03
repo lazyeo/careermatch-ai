@@ -73,12 +73,19 @@
   "nav": {
     "home": "首页",
     "dashboard": "仪表盘",
-    "jobs": "岗位管理",
+    "jobs": "我的机会",
     "resumes": "简历管理",
     "profile": "个人档案",
     "settings": "设置",
     "help": "帮助",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "applications": "申请管理"
+  },
+  "copilot": {
+    "title": "AI 助手",
+    "subtitle": "随时为您服务",
+    "close": "关闭",
+    "expand": "展开"
   },
   "auth": {
     "login": "登录",
@@ -221,7 +228,15 @@
     "smartImportJob": "智能导入岗位",
     "smartImportDesc": "粘贴招聘链接或内容，AI自动提取岗位信息",
     "editJobDesc": "修改岗位信息和状态",
-    "viewDetail": "查看详情"
+    "viewDetail": "查看详情",
+    "viewOriginal": "查看原文",
+    "refresh": "重新抓取",
+    "board": {
+      "saved": "收藏 / 准备中",
+      "applied": "已投递",
+      "interview": "面试中",
+      "archived": "已归档"
+    }
   },
   "coverLetter": {
     "title": "AI求职信生成",

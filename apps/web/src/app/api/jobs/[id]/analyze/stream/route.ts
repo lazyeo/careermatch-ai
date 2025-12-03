@@ -46,19 +46,22 @@ export async function POST(
 
     // Get request body
     const body = await request.json()
-    const { resumeId, provider } = body as {
-      resumeId: string
+    const { resumeId, provider, mode } = body as {
+      resumeId?: string
       provider?: AIProviderType
+      mode?: 'resume_match' | 'job_summary'
     }
 
-    if (!resumeId) {
+    const isJobSummary = mode === 'job_summary'
+
+    if (!isJobSummary && !resumeId) {
       return new Response(JSON.stringify({ error: 'resumeId is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       })
     }
 
-    // Fetch job and resume
+    // Fetch job and resume (if needed)
     const [jobResult, resumeResult] = await Promise.all([
       supabase
         .from('jobs')
@@ -66,12 +69,14 @@ export async function POST(
         .eq('id', params.id)
         .eq('user_id', user.id)
         .single(),
-      supabase
-        .from('resumes')
-        .select('*')
-        .eq('id', resumeId)
-        .eq('user_id', user.id)
-        .single(),
+      isJobSummary
+        ? Promise.resolve({ data: null, error: null })
+        : supabase
+          .from('resumes')
+          .select('*')
+          .eq('id', resumeId!)
+          .eq('user_id', user.id)
+          .single(),
     ])
 
     if (jobResult.error || !jobResult.data) {
@@ -81,7 +86,7 @@ export async function POST(
       })
     }
 
-    if (resumeResult.error || !resumeResult.data) {
+    if (!isJobSummary && (resumeResult.error || !resumeResult.data)) {
       return new Response(JSON.stringify({ error: 'Resume not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
@@ -98,19 +103,23 @@ export async function POST(
 
     console.log(`🤖 Starting streaming analysis with ${providerName.toUpperCase()}`)
     console.log(`📊 Using model: ${model}`)
+    console.log(`🎯 Mode: ${mode || 'resume_match'}`)
 
     // Build prompt
-    const prompt = buildFlexiblePrompt(job, resume)
+    const prompt = isJobSummary
+      ? buildJobSummaryPrompt(job)
+      : buildFlexiblePrompt(job, resume!)
 
     // Create AI client and stream
     const aiClient = createAIClient(provider)
 
-    const stream = await aiClient.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: 'system',
-          content: `你是一位经验丰富的职业顾问和招聘专家，专注于新西兰就业市场。
+    const systemPrompt = isJobSummary
+      ? `你是一位经验丰富的职业顾问和招聘专家，专注于新西兰就业市场。
+你将对职位描述进行深度点评，指出亮点、潜在风险和核心要求。
+
+**输出格式要求**：
+请直接输出Markdown格式的分析报告。不需要包含SCORE或RECOMMENDATION分隔符。`
+      : `你是一位经验丰富的职业顾问和招聘专家，专注于新西兰就业市场。
 你将进行深度的简历-岗位匹配分析，拥有自主权决定分析哪些维度、如何深入。
 
 **输出格式要求**：请严格使用分隔符格式输出，不要使用JSON格式。格式如下：
@@ -122,7 +131,14 @@ export async function POST(
 <Markdown分析报告>
 ---END---
 
-这种格式可以让你自由使用任何Markdown语法，包括引号、代码块等。`,
+这种格式可以让你自由使用任何Markdown语法，包括引号、代码块等。`
+
+    const stream = await aiClient.chat.completions.create({
+      model,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt,
         },
         {
           role: 'user',
@@ -160,45 +176,55 @@ export async function POST(
             }
           }
 
-          // Parse the complete response
-          const parsed = parseDelimiterFormat(fullResponse)
+          if (!isJobSummary) {
+            // Parse the complete response
+            const parsed = parseDelimiterFormat(fullResponse)
 
-          // Save to database
-          const { data: savedSession, error: saveError } = await supabase
-            .from('analysis_sessions')
-            .insert({
-              job_id: params.id,
-              resume_id: resumeId,
-              user_id: user.id,
-              status: 'active',
-              score: parsed?.score || 50,
-              recommendation: parsed?.recommendation || 'moderate',
-              analysis: parsed?.analysis || fullResponse,
-              provider: providerName,
-              model: model,
-            })
-            .select()
-            .single()
+            // Save to database (only for resume match)
+            const { data: savedSession, error: saveError } = await supabase
+              .from('analysis_sessions')
+              .insert({
+                job_id: params.id,
+                resume_id: resumeId!,
+                user_id: user.id,
+                status: 'active',
+                score: parsed?.score || 50,
+                recommendation: parsed?.recommendation || 'moderate',
+                analysis: parsed?.analysis || fullResponse,
+                provider: providerName,
+                model: model,
+              })
+              .select()
+              .single()
 
-          if (saveError) {
-            console.error('Error saving session:', saveError)
+            if (saveError) {
+              console.error('Error saving session:', saveError)
+            } else {
+              console.log('✅ Streaming analysis completed and saved')
+            }
+
+            // Send final message with session info
+            try {
+              const finalData = JSON.stringify({
+                done: true,
+                sessionId: savedSession?.id,
+                score: parsed?.score || 50,
+                recommendation: parsed?.recommendation || 'moderate',
+              })
+              controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
+              controller.close()
+            } catch {
+              console.log('Client disconnected before receiving final message')
+            }
           } else {
-            console.log('✅ Streaming analysis completed and saved')
-          }
-
-          // Send final message with session info - check if controller is still open
-          try {
-            const finalData = JSON.stringify({
-              done: true,
-              sessionId: savedSession?.id,
-              score: parsed?.score || 50,
-              recommendation: parsed?.recommendation || 'moderate',
-            })
-            controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
-            controller.close()
-          } catch {
-            // Client disconnected, but we already saved to DB, so it's okay
-            console.log('Client disconnected before receiving final message')
+            // For job summary, just close the stream
+            try {
+              const finalData = JSON.stringify({ done: true })
+              controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
+              controller.close()
+            } catch {
+              console.log('Client disconnected before receiving final message')
+            }
           }
         } catch (error) {
           console.error('Stream error:', error)
@@ -232,6 +258,52 @@ export async function POST(
       headers: { 'Content-Type': 'application/json' },
     })
   }
+}
+
+/**
+ * Build job summary prompt
+ */
+function buildJobSummaryPrompt(job: Record<string, unknown>): string {
+  return `
+请对以下职位进行深度点评和分析。
+
+## 岗位信息
+- **职位**: ${job.title}
+- **公司**: ${job.company}
+- **地点**: ${job.location || '未指定'}
+- **类型**: ${job.job_type || '未指定'}
+- **薪资范围**: ${job.salary_min && job.salary_max ? `${job.salary_currency || 'NZD'} ${job.salary_min} - ${job.salary_max}` : '未指定'}
+- **岗位描述**:
+${job.description || '未提供'}
+
+- **岗位要求**:
+${job.requirements || '未提供'}
+
+- **福利待遇**:
+${job.benefits || '未提供'}
+
+---
+
+## 分析要求
+
+请从职业顾问的角度，分析这个职位的优劣势，并给出建议。
+
+请包含以下几个部分（使用Markdown二级标题）：
+
+### 1. 职位亮点 ✨
+分析这个职位的吸引力，例如薪资、发展前景、公司背景、福利等。
+
+### 2. 潜在挑战与风险 ⚠️
+指出这个职位可能存在的坑或挑战，例如职责不清、要求过高、行业风险等。
+
+### 3. 核心竞争力要求 🎯
+总结要拿下这个offer，候选人必须具备的最核心的3个硬技能和3个软技能。
+
+### 4. 申请建议 💡
+给申请者的具体建议，例如简历应该突出什么，面试应该问什么问题。
+
+请保持客观、犀利，不要只说好话。
+`
 }
 
 /**

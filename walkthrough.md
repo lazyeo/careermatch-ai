@@ -21,13 +21,30 @@ Updated `apps/web/src/app/api/assistant/chat/route.ts` to use the new `AgentServ
 *   The route now initializes `MemoryManager` with the authenticated user session (respecting RLS).
 *   It passes the user's message to `AgentService`, which returns a structured JSON response (content, actions, suggestions).
 
+### 4. Interactive Tools (Phase 3.5 & 3.6)
+Implemented a tool system using OpenAI Function Calling:
+*   **`JobScraperTool`**: Scrapes job details from URLs.
+*   **`ResumeAnalysisTool`**: Analyzes resume content.
+*   **`SaveJobTool`**: Saves analyzed jobs to the database upon user confirmation.
+*   **Interactive Flow**: Agent analyzes a job -> Asks user to save -> User confirms -> Agent saves it.
+
 ## How to Test
-1.  **Chat with the Assistant**: Go to the "Assistant" or "Chat" page in the Web App.
+1.  **Chat with the Assistant**: Go
+### 1. The "Assistant" Page
+![Assistant Page](/Users/flash/.gemini/antigravity/brain/923f2d8a-aaa1-4aec-b2b6-2e84814754ba/assistant_with_paperclip_1764549621422.png)
+The dedicated chat interface for interacting with the Agent. Now supports **Drag & Drop** resume upload.
 2.  **Teach it something**: Tell it "I prefer working in FinTech companies".
-3.  **Check Memory**:
-    *   The system should save this interaction.
-    *   In a *new* session (or later in the conversation), ask "What kind of companies do I like?".
-    *   It should recall your preference for FinTech.
+3.  **Analyze & Save**:
+    *   Paste a job URL: "Analyze this job: [URL]"
+    *   Agent should scrape and analyze it.
+    *   Agent should ask: "Do you want to save this job?"
+    *   Reply: "Yes"
+    *   Agent should save it to your dashboard.
+
+### 5. Profile Sync (Phase 4 Part 1)
+Implemented `ResumeSyncService` to bridge the gap between parsing and profile data:
+*   **Auto-Sync**: When a resume is uploaded, it now automatically populates your Profile, Work Experience, Education, and Skills.
+*   **Memory Extraction**: Key facts (Current Role, Top Skills, Location) are extracted and saved to `user_facts` for the Agent to remember.
 
 ## Next Steps
-*   **MCP Integration**: Currently, the Agent can "talk" and "remember", but it cannot yet *autonomously* call tools like "Parse Resume" or "Scrape Job". We need to wrap our packages as MCP tools and give them to the Agent.
+*   **Co-pilot UX**: Refactor the layout to make the Agent a persistent sidebar companion.

@@ -1,12 +1,12 @@
 'use client'
 
 import { AssistantChat } from '@/components/assistant/AssistantChat'
-import { AppHeader } from '@/components/AppHeader'
+
 
 export default function AssistantPage() {
     return (
         <div className="flex flex-col h-screen bg-gray-50">
-            <AppHeader />
+            {/* AppHeader removed */}
             <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full p-4">
                 <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
                     <div className="p-4 border-b border-gray-100 bg-white">

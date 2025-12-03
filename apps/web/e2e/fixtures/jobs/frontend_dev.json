@@ -1,0 +1,24 @@
+{
+    "title": "Senior Frontend Developer",
+    "company": "TechCorp NZ",
+    "location": "Auckland, New Zealand",
+    "job_type": "full-time",
+    "salary_min": 120000,
+    "salary_max": 150000,
+    "salary_currency": "NZD",
+    "description": "We are looking for a Senior Frontend Developer to join our team. You will be working with React, TypeScript, and Next.js.",
+    "requirements": "5+ years of experience with React. Strong TypeScript skills. Experience with modern build tools.",
+    "benefits": "Health insurance, flexible working hours, remote work options.",
+    "posted_date": "2025-01-15",
+    "deadline": "2025-02-15",
+    "skills_required": [
+        "React",
+        "TypeScript",
+        "Next.js",
+        "Tailwind CSS"
+    ],
+    "experience_years": "5+",
+    "education_requirement": "Bachelor's Degree in Computer Science or related field",
+    "company_info": "TechCorp NZ is a leading software company in New Zealand.",
+    "application_url": "https://techcorp.nz/careers/frontend-dev"
+}

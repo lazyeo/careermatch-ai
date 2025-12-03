@@ -73,12 +73,19 @@
   "nav": {
     "home": "Home",
     "dashboard": "Dashboard",
-    "jobs": "Jobs",
+    "jobs": "My Opportunities",
     "resumes": "Resumes",
     "profile": "Profile",
     "settings": "Settings",
     "help": "Help",
-    "logout": "Logout"
+    "logout": "Logout",
+    "applications": "Applications"
+  },
+  "copilot": {
+    "title": "AI Co-pilot",
+    "subtitle": "Always here to help",
+    "close": "Close",
+    "expand": "Expand"
   },
   "auth": {
     "login": "Login",
@@ -221,7 +228,15 @@
     "smartImportJob": "Smart Import Job",
     "smartImportDesc": "Paste job link or content, AI automatically extracts job information",
     "editJobDesc": "Modify job information and status",
-    "viewDetail": "View Details"
+    "viewDetail": "View Details",
+    "viewOriginal": "Original Post",
+    "refresh": "Refresh",
+    "board": {
+      "saved": "Saved / Preparing",
+      "applied": "Applied",
+      "interview": "Interviewing",
+      "archived": "Archived"
+    }
   },
   "coverLetter": {
     "title": "AI Cover Letter Generator",

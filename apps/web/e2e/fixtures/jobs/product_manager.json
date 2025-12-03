@@ -1,0 +1,24 @@
+{
+    "title": "Product Manager",
+    "company": "Innovate Ltd",
+    "location": "Wellington, New Zealand",
+    "job_type": "full-time",
+    "salary_min": 110000,
+    "salary_max": 140000,
+    "salary_currency": "NZD",
+    "description": "We are seeking a Product Manager to lead our new product initiatives. You will work closely with engineering and design teams.",
+    "requirements": "3+ years of product management experience. Strong communication skills. Agile methodology experience.",
+    "benefits": "Competitive salary, stock options, professional development budget.",
+    "posted_date": "2025-01-20",
+    "deadline": "2025-02-20",
+    "skills_required": [
+        "Product Management",
+        "Agile",
+        "JIRA",
+        "User Research"
+    ],
+    "experience_years": "3+",
+    "education_requirement": "Bachelor's Degree",
+    "company_info": "Innovate Ltd is a fast-growing startup in Wellington.",
+    "application_url": "https://innovate.co.nz/jobs/pm"
+}

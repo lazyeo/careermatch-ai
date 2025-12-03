@@ -11,10 +11,10 @@
     "clean": "rm -rf .next .turbo node_modules"
   },
   "dependencies": {
-    "@careermatch/shared": "workspace:*",
-    "@careermatch/resume-parser": "workspace:*",
-    "@careermatch/job-scraper": "workspace:*",
     "@careermatch/ai-agent": "workspace:*",
+    "@careermatch/job-scraper": "workspace:*",
+    "@careermatch/resume-parser": "workspace:*",
+    "@careermatch/shared": "workspace:*",
     "@careermatch/ui": "workspace:*",
     "@hookform/resolvers": "^3.3.3",
     "@react-pdf/renderer": "^4.3.1",
@@ -40,6 +40,7 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
