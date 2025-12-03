@@ -5,6 +5,7 @@ import { Tool } from './Tool'
 import { JobScraperTool } from '../tools/JobScraperTool'
 import { ResumeAnalysisTool } from '../tools/ResumeAnalysisTool'
 import { SaveJobTool } from '../tools/SaveJobTool'
+import { BatchJobImportTool } from '../tools/BatchJobImportTool'
 
 export interface AgentContext {
     jobId?: string
@@ -47,6 +48,7 @@ export class AgentService {
         // Initialize Tools
         this.tools = [
             new JobScraperTool({ apiKey: openaiApiKey, baseUrl: openaiBaseUrl }),
+            new BatchJobImportTool({ apiKey: openaiApiKey, baseUrl: openaiBaseUrl }),
             new ResumeAnalysisTool(),
             new SaveJobTool()
         ]
@@ -179,13 +181,16 @@ ${factsText || 'No facts yet.'}
 ${memoriesText || 'No relevant memories found.'}
 
 ## Instructions
-- Use available tools when necessary.
-- **Job Analysis Workflow**:
-  1. If the user provides a URL, use \`scrape_job\` to get details.
-  2. Analyze the job against the user's profile/facts.
-  3. **CRITICAL**: After analyzing, ASK the user if they want to save this job to their dashboard.
-  4. If the user says "Yes" or "Save it", use \`save_job\`.
-- Be proactive: suggest next steps based on the user's goals.
+- **Tool Usage**: You have a tool \`batch_import_jobs\` that can access and read any job URL. **YOU CAN ACCESS LINKS**. Do not say you cannot.
+- **Multiple URLs**: If the user provides multiple job URLs (e.g. "analyze these: url1, url2"), you **MUST** call \`batch_import_jobs\` with the list of URLs.
+  - Do not ask for permission.
+  - Do not say you need to visit them.
+  - Just call the tool.
+  - Once the tool returns the job details, you can then proceed to analyze them.
+- **Single URL**:
+  - If the user asks to *import* or *save*, call \`batch_import_jobs\`.
+  - If the user asks to *analyze*, call \`scrape_job\` (or \`batch_import_jobs\`), get the content, and then analyze.
+- **Proactive**: Suggest next steps based on the user's goals.
 
 ## Output Format
 If you are NOT calling a tool, you MUST return a JSON object:

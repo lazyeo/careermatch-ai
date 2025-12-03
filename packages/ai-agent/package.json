@@ -12,6 +12,8 @@
     },
     "dependencies": {
         "@careermatch/shared": "workspace:*",
+        "@careermatch/job-scraper": "workspace:*",
+        "@careermatch/resume-parser": "workspace:*",
         "@supabase/supabase-js": "^2.39.0",
         "openai": "^4.104.0"
     },
