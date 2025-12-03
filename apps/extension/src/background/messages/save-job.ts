@@ -1,36 +1,29 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 import { getAuthToken } from "../auth"
+import { API_ENDPOINTS } from "../../config"
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
-    console.log("🔵 [Background] Save job message received")
-    console.log("🔵 [Background] Request body:", JSON.stringify(req.body, null, 2))
+    const { content, url } = req.body
 
     try {
-        const { content, url } = req.body
-        console.log(`🔵 [Background] Content length: ${content?.length || 0}, URL: ${url}`)
-
         const token = await getAuthToken()
-        console.log(`🔵 [Background] Auth token retrieved: ${token ? 'YES (length: ' + token.length + ')' : 'NO'}`)
 
-        // For MVP, we default to localhost
-        const API_URL = "http://localhost:3000/api/jobs/import"
-
-        const headers: Record<string, string> = {
-            "Content-Type": "application/json"
+        if (!token) {
+            res.send({ success: false, error: "Not authenticated. Please login to CareerMatch." })
+            return
         }
 
-        if (token) {
-            headers["Authorization"] = `Bearer ${token}`
-        }
+        console.log("🔵 [Background] Save job message received", { url })
 
-        const response = await fetch(API_URL, {
+        const response = await fetch(API_ENDPOINTS.IMPORT_JOB, {
             method: "POST",
-            headers,
+            headers: {
+                "Content-Type": "application/json",
+                "Cookie": `sb-access-token=${token}` // Pass the token if needed, or rely on browser cookies if same-site
+            },
             body: JSON.stringify({
-                url,
-                content: content, // Send as 'content' to match API expectation
-                source: "extension",
-                save_immediately: true
+                html: content,
+                url: url
             })
         })
 
