@@ -18,9 +18,9 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
   const [isPending, startTransition] = useTransition()
   const [isOpen, setIsOpen] = useState(false)
 
-  const handleLocaleChange = (newLocale: Locale) => {
-    startTransition(async () => {
-      await setLocale(newLocale)
+  const handleLocaleChange = async (newLocale: Locale) => {
+    await setLocale(newLocale)
+    startTransition(() => {
       router.refresh()
       setIsOpen(false)
     })
