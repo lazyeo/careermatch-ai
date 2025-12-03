@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
+    "build:dev": "PLASMO_PUBLIC_API_URL=http://localhost:3000 PLASMO_PUBLIC_NAME_SUFFIX=' (Dev)' plasmo build --dist-dir build/dev",
+    "build:prod": "PLASMO_PUBLIC_API_URL=https://cvto.work plasmo build --dist-dir build/prod",
     "package": "plasmo package"
   },
   "dependencies": {
@@ -42,7 +44,12 @@
     "permissions": [
       "storage",
       "cookies",
-      "tabs"
-    ]
+      "tabs",
+      "sidePanel",
+      "scripting"
+    ],
+    "side_panel": {
+      "default_path": "sidepanel.html"
+    }
   }
 }
