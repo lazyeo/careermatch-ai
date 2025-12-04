@@ -22,7 +22,7 @@ export default async function JobsPage() {
   // Fetch user's jobs
   const { data: jobs, error } = await supabase
     .from('jobs')
-    .select('*')
+    .select('id, title, company, location, salary_min, salary_max, salary_currency, source_url, status, created_at, updated_at, user_id')
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
 
