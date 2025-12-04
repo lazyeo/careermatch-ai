@@ -101,8 +101,10 @@ export async function POST(request: NextRequest) {
                 description: parsedData.description || null,
                 requirements: parsedData.requirements || null,
                 benefits: parsedData.benefits || null,
-                original_content: parsedData.original_content || null,
-                source_url: item.type === 'url' ? item.value : null,
+                // Prefer formatted markdown for original_content, fallback to raw
+                original_content: parsedData.formatted_original_content || parsedData.original_content || null,
+                // Ensure we save the URL, prioritizing the one from the extension/request
+                source_url: parsedData.application_url || (item.type === 'url' ? item.value : null) || (item.type === 'content' && url ? url : null),
                 posted_date: parsedData.posted_date || null,
                 deadline: parsedData.deadline || null,
                 status: 'saved',

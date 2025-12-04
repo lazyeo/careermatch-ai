@@ -27,32 +27,35 @@ export interface ParsedJobData {
   company_info?: string
   application_url?: string
   original_content?: string
+  formatted_original_content?: string
 }
 
 // AI解析Prompt
-const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务是从招聘信息中**主动挖掘**所有有价值的信息。
+const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务是从招聘信息中**主动挖掘**所有有价值的信息，并进行**专业排版**。
 
 ## 核心原则
 1. **准确提取**：精确识别岗位的核心信息
 2. **结构化输出**：将非结构化的招聘文本转换为结构化数据
-3. **智能推断**：对于隐含信息，基于上下文进行合理推断
+3. **排版美化**：使用Markdown格式优化阅读体验
+4. **原文清洗**：生成一份干净的、易读的原文副本
 
 ## 提取指令
 1. **基本信息**：岗位标题、公司名称、工作地点
 2. **岗位类型**：全职/兼职/合同/实习/临时
 3. **薪资信息**：薪资范围、货币类型（智能识别NZD/AUD/USD/CNY等）
-4. **岗位描述**：工作职责、日常任务
-5. **岗位要求**：技能要求、经验要求、学历要求
+4. **岗位描述**：工作职责、日常任务（必须使用Markdown列表）
+5. **岗位要求**：技能要求、经验要求、学历要求（必须使用Markdown列表）
 6. **福利待遇**：公司福利、额外benefits
 7. **时间信息**：发布日期、申请截止日期
 8. **技能清单**：提取所需的具体技能列表
 9. **公司信息**：公司简介（如有提供）
 
 ## 格式化规则
-- 日期格式化为 YYYY-MM-DD
-- 薪资转换为数字（去除货币符号和逗号）
-- 岗位类型映射：full-time/part-time/contract/internship/casual
-- 如果薪资是按小时/周/月计算，尝试换算为年薪
+- **日期**：YYYY-MM-DD
+- **薪资**：转换为数字（去除货币符号和逗号）
+- **岗位类型**：full-time/part-time/contract/internship/casual
+- **文本字段**：(description, requirements, benefits) 必须使用 **Markdown** 格式。使用无序列表 (- )、加粗 (**Title**) 和分段，避免大段纯文本。
+- **原文清洗**：生成 'formatted_original_content' 字段。将输入的HTML转换为干净的 Markdown。保留所有标题、段落、列表结构，但移除广告、导航栏、侧边栏推荐、无关链接和按钮。
 
 ## 招聘信息内容：
 {CONTENT}
@@ -67,22 +70,24 @@ const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务
   "salary_min": 80000,
   "salary_max": 120000,
   "salary_currency": "NZD|AUD|USD|CNY",
-  "description": "岗位描述和职责",
-  "requirements": "岗位要求（技能、经验、学历等）",
-  "benefits": "福利待遇",
+  "description": "### 工作职责\n- 职责1\n- 职责2...",
+  "requirements": "### 任职要求\n- 要求1\n- 要求2...",
+  "benefits": "福利待遇...",
   "posted_date": "YYYY-MM-DD",
   "deadline": "YYYY-MM-DD",
   "skills_required": ["技能1", "技能2"],
   "experience_years": "3-5年",
   "education_requirement": "本科及以上",
   "company_info": "公司简介",
-  "application_url": "申请链接"
+  "application_url": "申请链接",
+  "formatted_original_content": "# 岗位标题\n\n## 公司介绍\n...\n\n## 职位详情\n..."
 }
 
 注意：
 1. 如果某个字段找不到信息，使用null或省略该字段
 2. 不要返回markdown代码块，直接返回JSON
-3. 薪资字段必须是数字，不是字符串`
+3. 薪资字段必须是数字
+4. description 和 requirements 必须排版精美，易于阅读`
 
 /**
  * Fetch data specifically from Workable API
@@ -401,6 +406,7 @@ function sanitizeJobData(data: ParsedJobData): ParsedJobData {
     company_info: data.company_info || undefined,
     application_url: data.application_url || undefined,
     original_content: data.original_content || undefined,
+    formatted_original_content: data.formatted_original_content || undefined,
   }
 }
 

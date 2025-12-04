@@ -112,63 +112,81 @@ export const SaveJobButton = () => {
         }
     }
 
+    // Helper to find the best job container
+    const getScopedContainer = (): Element | null => {
+        const url = window.location.href
+
+        // Seek
+        if (url.includes('seek')) {
+            return document.querySelector('[data-automation="jobDetails"]') ||
+                document.querySelector('[data-automation="job-detail-container"]') ||
+                document.querySelector('article')
+        }
+
+        // LinkedIn
+        if (url.includes('linkedin')) {
+            return document.querySelector('.jobs-details__main-content') ||
+                document.querySelector('.jobs-search__job-details--container') ||
+                document.querySelector('.job-view-layout')
+        }
+
+        // Generic - Look for semantic tags
+        return document.querySelector('article') || document.querySelector('main') || document.body
+    }
+
+    // Helper to find the canonical job URL
+    const getJobUrl = (container: Element | null): string => {
+        // 1. Canonical tag (most reliable)
+        const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href')
+        if (canonical && !canonical.includes('search')) return canonical
+
+        // 2. OpenGraph URL
+        const ogUrl = document.querySelector('meta[property="og:url"]')?.getAttribute('content')
+        if (ogUrl && !ogUrl.includes('search')) return ogUrl
+
+        // 3. Look for link in title within container
+        if (container) {
+            const headerLinks = container.querySelectorAll('h1 a, h2 a, [data-automation="job-detail-title"] a')
+            for (const link of headerLinks) {
+                const href = link.getAttribute('href')
+                if (href && (href.includes('/job/') || href.includes('/view/'))) {
+                    return new URL(href, window.location.href).toString()
+                }
+            }
+        }
+
+        // 4. Fallback to current URL
+        return window.location.href
+    }
+
     const handleSave = async () => {
         setStatus("loading")
         try {
-            // Smart HTML extraction: Get only the job detail panel, not the entire page
-            let jobDetailHtml: string
-            const url = window.location.href
+            // 1. Find the best container
+            const container = getScopedContainer()
 
-            // Try to find the job detail container (works for both full pages and split view)
-            const seekDetailSelectors = [
-                '[data-automation="jobDetails"]',           // Main job details container
-                '[data-automation="job-detail-container"]', // Alternative
-                'article[data-automation*="job"]',          // Generic article
-            ]
-
-            const linkedinDetailSelectors = [
-                '.jobs-details__main-content',              // Main content area
-                '.jobs-unified-top-card',                   // Top card in split view
-                '[class*="job-view-layout"]',              // Generic job view
-                'div.jobs-search__job-details--container'   // Search split view
-            ]
-
-            // Determine which selectors to use based on domain
-            const selectors = url.includes('seek.co.nz')
-                ? seekDetailSelectors
-                : url.includes('linkedin.com')
-                    ? linkedinDetailSelectors
-                    : []
-
-            let detailContainer: Element | null = null
-            for (const selector of selectors) {
-                detailContainer = document.querySelector(selector)
-                if (detailContainer) {
-                    console.log(`🎯 [Extension] Found job detail container with: ${selector}`)
-                    break
-                }
-            }
-
-            if (detailContainer) {
-                // Auto-expand content before extracting
-                await expandContent(detailContainer)
-
-                // Extract HTML from the specific container
-                jobDetailHtml = (detailContainer as HTMLElement).outerHTML
-                console.log(`📦 [Extension] Extracted ${jobDetailHtml.length} chars from container`)
+            if (container) {
+                console.log(`🎯 [Extension] Found scoped container:`, container.tagName, container.className)
+                // Auto-expand content
+                await expandContent(container)
             } else {
-                // Fallback: Use entire page (for unknown layouts)
-                console.warn('⚠️ [Extension] Job detail container not found, using full page HTML')
-                // Try to expand globally if container not found
-                await expandContent(document.body)
-                jobDetailHtml = document.documentElement.outerHTML
+                console.warn('⚠️ [Extension] No scoped container found, using body')
             }
+
+            // 2. Extract content (HTML)
+            const contentContainer = container || document.body
+            const jobDetailHtml = (contentContainer as HTMLElement).outerHTML
+            console.log(`📦 [Extension] Extracted ${jobDetailHtml.length} chars`)
+
+            // 3. Extract URL
+            const jobUrl = getJobUrl(container)
+            console.log(`🔗 [Extension] Identified Job URL: ${jobUrl}`)
 
             const response = await sendToBackground({
                 name: "save-job",
                 body: {
                     content: jobDetailHtml,
-                    url
+                    url: jobUrl
                 }
             })
 
@@ -176,38 +194,27 @@ export const SaveJobButton = () => {
 
             if (response.success) {
                 setStatus("success")
-                // Mark job as saved in storage
                 await markAsSaved(currentJobId)
-
-                // Auto-reset after 2 seconds to "already-saved" state
-                setTimeout(() => {
-                    setStatus("already-saved")
-                }, 2000)
+                setTimeout(() => setStatus("already-saved"), 2000)
             } else {
                 setStatus("error")
                 setMessage(response.error || "Failed")
-                // Auto-reset error after 3 seconds
                 setTimeout(() => {
-                    const checkPreviouslySaved = async () => {
-                        const isSaved = await checkIfSaved(currentJobId)
+                    checkIfSaved(currentJobId).then(isSaved => {
                         setStatus(isSaved ? "already-saved" : "idle")
                         setMessage("")
-                    }
-                    checkPreviouslySaved()
+                    })
                 }, 3000)
             }
         } catch (error) {
             console.error("Failed to save job:", error)
             setStatus("error")
             setMessage((error as Error).message)
-            // Auto-reset error after 3 seconds
             setTimeout(() => {
-                const checkPreviouslySaved = async () => {
-                    const isSaved = await checkIfSaved(currentJobId)
+                checkIfSaved(currentJobId).then(isSaved => {
                     setStatus(isSaved ? "already-saved" : "idle")
                     setMessage("")
-                }
-                checkPreviouslySaved()
+                })
             }, 3000)
         }
     }

@@ -18,7 +18,8 @@ const isJobPage = (): boolean => {
     const url = window.location.href
 
     // 1. Exclude known sites handled by specific injectors
-    if (url.includes('seek.co.nz') || url.includes('linkedin.com')) {
+    // 1. Exclude known sites handled by specific injectors
+    if (url.includes('seek.') || url.includes('linkedin.com')) {
         return false
     }
 
