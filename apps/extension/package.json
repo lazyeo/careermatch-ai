@@ -8,7 +8,7 @@
     "dev": "plasmo dev",
     "build": "plasmo build",
     "build:dev": "PLASMO_PUBLIC_API_URL=http://localhost:3000 PLASMO_PUBLIC_NAME_SUFFIX=' (Dev)' plasmo build --target chrome-mv3 && rm -rf build/dev && mkdir -p build/dev && mv build/chrome-mv3-prod build/dev/chrome-mv3",
-    "build:prod": "PLASMO_PUBLIC_API_URL=https://www.cvto.work plasmo build --target chrome-mv3 && rm -rf build/prod && mkdir -p build/prod && mv build/chrome-mv3-prod build/prod/chrome-mv3",
+    "build:prod": "PLASMO_PUBLIC_API_URL=https://cvto.work plasmo build --target chrome-mv3 && rm -rf build/prod && mkdir -p build/prod && mv build/chrome-mv3-prod build/prod/chrome-mv3",
     "package": "plasmo package"
   },
   "dependencies": {
@@ -39,7 +39,10 @@
     "host_permissions": [
       "https://*/*",
       "http://localhost/*",
-      "http://127.0.0.1/*"
+      "http://127.0.0.1/*",
+      "*://*.cvto.work/*",
+      "https://*.vercel.app/*",
+      "*://localhost/*"
     ],
     "permissions": [
       "storage",

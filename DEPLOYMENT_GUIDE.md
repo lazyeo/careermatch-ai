@@ -1,48 +1,49 @@
-# 🚀 CareerMatch AI Deployment Guide
+# Deployment Guide
 
-You have registered **`cvto.work`**. Here is your specific configuration checklist.
+## 1. Web Application (Vercel)
 
-## 1. 🌍 Vercel (The Web App)
-*   **Action**: Go to Vercel Project Settings > Domains.
-*   **Add Domain**: Add `cvto.work` (and optionally `www.cvto.work`).
-*   **DNS**: Follow Vercel's instructions to update your DNS records (usually A record or CNAME) at your domain registrar.
-*   **Environment Variables**:
-    *   Update `NEXT_PUBLIC_APP_URL` to `https://cvto.work`.
+The web application is deployed on Vercel.
+- **Production URL**: `https://cvto.work`
+- **Preview URLs**: Generated automatically for each PR (e.g., `https://careermatch-ai-git-xxx.vercel.app`)
 
-## 2. ⚡ Supabase (Authentication)
-*   **Action**: Go to Supabase Dashboard > Authentication > URL Configuration.
-*   **Site URL**: Set to `https://cvto.work`.
-*   **Redirect URLs**: Add the following:
-    *   `https://cvto.work/auth/callback`
-    *   `https://cvto.work/**` (Wildcard for safety)
-    *   *Keep `http://localhost:3000/**` for local development.*
+### Environment Variables
+Ensure the following environment variables are set in Vercel:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `OPENAI_API_KEY` (or `CLAUDE_API_KEY` depending on configuration)
 
-## 3. 🧩 Browser Extension (The Connector)
-*   **Action**: Update the build script to point to your new stable domain.
-    1.  Open `apps/extension/package.json`.
-    2.  Update the `build:prod` script:
-        ```json
-        "build:prod": "PLASMO_PUBLIC_API_URL=https://cvto.work plasmo build --dist-dir build/prod"
-        ```
-    3.  **Rebuild**: Run `pnpm build:prod`.
-    4.  **Distribute**: Load the new `build/prod/chrome-mv3` folder into Chrome.
+## 2. Browser Extension
 
-## ✅ Verification
-1.  Deploy Web App to Vercel.
-2.  Wait for DNS propagation (usually minutes, up to 24h).
-3.  Visit `https://cvto.work` and login.
-4.  Install the new Extension build.
-5.  Open a job page -> Click Save -> Check if it appears on `https://cvto.work/dashboard`.
+The extension needs to be built specifically for the target environment because it hardcodes the API URL.
 
-## 💡 Pro Tip: Use a Stable Domain
-To avoid this "Configuration Hell", **buy a custom domain early** (e.g., `$10/year`).
-*   Point Vercel to `app.yourdomain.com`.
-*   Configure Supabase once.
-*   Configure Extension once.
-*   Even if you switch from Vercel to AWS later, the domain stays the same, and you don't need to update the extension users!
+### Build for Production (`cvto.work`)
+```bash
+cd apps/extension
+pnpm build:prod
+# Output: build/prod/chrome-mv3
+```
 
-## 🔄 CI/CD Automation (Advanced)
-You can automate the extension build in GitHub Actions:
-1.  Set `PLASMO_PUBLIC_API_URL` as a GitHub Secret.
-2.  On push to `main`, run the build script.
-3.  Upload the `build/prod/chrome-mv3` folder as a Release Artifact.
+### Build for Local Development (`localhost:3000`)
+```bash
+cd apps/extension
+pnpm build:dev
+# Output: build/dev/chrome-mv3
+```
+
+### Build for Vercel Preview
+To test the extension with a specific Vercel Preview deployment (e.g., `https://careermatch-ai-git-dev-lazyeo.vercel.app`), you must build it with that URL:
+
+```bash
+cd apps/extension
+# Replace the URL with your actual preview URL
+PLASMO_PUBLIC_API_URL=https://careermatch-ai-git-dev-lazyeo.vercel.app PLASMO_PUBLIC_NAME_SUFFIX=' (Preview)' plasmo build --target chrome-mv3
+```
+The output will be in `build/chrome-mv3-prod`. Load this folder into Chrome.
+
+> **Note**: We have added `*.vercel.app` to the extension's host permissions, so it can correctly read authentication cookies from any Vercel preview URL.
+
+## 3. Custom Domain Configuration
+- **Domain**: `cvto.work`
+- **DNS**: Configured in Vercel (A record / CNAME)
+- **Supabase**: Auth settings should allow `https://cvto.work` as a redirect URL.

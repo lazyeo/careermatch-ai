@@ -1,5 +1,5 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
-import { getAuthToken } from "../auth"
+import { getAuthToken, getAuthDebugInfo } from "../auth"
 import { API_ENDPOINTS } from "../../config"
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
@@ -9,27 +9,33 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
         const token = await getAuthToken()
 
         if (!token) {
-            res.send({ success: false, error: "Not authenticated. Please login to CareerMatch." })
+            const debug = await getAuthDebugInfo()
+            res.send({
+                success: false,
+                error: `Not authenticated. [Debug: Checked ${debug.domains.join(', ')}. Found ${debug.cookieCount} cookies: ${debug.cookieNames.join(', ')}]`
+            })
             return
         }
 
         console.log("🔵 [Background] Save job message received", { url })
 
-        const response = await fetch(API_ENDPOINTS.IMPORT_JOB, {
+        const response = await fetch(`${API_ENDPOINTS.IMPORT_JOB} `, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Cookie": `sb-access-token=${token}` // Pass the token if needed, or rely on browser cookies if same-site
+                "Authorization": `Bearer ${token} `
             },
             body: JSON.stringify({
-                html: content,
-                url: url
+                url: url,
+                content: content,
+                save_immediately: true
             })
         })
 
         if (!response.ok) {
             const errorText = await response.text()
-            throw new Error(`API returned ${response.status}: ${errorText}`)
+            console.error(`[Extension] Save Job Failed: ${response.status} ${response.statusText} `, errorText)
+            throw new Error(`Failed to save job: ${response.status} ${errorText} `)
         }
 
         const data = await response.json()

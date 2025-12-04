@@ -334,6 +334,12 @@ export async function parseJobFromUrl(
       }
 
       const data = await response.json() as ParsedJobData
+
+      // Validate the data - if essential fields are missing, consider it a failure
+      if (!data.title || !data.company) {
+        throw new Error('Worker returned incomplete data (missing title or company)')
+      }
+
       console.log('✅ Worker successfully parsed job data')
       return sanitizeJobData(data)
     } catch (error) {

@@ -67,7 +67,7 @@ export const getInlineAnchor: PlasmoGetInlineAnchor = async () => {
         return null
     }
 
-    console.log('🌍 [Extension] Universal Injector: Detected generic job page')
+    // console.log('🌍 [Extension] Universal Injector: Detected generic job page')
 
     // Prevent duplicate injection
     const existingContainer = document.getElementById("plasmo-universal-fixed-button-container")
