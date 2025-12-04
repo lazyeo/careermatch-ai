@@ -13,6 +13,8 @@ import {
   tryFixJson
 } from '@careermatch/shared'
 
+export type { ParsedJobData }
+
 const turndownService = new TurndownService({
   headingStyle: 'atx',
   codeBlockStyle: 'fenced',

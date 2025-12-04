@@ -161,7 +161,7 @@ export interface JobImport {
   source_content?: string
   screenshot_path?: string
   status: JobImportStatus
-  parsed_data?: ParsedJobData
+  parsed_data?: DocumentParsedJobData
   error_message?: string
   ai_provider?: string
   ai_model?: string
@@ -220,7 +220,7 @@ export interface ParsedJobContent {
 /**
  * AI解析的岗位数据（用于导入预览）
  */
-export interface ParsedJobData {
+export interface DocumentParsedJobData {
   title: string
   company: string
   location?: string
@@ -250,7 +250,7 @@ export interface ImportJobRequest {
  */
 export interface ConfirmJobImportRequest {
   import_id: string
-  data_overrides?: Partial<ParsedJobData>
+  data_overrides?: Partial<DocumentParsedJobData>
 }
 
 /**

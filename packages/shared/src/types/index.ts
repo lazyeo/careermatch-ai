@@ -28,6 +28,7 @@ export type {
   AnalyzeResponse,
   ChatResponse,
   AIAnalysisOutput,
+  ParsedJobData,
 } from './job'
 
 // Application types
@@ -99,7 +100,7 @@ export type {
   JobV2,
   JobV2Status,
   ParsedJobContent,
-  ParsedJobData,
+  DocumentParsedJobData,
   // API请求类型
   GenerateDocumentRequest,
   UpdateDocumentRequest,
