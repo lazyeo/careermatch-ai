@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, ReactNode } from 'react'
+import { useState, useEffect, ReactNode } from 'react'
 import { Card, CardContent } from '@careermatch/ui'
 import { FileText, Layout, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -16,22 +16,27 @@ type TabType = 'details' | 'original' | 'analysis'
 
 export function JobDetailTabs({ details, original, analysis }: JobDetailTabsProps) {
     const [activeTab, setActiveTab] = useState<TabType>('details')
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const tabs: { id: TabType; label: string; icon: ReactNode }[] = [
         {
             id: 'details',
             label: '职位详情',
-            icon: <Layout className="w-4 h-4" />
+            icon: mounted ? <Layout className="w-4 h-4" /> : <div className="w-4 h-4" />
         },
         {
             id: 'original',
             label: '原始招聘文案',
-            icon: <FileText className="w-4 h-4" />
+            icon: mounted ? <FileText className="w-4 h-4" /> : <div className="w-4 h-4" />
         },
         {
             id: 'analysis',
             label: 'AI 深度分析',
-            icon: <Sparkles className="w-4 h-4" />
+            icon: mounted ? <Sparkles className="w-4 h-4" /> : <div className="w-4 h-4" />
         },
     ]
 

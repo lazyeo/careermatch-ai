@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button, Card, CardContent } from '@careermatch/ui'
 import { Sparkles, Loader2, AlertCircle } from 'lucide-react'
 import { MarkdownAnalysis } from '../analysis/components/MarkdownAnalysis'
@@ -11,10 +12,18 @@ interface JobSummaryProps {
 }
 
 export function JobSummary({ jobId, initialContent = '' }: JobSummaryProps) {
+    const router = useRouter()
     const [content, setContent] = useState(initialContent)
     const [isStreaming, setIsStreaming] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const abortControllerRef = useRef<AbortController | null>(null)
+
+    // Sync content when initialContent changes (e.g. after router.refresh())
+    useEffect(() => {
+        if (initialContent) {
+            setContent(initialContent)
+        }
+    }, [initialContent])
 
     const startStreaming = async () => {
         if (abortControllerRef.current) {
@@ -61,6 +70,7 @@ export function JobSummary({ jobId, initialContent = '' }: JobSummaryProps) {
                             }
                             if (data.done) {
                                 setIsStreaming(false)
+                                router.refresh() // Refresh to update server component data
                             }
                             if (data.error) {
                                 throw new Error(data.error)

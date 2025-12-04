@@ -280,7 +280,7 @@ export default async function JobDetailPage({
           analysis={
             <div className="space-y-6">
               {/* Job Summary / Critique */}
-              <JobSummary jobId={params.id} />
+              <JobSummary jobId={params.id} initialContent={job.ai_analysis} />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Apply for Job */}

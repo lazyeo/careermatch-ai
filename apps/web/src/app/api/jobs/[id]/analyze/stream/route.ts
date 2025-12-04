@@ -217,7 +217,19 @@ export async function POST(
               console.log('Client disconnected before receiving final message')
             }
           } else {
-            // For job summary, just close the stream
+            // For job summary, save to jobs table and close stream
+            const { error: updateError } = await supabase
+              .from('jobs')
+              .update({ ai_analysis: fullResponse })
+              .eq('id', params.id)
+              .eq('user_id', user.id)
+
+            if (updateError) {
+              console.error('Error saving job summary:', updateError)
+            } else {
+              console.log('✅ Job summary saved to database')
+            }
+
             try {
               const finalData = JSON.stringify({ done: true })
               controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
