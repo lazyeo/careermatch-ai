@@ -13,6 +13,7 @@ export interface Job {
   deadline?: Date
   sourceUrl?: string
   status: JobStatus
+  aiAnalysis?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -112,4 +113,28 @@ export interface AIAnalysisOutput {
   score: number
   recommendation: AnalysisRecommendation
   analysis: string                      // Markdown格式
+}
+
+// 解析后的岗位数据结构
+export interface ParsedJobData {
+  title: string
+  company: string
+  location?: string
+  job_type?: 'full-time' | 'part-time' | 'contract' | 'internship' | 'casual'
+  salary_min?: number
+  salary_max?: number
+  salary_currency?: string
+  description?: string
+  requirements?: string
+  benefits?: string
+  posted_date?: string
+  deadline?: string
+  // 扩展信息
+  skills_required?: string[]
+  experience_years?: string
+  education_requirement?: string
+  company_info?: string
+  application_url?: string
+  original_content?: string
+  formatted_original_content?: string
 }

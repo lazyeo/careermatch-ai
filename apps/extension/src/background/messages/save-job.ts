@@ -41,10 +41,15 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
         const data = await response.json()
         console.log("🟢 [Background] API Response:", JSON.stringify(data, null, 2))
 
+        // Check if the individual item succeeded
+        const itemResult = data.results?.[0]
+        const isSuccess = data.success && itemResult?.success
+
         res.send({
-            success: data.success,
-            error: data.error,
-            job_id: data.results?.[0]?.job_id // Pass back job_id for debugging
+            success: isSuccess,
+            error: data.error || itemResult?.error,
+            job_id: itemResult?.job_id,
+            parsed_data: itemResult?.parsed_data
         })
     } catch (error) {
         console.error("Save job failed:", error)

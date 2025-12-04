@@ -5,57 +5,52 @@
  */
 
 import OpenAI from 'openai'
+import TurndownService from 'turndown'
+import {
+  ParsedJobData,
+  cleanJsonResponse,
+  parseJsonFromAI,
+  tryFixJson
+} from '@careermatch/shared'
 
-// 解析后的岗位数据结构
-export interface ParsedJobData {
-  title: string
-  company: string
-  location?: string
-  job_type?: 'full-time' | 'part-time' | 'contract' | 'internship' | 'casual'
-  salary_min?: number
-  salary_max?: number
-  salary_currency?: string
-  description?: string
-  requirements?: string
-  benefits?: string
-  posted_date?: string
-  deadline?: string
-  // 扩展信息
-  skills_required?: string[]
-  experience_years?: string
-  education_requirement?: string
-  company_info?: string
-  application_url?: string
-  original_content?: string
-  formatted_original_content?: string
-}
+const turndownService = new TurndownService({
+  headingStyle: 'atx',
+  codeBlockStyle: 'fenced',
+  hr: '---',
+  bulletListMarker: '-',
+  emDelimiter: '*'
+})
+
+// Add rule to ensure spacing around headings
+turndownService.addRule('headingSpacing', {
+  filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+  replacement: function (content, node, options) {
+    const hLevel = Number(node.nodeName.charAt(1))
+    const hashes = '#'.repeat(hLevel)
+    return '\n\n' + hashes + ' ' + content + '\n\n'
+  }
+})
+
+// Add rule to improve paragraph spacing
+turndownService.addRule('paragraphSpacing', {
+  filter: 'p',
+  replacement: function (content) {
+    return '\n\n' + content + '\n\n'
+  }
+})
 
 // AI解析Prompt
-const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务是从招聘信息中**主动挖掘**所有有价值的信息，并进行**专业排版**。
-
-## 核心原则
-1. **准确提取**：精确识别岗位的核心信息
-2. **结构化输出**：将非结构化的招聘文本转换为结构化数据
-3. **排版美化**：使用Markdown格式优化阅读体验
-4. **原文清洗**：生成一份干净的、易读的原文副本
+const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务是从招聘信息中提取关键结构化数据。
 
 ## 提取指令
 1. **基本信息**：岗位标题、公司名称、工作地点
 2. **岗位类型**：全职/兼职/合同/实习/临时
 3. **薪资信息**：薪资范围、货币类型（智能识别NZD/AUD/USD/CNY等）
-4. **岗位描述**：工作职责、日常任务（必须使用Markdown列表）
-5. **岗位要求**：技能要求、经验要求、学历要求（必须使用Markdown列表）
-6. **福利待遇**：公司福利、额外benefits
-7. **时间信息**：发布日期、申请截止日期
-8. **技能清单**：提取所需的具体技能列表
-9. **公司信息**：公司简介（如有提供）
-
-## 格式化规则
-- **日期**：YYYY-MM-DD
-- **薪资**：转换为数字（去除货币符号和逗号）
-- **岗位类型**：full-time/part-time/contract/internship/casual
-- **文本字段**：(description, requirements, benefits) 必须使用 **Markdown** 格式。使用无序列表 (- )、加粗 (**Title**) 和分段，避免大段纯文本。
-- **原文清洗**：生成 'formatted_original_content' 字段。将输入的HTML转换为干净的 Markdown。保留所有标题、段落、列表结构，但移除广告、导航栏、侧边栏推荐、无关链接和按钮。
+4. **岗位摘要**：请生成一个简短的岗位职责摘要（description），不超过300字。不要复制全文。
+5. **核心要求**：请生成一个简短的核心要求摘要（requirements），不超过300字。
+6. **时间信息**：发布日期、申请截止日期
+7. **技能清单**：提取所需的具体技能列表
+8. **公司信息**：公司简介（如有提供）
 
 ## 招聘信息内容：
 {CONTENT}
@@ -70,8 +65,8 @@ const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务
   "salary_min": 80000,
   "salary_max": 120000,
   "salary_currency": "NZD|AUD|USD|CNY",
-  "description": "### 工作职责\n- 职责1\n- 职责2...",
-  "requirements": "### 任职要求\n- 要求1\n- 要求2...",
+  "description": "简短的职责摘要...",
+  "requirements": "简短的要求摘要...",
   "benefits": "福利待遇...",
   "posted_date": "YYYY-MM-DD",
   "deadline": "YYYY-MM-DD",
@@ -79,15 +74,15 @@ const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务
   "experience_years": "3-5年",
   "education_requirement": "本科及以上",
   "company_info": "公司简介",
-  "application_url": "申请链接",
-  "formatted_original_content": "# 岗位标题\n\n## 公司介绍\n...\n\n## 职位详情\n..."
+  "application_url": "申请链接"
 }
 
 注意：
 1. 如果某个字段找不到信息，使用null或省略该字段
 2. 不要返回markdown代码块，直接返回JSON
 3. 薪资字段必须是数字
-4. description 和 requirements 必须排版精美，易于阅读`
+4. description 和 requirements 必须是纯文本或简单的Markdown，不要太长
+`
 
 /**
  * Fetch data specifically from Workable API
@@ -146,7 +141,6 @@ export async function fetchJobPageContent(url: string): Promise<string> {
     }
 
     // 2. Standard Fetch
-    // 使用无头浏览器或简单fetch获取页面内容
     const response = await fetch(url, {
       headers: {
         'User-Agent':
@@ -258,7 +252,6 @@ export async function parseJobContent(
     .trim()
 
   // Limit to ~50k characters to stay well under 200k token limit
-  // (rough estimate: 1 char ≈ 0.25-0.5 tokens, so 50k chars ≈ 12.5-25k tokens)
   const MAX_CHARS = 50000
   if (cleanedContent.length > MAX_CHARS) {
     console.warn(`⚠️ Content length ${cleanedContent.length} exceeds ${MAX_CHARS}, truncating...`)
@@ -266,6 +259,22 @@ export async function parseJobContent(
   }
 
   console.log(`✅ Cleaned content length: ${cleanedContent.length} characters`)
+
+  // Convert HTML to Markdown using Turndown for the original_content field
+  // We use the original 'content' (or slightly cleaned version) for this, not the aggressive strip-tags version
+  // Actually, 'content' passed here might already be HTML.
+  // Let's try to convert the raw content first.
+  let markdownContent = ''
+  try {
+    // Basic cleanup for turndown
+    const preClean = content
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    markdownContent = turndownService.turndown(preClean)
+  } catch (e) {
+    console.warn('Turndown conversion failed, using raw content', e)
+    markdownContent = content
+  }
 
   const prompt = PARSE_JOB_PROMPT.replace('{CONTENT}', cleanedContent)
 
@@ -281,7 +290,7 @@ export async function parseJobContent(
       },
     ],
     temperature: 0.1,
-    max_tokens: 4000,
+    max_tokens: 16000,
   })
 
   const responseText = response.choices[0]?.message?.content || ''
@@ -289,22 +298,28 @@ export async function parseJobContent(
 
   // 解析JSON
   try {
-    const { parseJsonFromAI } = await import('@careermatch/shared')
     const parsed = parseJsonFromAI<ParsedJobData>(responseText)
     console.log('✅ Successfully parsed job data')
 
-    return sanitizeJobData({ ...parsed, original_content: content })
+    return sanitizeJobData({
+      ...parsed,
+      original_content: markdownContent,
+      formatted_original_content: markdownContent
+    })
   } catch (error) {
     console.error('❌ Failed to parse AI response:', error)
     console.error('Response text preview:', responseText.substring(0, 500))
 
     // 尝试修复JSON
     try {
-      const { tryFixJson } = await import('@careermatch/shared')
       const fixedJson = tryFixJson(responseText)
       const parsed = JSON.parse(fixedJson) as ParsedJobData
       console.log('✅ Successfully parsed job data after fix')
-      return sanitizeJobData({ ...parsed, original_content: content })
+      return sanitizeJobData({
+        ...parsed,
+        original_content: markdownContent,
+        formatted_original_content: markdownContent
+      })
     } catch {
       console.error('❌ Failed to fix JSON')
       throw new Error('AI返回的数据格式无效')
@@ -358,11 +373,6 @@ export async function parseJobFromUrl(
 
   return parseJobContent(content, config)
 }
-
-/**
- * 尝试修复常见的JSON格式问题
- */
-// Keeping local name removed; use shared tryFixJson from json-utils when needed
 
 /**
  * 清理和验证解析的岗位数据

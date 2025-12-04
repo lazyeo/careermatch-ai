@@ -26,6 +26,15 @@ export default async function JobsPage() {
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
 
+  console.log('🔍 [Dashboard] Current User:', user.id)
+  console.log('🔍 [Dashboard] Fetched Jobs:', jobs?.length)
+  if (jobs && jobs.length > 0) {
+    console.log('🔍 [Dashboard] Top 5 Jobs:')
+    jobs.slice(0, 5).forEach((j, i) => {
+      console.log(`   ${i + 1}. ${j.title} (Status: ${j.status}, Updated: ${j.updated_at})`)
+    })
+  }
+
   if (error) {
     console.error('Error fetching jobs:', error)
   }

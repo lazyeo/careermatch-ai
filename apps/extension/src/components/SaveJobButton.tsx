@@ -53,6 +53,14 @@ export const SaveJobButton = () => {
     useEffect(() => {
         const checkJobChange = async () => {
             const newJobId = getJobIdentifier(window.location.href)
+
+            // Debug: Log what we see immediately
+            const container = getScopedContainer()
+            const detectedUrl = getJobUrl(container)
+            console.log(`👀 [Extension] Auto-Detect:`)
+            console.log(`   - Container: ${container ? `${container.tagName.toLowerCase()}.${Array.from(container.classList).join('.')}` : '❌ Not Found (will use body)'}`)
+            console.log(`   - Target URL: ${detectedUrl}`)
+
             if (newJobId !== currentJobId) {
                 console.log(`🔄 [Extension] Job changed: ${currentJobId} → ${newJobId}`)
                 setCurrentJobId(newJobId)
@@ -119,7 +127,9 @@ export const SaveJobButton = () => {
         // Seek
         if (url.includes('seek')) {
             return document.querySelector('[data-automation="jobDetails"]') ||
-                document.querySelector('[data-automation="job-detail-container"]') ||
+                document.querySelector('[data-automation="job-detail-root"]') ||
+                document.querySelector('[data-automation="jobAdDetails"]') ||
+                document.querySelector('main') || // Seek usually puts detail in main
                 document.querySelector('article')
         }
 
@@ -194,6 +204,9 @@ export const SaveJobButton = () => {
 
             if (response.success) {
                 setStatus("success")
+                if (response.parsed_data) {
+                    console.log(`✅ [Extension] Saved Job: "${response.parsed_data.title}" at ${response.parsed_data.company}`)
+                }
                 await markAsSaved(currentJobId)
                 setTimeout(() => setStatus("already-saved"), 2000)
             } else {
@@ -222,7 +235,7 @@ export const SaveJobButton = () => {
     return (
         <button
             onClick={handleSave}
-            disabled={status === "loading" || status === "success" || status === "already-saved"}
+            disabled={status === "loading" || status === "success"}
             className={`
         plasmo-flex plasmo-items-center plasmo-gap-2 plasmo-px-4 plasmo-py-2 plasmo-rounded-full plasmo-font-medium plasmo-transition-all plasmo-shadow-sm
         ${status === "idle" ? "plasmo-bg-blue-600 plasmo-text-white hover:plasmo-bg-blue-700" : ""}
