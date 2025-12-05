@@ -155,17 +155,20 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `你是一位专业的简历撰写专家，擅长根据AI分析建议创建针对性的简历。
-你将基于用户的个人档案信息和AI的分析建议，创建一份完整的、针对特定岗位的简历。
+          content: `You are a professional resume writer specializing in creating targeted resumes based on AI analysis.
+You will create a complete, job-specific resume based on the user's profile and AI analysis suggestions.
 
-**重要**：
-1. 简历内容必须基于用户真实的经历和技能
-2. 根据AI分析建议，突出与岗位最相关的内容
-3. 使用专业的措辞和格式
-4. 量化成就，使用具体数字
-5. 输出必须是严格的JSON格式，可以被直接解析
+**CRITICAL REQUIREMENT**:
+All content in the generated resume MUST be in **ENGLISH**. Even if the input profile or job description is in another language, you must translate and adapt it to professional English.
 
-**输出格式**：
+**Important**:
+1. Resume content must be based on the user's real experience and skills.
+2. Highlight the most relevant content based on AI analysis.
+3. Use professional English wording and format.
+4. Quantify achievements with specific numbers.
+5. Output must be strictly in JSON format.
+
+**Output Format**:
 {
   "personal_info": {
     "full_name": "姓名",
@@ -262,27 +265,92 @@ export async function POST(request: NextRequest) {
     const resumeTitle = `简历 - ${job.title} at ${job.company}`
 
     // Save resume to database
-    const { data: resume, error: saveError } = await supabase
+    // Check for existing resume for this job
+    const { data: existingResume } = await supabase
       .from('resumes')
-      .insert({
-        user_id: user.id,
-        title: resumeTitle,
-        content: resumeContent,
-        job_id: session.job_id,
-        analysis_session_id: session.id,
-        source: 'ai_generated',
-        version: 1,
-        is_primary: false,
-      })
-      .select()
+      .select('id, version')
+      .eq('job_id', session.job_id)
+      .eq('user_id', user.id)
       .single()
 
-    if (saveError) {
-      console.error('Error saving resume:', saveError)
-      throw new Error('Failed to save resume')
+    let resume
+    if (existingResume) {
+      // Update existing resume
+      const { data: updatedResume, error: updateError } = await supabase
+        .from('resumes')
+        .update({
+          title: resumeTitle,
+          content: resumeContent,
+          analysis_session_id: session.id,
+          source: 'ai_generated',
+          version: (existingResume.version || 1) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingResume.id)
+        .select()
+        .single()
+
+      if (updateError) {
+        console.error('Error updating resume:', updateError)
+        throw new Error('Failed to update resume')
+      }
+      resume = updatedResume
+      console.log('✅ Resume updated:', resume.id, 'Version:', resume.version)
+    } else {
+      // Create new resume
+      const { data: newResume, error: saveError } = await supabase
+        .from('resumes')
+        .insert({
+          user_id: user.id,
+          title: resumeTitle,
+          content: resumeContent,
+          job_id: session.job_id,
+          analysis_session_id: session.id,
+          source: 'ai_generated',
+          version: 1,
+          is_primary: false,
+        })
+        .select()
+        .single()
+
+      if (saveError) {
+        console.error('Error saving resume:', saveError)
+        throw new Error('Failed to save resume')
+      }
+      resume = newResume
+      console.log('✅ New resume created:', resume.id)
     }
 
+
+
     console.log('✅ Resume generated and saved:', resume.id)
+
+    // Log the generation details
+    try {
+      await supabase.from('resume_generation_logs').insert({
+        user_id: user.id,
+        resume_id: resume.id,
+        job_id: session.job_id,
+        provider: providerName,
+        model: model,
+        prompt: prompt,
+        context_snapshot: {
+          job: {
+            title: job.title,
+            company: job.company,
+            description: job.description,
+            requirements: job.requirements
+          },
+          profile: profile,
+          analysis: session.analysis
+        },
+        generated_content: generatedContent
+      })
+      console.log('📝 Generation log saved')
+    } catch (logError) {
+      // Don't fail the request if logging fails, just log the error
+      console.error('⚠️ Failed to save generation log:', logError)
+    }
 
     return NextResponse.json({
       resumeId: resume.id,
@@ -369,10 +437,12 @@ function buildResumeGenerationPrompt(
   }))
 
   return `
-请基于以下信息生成一份针对性的简历。
+Please generate a targeted resume based on the following information.
 
-## 目标岗位信息
-- **职位**: ${job.title}
+**IMPORTANT**: The output resume content MUST be in ENGLISH.
+
+## Target Job Information
+- **Title**: ${job.title}
 - **公司**: ${job.company}
 - **地点**: ${job.location || '未指定'}
 - **描述**: ${job.description || '未提供'}
@@ -436,12 +506,13 @@ ${JSON.stringify(certificationsFormatted, null, 2)}
 - 技能分类：技术技能、软技能、语言、工具
 - 项目经验：选择最相关的2-3个项目
 
-### 4. 注意事项
-- 所有内容必须基于用户真实信息，不能编造
-- 日期格式统一使用 YYYY-MM
-- 联系方式使用用户提供的真实信息
-- 如果某些信息缺失，可以省略该字段
+### 4. Important Notes
+- All content must be based on real user information, do not fabricate.
+- Date format: YYYY-MM.
+- Use real contact information provided.
+- If information is missing, omit the field.
+- **ENSURE ALL CONTENT IS IN ENGLISH.**
 
-请严格按照JSON格式输出，确保可以被直接解析。
+Please strictly output in JSON format.
 `
 }

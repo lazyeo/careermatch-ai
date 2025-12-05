@@ -7,6 +7,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/u
 import type { ResumeContent } from '@careermatch/shared'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 // Zod schema for resume validation
 const resumeSchema = z.object({
@@ -99,28 +100,28 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
     resolver: zodResolver(resumeSchema),
     defaultValues: initialData
       ? {
-          title: initialData.title,
-          ...initialData.content,
-        }
+        title: initialData.title,
+        ...initialData.content,
+      }
       : {
-          title: '我的简历',
-          personalInfo: {
-            fullName: '',
-            email: '',
-            phone: '',
-            location: '',
-            linkedIn: '',
-            github: '',
-            website: '',
-          },
-          careerObjective: '',
-          skills: [],
-          workExperience: [],
-          projects: [],
-          education: [],
-          certifications: [],
-          interests: [],
+        title: '我的简历',
+        personalInfo: {
+          fullName: '',
+          email: '',
+          phone: '',
+          location: '',
+          linkedIn: '',
+          github: '',
+          website: '',
         },
+        careerObjective: '',
+        skills: [],
+        workExperience: [],
+        projects: [],
+        education: [],
+        certifications: [],
+        interests: [],
+      },
   })
 
   const {
@@ -182,11 +183,14 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
       }
 
       await response.json()
+      toast.success(mode === 'create' ? '简历创建成功' : '简历保存成功')
       router.push(`/resumes`)
       router.refresh()
     } catch (err) {
       console.error('Error saving resume:', err)
-      setError('保存失败，请重试')
+      const errorMessage = '保存失败，请重试'
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
