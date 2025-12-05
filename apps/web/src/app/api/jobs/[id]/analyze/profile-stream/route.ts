@@ -46,8 +46,9 @@ export async function POST(
 
     // Get request body
     const body = await request.json()
-    const { provider } = body as {
+    const { provider, locale = 'zh' } = body as {
       provider?: AIProviderType
+      locale?: string
     }
 
     // Fetch job and user profile with all related data
@@ -129,19 +130,36 @@ export async function POST(
 
     console.log(`🤖 Starting profile-based streaming analysis with ${providerName.toUpperCase()}`)
     console.log(`📊 Using model: ${model}`)
+    console.log(`🌐 Locale: ${locale}`)
 
     // Build prompt for profile-based analysis
-    const prompt = buildProfileAnalysisPrompt(job, profile)
+    const prompt = buildProfileAnalysisPrompt(job, profile, locale)
 
     // Create AI client and stream
     const aiClient = createAIClient(provider)
 
-    const stream = await aiClient.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: 'system',
-          content: `你是一位经验丰富的职业顾问和招聘专家，专注于新西兰就业市场。
+    let systemPrompt = ''
+    if (locale === 'en') {
+      systemPrompt = `You are an experienced career consultant and recruitment expert specializing in the New Zealand job market.
+You will analyze the match between the user's profile and the target position, and provide targeted resume writing advice.
+
+**Important**: The user currently does not have a resume tailored for this position. You need to:
+1. Analyze the match between the user's background and the position.
+2. Point out the user's strengths and potential weaknesses.
+3. Provide detailed resume writing advice, including what to highlight and how to organize content.
+
+**Output Format Requirements**: Please strictly use the delimiter format for output, do not use JSON format. The format is as follows:
+---SCORE---
+<Score>
+---RECOMMENDATION---
+<Recommendation Level>
+---ANALYSIS---
+<Markdown Analysis Report>
+---END---
+
+This format allows you to freely use any Markdown syntax, including quotes, code blocks, etc.`
+    } else {
+      systemPrompt = `你是一位经验丰富的职业顾问和招聘专家，专注于新西兰就业市场。
 你将基于用户的个人档案信息分析与目标岗位的匹配度，并给出针对性的简历撰写建议。
 
 **重要**：用户目前没有针对这个岗位的简历，你需要：
@@ -158,7 +176,15 @@ export async function POST(
 <Markdown分析报告>
 ---END---
 
-这种格式可以让你自由使用任何Markdown语法，包括引号、代码块等。`,
+这种格式可以让你自由使用任何Markdown语法，包括引号、代码块等。`
+    }
+
+    const stream = await aiClient.chat.completions.create({
+      model,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt,
         },
         {
           role: 'user',
@@ -200,7 +226,7 @@ export async function POST(
           const parsed = parseDelimiterFormat(fullResponse)
 
           // Save to database (with null resume_id to indicate profile-based analysis)
-          const { data: savedSession, error: saveError} = await supabase
+          const { data: savedSession, error: saveError } = await supabase
             .from('analysis_sessions')
             .insert({
               job_id: params.id,
@@ -329,7 +355,8 @@ function buildProfileAnalysisPrompt(
     skills: Array<Record<string, unknown>>
     projects: Array<Record<string, unknown>>
     certifications: Array<Record<string, unknown>>
-  }
+  },
+  locale: string = 'zh'
 ): string {
   // Format work experiences
   const workExperiencesFormatted = profile.work_experiences.map((exp) => ({
@@ -377,6 +404,123 @@ function buildProfileAnalysisPrompt(
     expires: cert.expiration_date,
     credentialId: cert.credential_id,
   }))
+
+  if (locale === 'en') {
+    return `
+Please analyze the match with the target position based on the user's profile below and provide targeted resume writing advice.
+
+## Target Position Information
+- **Title**: ${job.title}
+- **Company**: ${job.company}
+- **Location**: ${job.location || 'Not specified'}
+- **Type**: ${job.job_type || 'Not specified'}
+- **Salary Range**: ${job.salary_min && job.salary_max ? `${job.salary_currency || 'NZD'} ${job.salary_min} - ${job.salary_max}` : 'Not specified'}
+- **Description**:
+${job.description || 'Not provided'}
+
+- **Requirements**:
+${job.requirements || 'Not provided'}
+
+- **Benefits**:
+${job.benefits || 'Not provided'}
+
+---
+
+## User Profile Information
+
+### Basic Info
+- **Name**: ${profile.full_name || 'Not provided'}
+- **Location**: ${profile.location || 'Not provided'}
+- **Target Roles**: ${profile.target_roles?.join(', ') || 'Not set'}
+
+### Professional Summary
+${profile.professional_summary || 'Not provided'}
+
+### Work Experience (${profile.work_experiences.length} entries)
+${JSON.stringify(workExperiencesFormatted, null, 2)}
+
+### Education (${profile.education_records.length} entries)
+${JSON.stringify(educationFormatted, null, 2)}
+
+### Skills (${profile.skills.length} items)
+${JSON.stringify(skillsFormatted, null, 2)}
+
+### Projects (${profile.projects.length} items)
+${JSON.stringify(projectsFormatted, null, 2)}
+
+### Certifications (${profile.certifications.length} items)
+${JSON.stringify(certificationsFormatted, null, 2)}
+
+---
+
+## ⚠️ Word Count Limit
+**Important**: Please keep the analysis report around **1000 words** (±100 words), keeping it concise and efficient.
+
+## Analysis Requirements
+
+Please provide a **concise** analysis from the following perspectives (each part must be concise):
+
+### 1. Match Assessment (~100 words)
+- Overall match level (1-2 sentences core view)
+- Key match points and mismatch points
+- 0-100 score
+
+### 2. Core Strengths (~150 words)
+- 2-3 most outstanding competitive advantages
+- Key points that can impress the recruiter
+
+### 3. Major Gaps (~150 words)
+- 2-3 key gaps
+- How to address them in the resume
+
+### 4. Resume Writing Advice (~400 words, Focus)
+Concisely provide:
+- **Format Selection**: 1 sentence recommending format and reason
+- **Structure Order**: Suggested section arrangement
+- **Professional Summary**: 1-2 sentence template or key points
+- **Work Experience**: How to highlight relevance (1-2 specific examples)
+- **Keywords**: 5-7 keywords that must be included
+- **A Specific Optimization Example**: Choose one experience and provide a before/after comparison
+
+### 5. Action Advice (~150 words)
+- 2-3 most important preparation items
+- 1-2 possible interview questions
+
+**Tip**: Each section must be concise and powerful, avoiding lengthy explanations, hitting the point directly.
+
+---
+
+## Output Format (Important! Please follow strictly)
+
+Please use the following **delimiter format** for output:
+
+\`\`\`
+---SCORE---
+<Integer 0-100>
+---RECOMMENDATION---
+<strong|moderate|weak|not_recommended>
+---ANALYSIS---
+<Detailed analysis report in Markdown format, focusing on resume writing advice>
+---END---
+\`\`\`
+
+Explanation:
+- SCORE: 0-100 match score
+- RECOMMENDATION: Recommendation level
+  - strong (85-100): Strongly recommended
+  - moderate (65-84): Worth trying
+  - weak (40-64): Some chance
+  - not_recommended (0-39): Not recommended
+- ANALYSIS: Markdown format analysis report, **controlled around 1000 words, concise and efficient**
+
+**Important Constraints**:
+1. Total word count controlled around 1000 words (±100 words)
+2. User does not have a resume for this position yet, focus on resume writing advice
+3. Each section must be concise and to the point, avoid verbosity
+4. Use clear Markdown format (headings, lists, bold)
+5. Hit the point directly, delete unnecessary explanations
+`
+  }
 
   return `
 请基于以下用户的个人档案信息，分析与目标岗位的匹配度，并给出针对性的简历撰写建议。

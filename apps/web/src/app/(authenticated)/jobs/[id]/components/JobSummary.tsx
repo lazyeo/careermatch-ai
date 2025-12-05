@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLocale } from 'next-intl'
 import { Button, Card, CardContent } from '@careermatch/ui'
 import { Sparkles, Loader2, AlertCircle } from 'lucide-react'
 import { MarkdownAnalysis } from '../analysis/components/MarkdownAnalysis'
@@ -13,6 +14,7 @@ interface JobSummaryProps {
 
 export function JobSummary({ jobId, initialContent = '' }: JobSummaryProps) {
     const router = useRouter()
+    const locale = useLocale()
     const [content, setContent] = useState(initialContent)
     const [isStreaming, setIsStreaming] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -39,7 +41,7 @@ export function JobSummary({ jobId, initialContent = '' }: JobSummaryProps) {
             const response = await fetch(`/api/jobs/${jobId}/analyze/stream`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mode: 'job_summary' }),
+                body: JSON.stringify({ mode: 'job_summary', locale }),
                 signal: abortControllerRef.current.signal,
             })
 

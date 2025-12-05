@@ -117,21 +117,61 @@ export default async function JobDetailPage({
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex justify-between items-start">
             <div className="flex-1">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(job.status)}`}>
                   {getStatusLabel(job.status)}
                 </span>
               </div>
-              <p className="text-lg text-gray-600 mt-1">{job.company}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                {t('updatedAt')} {new Date(job.updated_at).toLocaleDateString(locale)}
-              </p>
+
+              {/* Basic Info Grid in Header */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm mt-4">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <span className="font-medium text-gray-900">{t('companyName')}:</span>
+                  {job.company}
+                </div>
+                {job.location && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <span className="font-medium text-gray-900">{t('location')}:</span>
+                    {job.location}
+                  </div>
+                )}
+                {job.job_type && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <span className="font-medium text-gray-900">{t('jobType')}:</span>
+                    {getJobTypeLabel(job.job_type)}
+                  </div>
+                )}
+                {(job.salary_min || job.salary_max) && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <span className="font-medium text-gray-900">{t('salaryRange')}:</span>
+                    {job.salary_currency} {job.salary_min?.toLocaleString() || '0'}
+                    {job.salary_max ? ` - ${job.salary_max.toLocaleString()}` : '+'}
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-gray-600">
+                  <span className="font-medium text-gray-900">{t('updatedAt')}:</span>
+                  {new Date(job.updated_at).toLocaleDateString(locale)}
+                </div>
+                {sourceUrl && (
+                  <div className="flex items-center gap-2 text-gray-600 col-span-1 md:col-span-2">
+                    <span className="font-medium text-gray-900">{t('sourceUrl')}:</span>
+                    <a
+                      href={sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary-600 hover:underline truncate max-w-md"
+                    >
+                      {sourceUrl}
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 ml-4">
               <RefreshJobButton jobId={params.id} label={t('refresh')} />
               <Link href={`/jobs/${params.id}/edit`}>
                 <Button variant="primary">{t('edit')}</Button>
@@ -147,137 +187,8 @@ export default async function JobDetailPage({
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <JobDetailTabs
-          details={
-            <div className="space-y-6">
-              {/* Basic Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('basicInfo')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-sm font-medium text-gray-500">{t('jobTitle')}</span>
-                      <p className="mt-1 text-gray-900">{job.title}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-500">{t('companyName')}</span>
-                      <p className="mt-1 text-gray-900">{job.company}</p>
-                    </div>
-                    {job.location && (
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">{t('location')}</span>
-                        <p className="mt-1 text-gray-900">{job.location}</p>
-                      </div>
-                    )}
-                    {job.job_type && (
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">{t('jobType')}</span>
-                        <p className="mt-1 text-gray-900">{getJobTypeLabel(job.job_type)}</p>
-                      </div>
-                    )}
-                    {(job.salary_min || job.salary_max) && (
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">{t('salaryRange')}</span>
-                        <p className="mt-1 text-gray-900">
-                          {job.salary_currency} {job.salary_min?.toLocaleString() || '0'}
-                          {job.salary_max ? ` - ${job.salary_max.toLocaleString()}` : '+'}
-                        </p>
-                      </div>
-                    )}
-                    {sourceUrl && (
-                      <div className="col-span-2">
-                        <span className="text-sm font-medium text-gray-500">{t('sourceUrl')}</span>
-                        <p className="mt-1">
-                          <a
-                            href={sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary-600 hover:underline break-all"
-                          >
-                            {sourceUrl}
-                          </a>
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Job Description */}
-              {job.description && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('description')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
-                      {job.description}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Requirements */}
-              {job.requirements && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('requirements')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
-                      {job.requirements}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Benefits */}
-              {job.benefits && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('benefits')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
-                      {job.benefits}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Timeline */}
-              {(job.posted_date || job.deadline) && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('timeInfo')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-4">
-                      {job.posted_date && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-500">{t('postedDate')}</span>
-                          <p className="mt-1 text-gray-900">
-                            {new Date(job.posted_date).toLocaleDateString(locale)}
-                          </p>
-                        </div>
-                      )}
-                      {job.deadline && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-500">{t('deadline')}</span>
-                          <p className="mt-1 text-gray-900">
-                            {new Date(job.deadline).toLocaleDateString(locale)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          }
           original={originalContent}
-          analysis={
+          aiInsights={
             <div className="space-y-6">
               {/* Job Summary / Critique */}
               <JobSummary jobId={params.id} initialContent={job.ai_analysis} />
@@ -369,83 +280,83 @@ export default async function JobDetailPage({
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Generated Documents Section */}
+              {(resumes.length > 0 || coverLetters.length > 0) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>已生成的求职材料</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Resumes */}
+                    {resumes.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          简历 ({resumes.length})
+                        </h4>
+                        <div className="space-y-2">
+                          {resumes.map((resume) => (
+                            <Link
+                              key={resume.id}
+                              href={`/resumes/preview/${resume.id}`}
+                              className="block p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 transition-colors"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">{resume.title}</div>
+                                  <div className="text-sm text-gray-500 mt-1">
+                                    {new Date(resume.created_at).toLocaleDateString(locale)} · {' '}
+                                    {resume.source === 'ai_generated' ? 'AI生成' : '手动创建'}
+                                  </div>
+                                </div>
+                                <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Cover Letters */}
+                    {coverLetters.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          求职信 ({coverLetters.length})
+                        </h4>
+                        <div className="space-y-2">
+                          {coverLetters.map((letter) => (
+                            <div
+                              key={letter.id}
+                              className="block p-3 border border-gray-200 rounded-lg"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">{letter.title}</div>
+                                  <div className="text-sm text-gray-500 mt-1">
+                                    {new Date(letter.created_at).toLocaleDateString(locale)} · {' '}
+                                    {letter.source === 'ai_generated' ? 'AI生成' : '手动创建'}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           }
         />
-
-        {/* Generated Documents Section */}
-        {(resumes.length > 0 || coverLetters.length > 0) && (
-          <Card>
-            <CardHeader>
-              <CardTitle>已生成的求职材料</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Resumes */}
-              {resumes.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    简历 ({resumes.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {resumes.map((resume) => (
-                      <Link
-                        key={resume.id}
-                        href={`/resumes/preview/${resume.id}`}
-                        className="block p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 transition-colors"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900">{resume.title}</div>
-                            <div className="text-sm text-gray-500 mt-1">
-                              {new Date(resume.created_at).toLocaleDateString(locale)} · {' '}
-                              {resume.source === 'ai_generated' ? 'AI生成' : '手动创建'}
-                            </div>
-                          </div>
-                          <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Cover Letters */}
-              {coverLetters.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    求职信 ({coverLetters.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {coverLetters.map((letter) => (
-                      <div
-                        key={letter.id}
-                        className="block p-3 border border-gray-200 rounded-lg"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900">{letter.title}</div>
-                            <div className="text-sm text-gray-500 mt-1">
-                              {new Date(letter.created_at).toLocaleDateString(locale)} · {' '}
-                              {letter.source === 'ai_generated' ? 'AI生成' : '手动创建'}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
       </main>
     </div>
   )

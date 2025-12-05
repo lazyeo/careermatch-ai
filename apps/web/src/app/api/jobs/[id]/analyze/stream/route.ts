@@ -46,10 +46,11 @@ export async function POST(
 
     // Get request body
     const body = await request.json()
-    const { resumeId, provider, mode } = body as {
+    const { resumeId, provider, mode, locale = 'zh' } = body as {
       resumeId?: string
       provider?: AIProviderType
       mode?: 'resume_match' | 'job_summary'
+      locale?: string
     }
 
     const isJobSummary = mode === 'job_summary'
@@ -104,22 +105,49 @@ export async function POST(
     console.log(`🤖 Starting streaming analysis with ${providerName.toUpperCase()}`)
     console.log(`📊 Using model: ${model}`)
     console.log(`🎯 Mode: ${mode || 'resume_match'}`)
+    console.log(`🌐 Locale: ${locale}`)
 
     // Build prompt
     const prompt = isJobSummary
-      ? buildJobSummaryPrompt(job)
-      : buildFlexiblePrompt(job, resume!)
+      ? buildJobSummaryPrompt(job, locale)
+      : buildFlexiblePrompt(job, resume!, locale)
 
     // Create AI client and stream
     const aiClient = createAIClient(provider)
 
-    const systemPrompt = isJobSummary
-      ? `你是一位经验丰富的职业顾问和招聘专家，专注于新西兰就业市场。
+    let systemPrompt = ''
+
+    if (isJobSummary) {
+      if (locale === 'en') {
+        systemPrompt = `You are an experienced career consultant and recruitment expert specializing in the New Zealand job market.
+You will provide a deep critique of the job description, highlighting key points, potential risks, and core requirements.
+
+**Output Format Requirements**:
+Please output the analysis report directly in Markdown format. Do not include SCORE or RECOMMENDATION delimiters.`
+      } else {
+        systemPrompt = `你是一位经验丰富的职业顾问和招聘专家，专注于新西兰就业市场。
 你将对职位描述进行深度点评，指出亮点、潜在风险和核心要求。
 
 **输出格式要求**：
 请直接输出Markdown格式的分析报告。不需要包含SCORE或RECOMMENDATION分隔符。`
-      : `你是一位经验丰富的职业顾问和招聘专家，专注于新西兰就业市场。
+      }
+    } else {
+      if (locale === 'en') {
+        systemPrompt = `You are an experienced career consultant and recruitment expert specializing in the New Zealand job market.
+You will conduct a deep resume-job match analysis, with autonomy to decide which dimensions to analyze and how deeply.
+
+**Output Format Requirements**: Please strictly use the delimiter format for output, do not use JSON format. The format is as follows:
+---SCORE---
+<Score>
+---RECOMMENDATION---
+<Recommendation Level>
+---ANALYSIS---
+<Markdown Analysis Report>
+---END---
+
+This format allows you to freely use any Markdown syntax, including quotes, code blocks, etc.`
+      } else {
+        systemPrompt = `你是一位经验丰富的职业顾问和招聘专家，专注于新西兰就业市场。
 你将进行深度的简历-岗位匹配分析，拥有自主权决定分析哪些维度、如何深入。
 
 **输出格式要求**：请严格使用分隔符格式输出，不要使用JSON格式。格式如下：
@@ -132,6 +160,8 @@ export async function POST(
 ---END---
 
 这种格式可以让你自由使用任何Markdown语法，包括引号、代码块等。`
+      }
+    }
 
     const stream = await aiClient.chat.completions.create({
       model,
@@ -275,7 +305,50 @@ export async function POST(
 /**
  * Build job summary prompt
  */
-function buildJobSummaryPrompt(job: Record<string, unknown>): string {
+function buildJobSummaryPrompt(job: Record<string, unknown>, locale: string = 'zh'): string {
+  if (locale === 'en') {
+    return `
+Please provide a deep critique and analysis of the following job position.
+
+## Job Information
+- **Title**: ${job.title}
+- **Company**: ${job.company}
+- **Location**: ${job.location || 'Not specified'}
+- **Type**: ${job.job_type || 'Not specified'}
+- **Salary Range**: ${job.salary_min && job.salary_max ? `${job.salary_currency || 'NZD'} ${job.salary_min} - ${job.salary_max}` : 'Not specified'}
+- **Description**:
+${job.description || 'Not provided'}
+
+- **Requirements**:
+${job.requirements || 'Not provided'}
+
+- **Benefits**:
+${job.benefits || 'Not provided'}
+
+---
+
+## Analysis Requirements
+
+Please analyze the pros and cons of this position from a career consultant's perspective and provide recommendations.
+
+Please include the following sections (use Markdown Level 2 headers):
+
+### 1. Job Highlights ✨
+Analyze the attractiveness of this position, such as salary, career prospects, company background, benefits, etc.
+
+### 2. Potential Challenges & Risks ⚠️
+Point out potential pitfalls or challenges, such as unclear responsibilities, overly high requirements, industry risks, etc.
+
+### 3. Core Competency Requirements 🎯
+Summarize the top 3 hard skills and top 3 soft skills required to secure this offer.
+
+### 4. Application Advice 💡
+Specific advice for applicants, such as what to highlight in the resume and what questions to ask during the interview.
+
+Please be objective and sharp, do not just say nice things.
+`
+  }
+
   return `
 请对以下职位进行深度点评和分析。
 
@@ -366,7 +439,8 @@ function parseDelimiterFormat(responseText: string): {
  */
 function buildFlexiblePrompt(
   job: Record<string, unknown>,
-  resume: Record<string, unknown>
+  resume: Record<string, unknown>,
+  locale: string = 'zh'
 ): string {
   const resumeContent = (resume.content as Record<string, unknown>) || {}
   const personalInfo =
@@ -393,6 +467,104 @@ function buildFlexiblePrompt(
   const projects = resumeContent.projects || resume.projects || []
   const certifications =
     resumeContent.certifications || resume.certifications || []
+
+  if (locale === 'en') {
+    return `
+Please conduct a deep match analysis between the following candidate and the target position.
+
+## Job Information
+- **Title**: ${job.title}
+- **Company**: ${job.company}
+- **Location**: ${job.location || 'Not specified'}
+- **Type**: ${job.job_type || 'Not specified'}
+- **Salary Range**: ${job.salary_min && job.salary_max ? `${job.salary_currency || 'NZD'} ${job.salary_min} - ${job.salary_max}` : 'Not specified'}
+- **Description**:
+${job.description || 'Not provided'}
+
+- **Requirements**:
+${job.requirements || 'Not provided'}
+
+- **Benefits**:
+${job.benefits || 'Not provided'}
+
+---
+
+## Candidate Resume
+- **Name**: ${fullName}
+- **Location**: ${location}
+- **Objective**: ${objective}
+- **Skills**: ${JSON.stringify(skills, null, 2)}
+- **Work Experience**: ${JSON.stringify(workExperience, null, 2)}
+- **Education**: ${JSON.stringify(education, null, 2)}
+- **Projects**: ${JSON.stringify(projects, null, 2)}
+- **Certifications**: ${JSON.stringify(certifications, null, 2)}
+
+---
+
+## Analysis Framework Reference (Choose focus areas autonomously)
+
+Here are 9 dimensions for your reference, please decide which ones to analyze deeply based on the job characteristics:
+
+1. **Role Positioning Analysis** - Job nature, core responsibilities, career path
+2. **Keyword Matching** - Must-have skills, technical requirements, soft skills
+3. **Skill Requirement Grading** - Mandatory vs. nice-to-have
+4. **SWOT Analysis** - Candidate's Strengths/Weaknesses/Opportunities/Threats
+5. **CV Strategy Advice** - What to highlight/avoid in the resume
+6. **Interview Preparation** - Potential questions and preparation advice
+7. **Competitiveness Assessment** - Unique advantages compared to other candidates
+8. **Skill Gap** - Areas for improvement and learning suggestions
+9. **Action Plan** - Preparation needed before applying
+
+---
+
+## Output Requirements
+
+You have full autonomy to decide:
+- Which dimensions to focus on (choose the most relevant 3-6)
+- How to organize and present the analysis content
+- Where to go deep and where to be brief
+
+### Must Include
+1. **Overall Assessment** - Match score (0-100) + Recommendation Level
+2. **Key Findings** - 3-5 key insights
+3. **Proactive Advice** - Things the candidate should know but might not have thought of
+
+### Encouraged to Include (If relevant)
+- Potential interview questions
+- Specific resume optimization suggestions
+- Hidden requirements or cultural implications of this role
+
+---
+
+## Output Format (Important! Please follow strictly)
+
+Please use the following **delimiter format** for output, do not use pure JSON:
+
+\`\`\`
+---SCORE---
+<Integer 0-100>
+---RECOMMENDATION---
+<strong|moderate|weak|not_recommended>
+---ANALYSIS---
+<Detailed analysis report in Markdown format, free to use any Markdown syntax>
+---END---
+\`\`\`
+
+Explanation:
+- SCORE: 0-100 match score
+- RECOMMENDATION: Recommendation level
+  - strong (85-100): Strongly recommended
+  - moderate (65-84): Worth trying
+  - weak (40-64): Some chance
+  - not_recommended (0-39): Not recommended
+- ANALYSIS: Complete analysis report in Markdown format
+
+**Important**:
+1. Must use the above delimiter format, each delimiter on a separate line
+2. ANALYSIS section can contain any Markdown content, including quotes, code blocks, tables, etc.
+3. End output with ---END---
+`
+  }
 
   return `
 请对以下求职者与目标岗位进行深度匹配分析。

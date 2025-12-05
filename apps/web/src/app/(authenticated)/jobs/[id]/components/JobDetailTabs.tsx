@@ -2,20 +2,19 @@
 
 import { useState, useEffect, ReactNode } from 'react'
 import { Card, CardContent } from '@careermatch/ui'
-import { FileText, Layout, Sparkles } from 'lucide-react'
+import { FileText, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
 interface JobDetailTabsProps {
-    details: ReactNode
     original: ReactNode
-    analysis: ReactNode
+    aiInsights: ReactNode
 }
 
-type TabType = 'details' | 'original' | 'analysis'
+type TabType = 'original' | 'ai-insights'
 
-export function JobDetailTabs({ details, original, analysis }: JobDetailTabsProps) {
-    const [activeTab, setActiveTab] = useState<TabType>('details')
+export function JobDetailTabs({ original, aiInsights }: JobDetailTabsProps) {
+    const [activeTab, setActiveTab] = useState<TabType>('original')
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
@@ -24,18 +23,13 @@ export function JobDetailTabs({ details, original, analysis }: JobDetailTabsProp
 
     const tabs: { id: TabType; label: string; icon: ReactNode }[] = [
         {
-            id: 'details',
-            label: '职位详情',
-            icon: mounted ? <Layout className="w-4 h-4" /> : <div className="w-4 h-4" />
-        },
-        {
             id: 'original',
             label: '原始招聘文案',
             icon: mounted ? <FileText className="w-4 h-4" /> : <div className="w-4 h-4" />
         },
         {
-            id: 'analysis',
-            label: 'AI 深度分析',
+            id: 'ai-insights',
+            label: 'AI 智能助手',
             icon: mounted ? <Sparkles className="w-4 h-4" /> : <div className="w-4 h-4" />
         },
     ]
@@ -70,12 +64,6 @@ export function JobDetailTabs({ details, original, analysis }: JobDetailTabsProp
 
             {/* Tab Content */}
             <div className="min-h-[400px]">
-                {activeTab === 'details' && (
-                    <div className="space-y-6 animate-in fade-in duration-300">
-                        {details}
-                    </div>
-                )}
-
                 {activeTab === 'original' && (
                     <div className="animate-in fade-in duration-300">
                         <Card>
@@ -94,9 +82,9 @@ export function JobDetailTabs({ details, original, analysis }: JobDetailTabsProp
                     </div>
                 )}
 
-                {activeTab === 'analysis' && (
+                {activeTab === 'ai-insights' && (
                     <div className="space-y-6 animate-in fade-in duration-300">
-                        {analysis}
+                        {aiInsights}
                     </div>
                 )}
             </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useLocale } from 'next-intl'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { Sparkles, Loader2, CheckCircle, User } from 'lucide-react'
 import { MarkdownAnalysis } from './MarkdownAnalysis'
@@ -37,6 +38,7 @@ export function ProfileStreamingAnalysis({
 }: ProfileStreamingAnalysisProps) {
   // Initialize state: if existingSession, start with completed state
   const [state, setState] = useState<StreamState>(() => existingSession ? 'completed' : 'idle')
+  const locale = useLocale()
   const hasAutoStarted = useRef(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_content, setContent] = useState('')
@@ -101,7 +103,7 @@ export function ProfileStreamingAnalysis({
       const response = await fetch(`/api/jobs/${jobId}/analyze/profile-stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider }),
+        body: JSON.stringify({ provider, locale }),
         signal: abortControllerRef.current.signal,
       })
 
@@ -392,6 +394,7 @@ export function ProfileStreamingAnalysis({
                   body: JSON.stringify({
                     sessionId: sessionId,
                     provider: provider,
+                    locale,
                   }),
                 })
 

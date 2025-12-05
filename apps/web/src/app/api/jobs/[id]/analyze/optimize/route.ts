@@ -106,9 +106,12 @@ export async function POST(
       messages: [
         {
           role: 'system',
-          content: `你是一位专业的简历优化专家，专注于帮助求职者优化简历以更好地匹配目标岗位。
-你将基于之前的AI分析报告，优化简历的内容，使其更具竞争力。
-你需要返回一个JSON对象，包含optimizedContent（优化后的简历内容）和changes（主要修改说明）。`,
+          content: `You are a professional resume optimization expert.
+You will optimize the resume content based on the previous AI analysis report to make it more competitive for the target job.
+You need to return a JSON object containing optimizedContent (optimized resume content) and changes (summary of major changes).
+
+**CRITICAL REQUIREMENT**:
+All content in the optimized resume MUST be in **ENGLISH**. Even if the input is in another language, you must translate and adapt it to professional English.`,
         },
         {
           role: 'user',
@@ -161,36 +164,39 @@ function buildOptimizationPrompt(
   const resumeContent = resume.content as Record<string, unknown> || {}
 
   return `
-## 任务
-基于以下AI分析报告，优化求职者的简历，使其更好地匹配目标岗位。
+## Task
+Optimize the candidate's resume based on the following AI analysis report to better match the target job.
 
-## 目标岗位
-- 职位: ${job.title}
-- 公司: ${job.company}
-- 要求: ${job.requirements || '未提供'}
-- 描述: ${job.description || '未提供'}
+**IMPORTANT**: The output resume content MUST be in ENGLISH.
 
-## 当前简历内容
+## Target Job
+- Title: ${job.title}
+- Company: ${job.company}
+- Requirements: ${job.requirements || 'Not provided'}
+- Description: ${job.description || 'Not provided'}
+
+## Current Resume Content
 ${JSON.stringify(resumeContent, null, 2)}
 
-## AI分析报告
-匹配度评分: ${session.score}/100
-推荐等级: ${session.recommendation}
+## AI Analysis Report
+Match Score: ${session.score}/100
+Recommendation: ${session.recommendation}
 
-分析内容:
+Analysis Content:
 ${session.analysis}
 
-## 优化要求
+## Optimization Requirements
 
-1. **保持真实性**: 只优化表达方式和组织结构，不要编造虚假信息
-2. **突出相关性**: 突出与岗位要求相关的技能和经验
-3. **量化成果**: 尽可能使用数字和具体成果来描述工作经历
-4. **关键词优化**: 使用岗位描述中出现的关键词
-5. **结构优化**: 调整内容顺序，将最相关的信息放在前面
+1. **Authenticity**: Optimize expression and structure only, do not fabricate information.
+2. **Relevance**: Highlight skills and experience relevant to the job requirements.
+3. **Quantification**: Use numbers and specific results to describe work experience.
+4. **Keywords**: Use keywords from the job description.
+5. **Structure**: Adjust the order to place the most relevant information first.
+6. **ENGLISH ONLY**: Ensure all optimized content is in professional English.
 
-## 输出格式
+## Output Format
 
-请返回以下JSON格式:
+Please return the following JSON format:
 
 {
   "optimizedContent": {
@@ -243,13 +249,13 @@ ${session.analysis}
     ]
   },
   "changes": [
-    "主要修改1：说明具体改了什么",
-    "主要修改2：说明具体改了什么",
-    "主要修改3：说明具体改了什么"
+    "Major change 1: Explain what was changed",
+    "Major change 2: Explain what was changed",
+    "Major change 3: Explain what was changed"
   ]
 }
 
-请确保optimizedContent保持原简历的真实信息，只进行表达优化和结构调整。
+Ensure optimizedContent maintains the original resume's factual information, only optimizing expression and structure.
 `
 }
 
