@@ -42,6 +42,14 @@ export default async function DashboardPage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
 
+  // 获取最近的岗位
+  const { data: recentJobs } = await supabase
+    .from('jobs')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(5)
+
   // 获取申请数量
   const { count: applicationCount } = await supabase
     .from('applications')
@@ -230,23 +238,57 @@ export default async function DashboardPage() {
           </Card>
         )}
 
-        {/* 开发提示 */}
-        <Card className="mt-8 bg-success-50 border-success-200">
-          <CardHeader>
-            <CardTitle className="text-success-700">🚀 {t('sprintNotice')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-neutral-700">
-              <strong>{t('completedFeatures')}</strong>{t('completedFeaturesDesc')}
-            </p>
-            <p className="text-sm text-neutral-700 mt-2">
-              <strong>{t('newFeatures')}</strong>{t('newFeaturesDesc')}
-            </p>
-            <p className="text-xs text-neutral-500 mt-2">
-              {t('currentStatus')}<strong>{t('currentStatusDesc')}</strong> ✅
-            </p>
-          </CardContent>
-        </Card>
+        {/* 最近添加的岗位 */}
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">{t('recentJobs')}</h3>
+            <Link href="/jobs">
+              <Button variant="ghost" size="sm">
+                {t('viewAll')}
+              </Button>
+            </Link>
+          </div>
+
+          {recentJobs && recentJobs.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentJobs.map((job) => (
+                <Link key={job.id} href={`/jobs/${job.id}`}>
+                  <Card className="hover:shadow-md transition-shadow cursor-pointer h-full border-l-4 border-l-primary-500">
+                    <CardContent className="p-5">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold text-gray-900 line-clamp-1" title={job.title}>
+                          {job.title}
+                        </h4>
+                        <span className={`text-xs px-2 py-1 rounded-full ${job.status === 'saved' ? 'bg-gray-100 text-gray-600' :
+                            job.status === 'applied' ? 'bg-primary-100 text-primary-600' :
+                              'bg-gray-100 text-gray-600'
+                          }`}>
+                          {job.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-1">{job.company}</p>
+                      <div className="flex items-center text-xs text-gray-500 gap-4">
+                        <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                        {job.location && <span>{job.location}</span>}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-gray-50 border-dashed">
+              <CardContent className="py-8 text-center">
+                <p className="text-gray-500 mb-4">{t('noRecentJobs')}</p>
+                <Link href="/jobs/import">
+                  <Button variant="primary" size="sm">
+                    {t('importJob')}
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </main>
     </div>
   )
