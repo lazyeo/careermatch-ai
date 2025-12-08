@@ -2,19 +2,21 @@ import { redirect, notFound } from 'next/navigation'
 import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
-import { ArrowLeft, FileText, Sparkles, User } from 'lucide-react'
+import { ArrowLeft, FileText, Sparkles, User, Zap } from 'lucide-react'
 import { ResumeSelector } from './components/ResumeSelector'
 import { AnalysisInterface } from './components/AnalysisInterface'
 import { AnalysisResultsView } from './components/AnalysisResultsView'
 import { ProfileAnalysisInterface } from './components/ProfileAnalysisInterface'
+import { AnalysisV2 } from './components/AnalysisV2'
 import { getTranslations } from 'next-intl/server'
+import type { AnalysisDimensions } from '@careermatch/shared'
 
 export default async function JobAnalysisPage({
   params,
   searchParams,
 }: {
   params: { id: string }
-  searchParams: { resumeId?: string; mode?: 'profile' | 'resume'; autoStart?: string }
+  searchParams: { resumeId?: string; mode?: 'profile' | 'resume' | 'v2'; autoStart?: string }
 }) {
   const t = await getTranslations('analysis')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -89,10 +91,26 @@ export default async function JobAnalysisPage({
     if (sessionData) {
       session = sessionData
     }
+  } else if (searchParams.mode === 'v2') {
+    // V2 8-dimension analysis session (has dimensions field)
+    const { data: sessionData } = await supabase
+      .from('analysis_sessions')
+      .select('*')
+      .eq('job_id', params.id)
+      .not('dimensions', 'is', null)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (sessionData) {
+      session = sessionData
+    }
   }
 
   const hasResumes = !!(resumes && resumes.length > 0)
   const isProfileMode = searchParams.mode === 'profile' || !hasResumes
+  const isV2Mode = searchParams.mode === 'v2'
   const autoStart = searchParams.autoStart === 'true'
 
   return (
@@ -122,7 +140,22 @@ export default async function JobAnalysisPage({
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {isProfileMode && !searchParams.resumeId ? (
+        {isV2Mode ? (
+          /* V2 8-dimension analysis */
+          <AnalysisV2
+            jobId={params.id}
+            autoStart={autoStart}
+            existingSession={session ? {
+              id: session.id,
+              score: session.score,
+              recommendation: session.recommendation,
+              analysis: session.analysis,
+              dimensions: session.dimensions as AnalysisDimensions | undefined,
+              provider: session.provider,
+              model: session.model,
+            } : null}
+          />
+        ) : isProfileMode && !searchParams.resumeId ? (
           /* Profile-based analysis (no resume needed) */
           <ProfileAnalysisInterface
             jobId={params.id}
@@ -143,21 +176,26 @@ export default async function JobAnalysisPage({
                 </p>
 
                 {/* Analysis Mode Options */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  {/* Resume-based Option */}
-                  <div className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">{t('resumeMatching')}</h4>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {t('resumeMatchingDesc')}
-                        </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  {/* V2 8-dimension Option - NEW & Recommended */}
+                  <Link href={`/jobs/${params.id}/analysis?mode=v2`}>
+                    <div className="border-2 border-indigo-300 rounded-lg p-4 hover:border-indigo-400 hover:bg-indigo-50/50 transition-colors cursor-pointer h-full relative">
+                      <span className="absolute -top-2 right-2 px-2 py-0.5 bg-indigo-600 text-white text-xs rounded-full">
+                        推荐
+                      </span>
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                          <Zap className="w-5 h-5 text-indigo-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">8维度智能分析</h4>
+                          <p className="text-sm text-gray-500 mt-1">
+                            深度8维度分析，包含CV策略、面试准备、SWOT分析等
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Profile-based Option */}
                   <Link href={`/jobs/${params.id}/analysis?mode=profile`}>
@@ -175,6 +213,21 @@ export default async function JobAnalysisPage({
                       </div>
                     </div>
                   </Link>
+
+                  {/* Resume-based Option */}
+                  <div className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-primary-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">{t('resumeMatching')}</h4>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {t('resumeMatchingDesc')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="border-t border-gray-100 pt-6">
