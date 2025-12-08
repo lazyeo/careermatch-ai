@@ -170,3 +170,36 @@ export type {
   DatabaseValidationResult,
   DatabaseQualityMetrics,
 } from './resume-quality'
+
+// =====================================================
+// Analysis Dimensions Types (8维度分析类型 - Phase 3)
+// =====================================================
+export type {
+  // 8维度核心类型
+  AnalysisDimensions,
+  RolePositioning,
+  CoreResponsibilities,
+  CoreResponsibility,
+  KeywordMatching,
+  KeywordItem,
+  KeyRequirements,
+  Requirement,
+  EnhancedSWOTAnalysis,
+  CVStrategy,
+  CVTone,
+  ResumeSectionPriority,
+  InterviewPreparation,
+  InterviewQuestion,
+  MatchScore,
+  MatchScoreBreakdown,
+  MatchRecommendation,
+  // 数据库类型
+  DatabaseAnalysisDimensions,
+  DimensionsTransformer,
+  // 部分/简化类型
+  PartialAnalysisDimensions,
+  SimplifiedCVStrategy,
+} from './analysis-dimensions'
+
+// 导出函数
+export { simplifyStrategy } from './analysis-dimensions'

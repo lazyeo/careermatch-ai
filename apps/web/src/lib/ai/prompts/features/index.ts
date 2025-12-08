@@ -11,6 +11,9 @@ export * from './job-parsing'
 // 岗位匹配分析
 export * from './job-matching'
 
+// 岗位匹配分析 V2 (8维度增强版)
+export * from './job-matching-v2'
+
 // 求职信生成
 export * from './cover-letter'
 
@@ -24,6 +27,7 @@ export * from './assistant-chat'
 import { RESUME_PARSING_TEMPLATE } from './resume-parsing'
 import { JOB_PARSING_TEMPLATE } from './job-parsing'
 import { JOB_MATCHING_TEMPLATE } from './job-matching'
+import { JOB_MATCHING_V2_TEMPLATE } from './job-matching-v2'
 import { COVER_LETTER_TEMPLATE } from './cover-letter'
 import { ASSISTANT_CHAT_TEMPLATE } from './assistant-chat'
 import type { PromptTemplate } from '../types'
@@ -35,6 +39,7 @@ export const PROMPT_TEMPLATES: Record<string, PromptTemplate> = {
   'resume-parsing': RESUME_PARSING_TEMPLATE,
   'job-parsing': JOB_PARSING_TEMPLATE,
   'job-matching': JOB_MATCHING_TEMPLATE,
+  'job-matching-v2': JOB_MATCHING_V2_TEMPLATE,
   'cover-letter': COVER_LETTER_TEMPLATE,
   'assistant-chat': ASSISTANT_CHAT_TEMPLATE,
 }
