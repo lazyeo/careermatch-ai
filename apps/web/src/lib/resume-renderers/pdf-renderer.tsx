@@ -10,14 +10,11 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
   renderToBuffer,
 } from '@react-pdf/renderer'
-import type { Style } from '@react-pdf/types'
 import type {
   ResumeTemplate,
   TemplateConfig,
-  TemplateColors,
   OutputFormat,
 } from '@careermatch/shared'
 import type { ResumeContent } from '@careermatch/shared'
@@ -170,9 +167,9 @@ export class PDFRenderer extends BaseResumeRenderer<Buffer> {
                     <Text style={styles.degreeTitle}>
                       {edu.degree} in {edu.major}
                     </Text>
-                    {edu.graduationDate && (
+                    {edu.endDate && (
                       <Text style={styles.dateText}>
-                        {this.formatDate(edu.graduationDate)}
+                        {this.formatDate(edu.endDate)}
                       </Text>
                     )}
                   </View>
@@ -194,9 +191,9 @@ export class PDFRenderer extends BaseResumeRenderer<Buffer> {
               {content.certifications.map((cert, index) => (
                 <View key={index} style={styles.certificationItem}>
                   <Text style={styles.certificationName}>{cert.name}</Text>
-                  {cert.issuedDate && (
+                  {cert.issueDate && (
                     <Text style={styles.certificationDate}>
-                      Issued: {this.formatDate(cert.issuedDate)}
+                      Issued: {this.formatDate(cert.issueDate)}
                     </Text>
                   )}
                 </View>
@@ -374,6 +371,6 @@ export class PDFRenderer extends BaseResumeRenderer<Buffer> {
         fontSize: fonts.bodySize - 1,
         color: colors.textLight,
       },
-    } as Record<string, Style>)
+    })
   }
 }

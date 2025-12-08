@@ -206,10 +206,7 @@ export async function GET(
  * POST方法 - 支持传入自定义内容和配置
  * 用于预览未保存的简历
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
 

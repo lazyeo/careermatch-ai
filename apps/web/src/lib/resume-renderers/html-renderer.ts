@@ -6,7 +6,6 @@
 import type {
   ResumeTemplate,
   TemplateConfig,
-  TemplateColors,
   OutputFormat,
 } from '@careermatch/shared'
 import type { ResumeContent } from '@careermatch/shared'
@@ -493,9 +492,9 @@ body {
           edu.major
         )}</h3>
       ${
-        edu.graduationDate
+        edu.endDate
           ? `<span class="date-text">${this.formatDate(
-              edu.graduationDate
+              edu.endDate
             )}</span>`
           : ''
       }
@@ -524,9 +523,9 @@ body {
   <div class="certification-item">
     <span class="certification-name">${this.escapeHtml(cert.name)}</span>
     ${
-      cert.issuedDate
+      cert.issueDate
         ? `<span class="certification-date">Issued: ${this.formatDate(
-            cert.issuedDate
+            cert.issueDate
           )}</span>`
         : ''
     }
