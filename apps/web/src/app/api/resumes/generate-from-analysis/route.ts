@@ -7,7 +7,9 @@ import {
   TEMPERATURE_PRESETS,
   type AIProviderType,
 } from '@/lib/ai-providers'
+import { validateResumeContent } from '@/lib/ai/resume-quality-validator'
 import { NextRequest, NextResponse } from 'next/server'
+import type { FullProfile, ResumeContent } from '@careermatch/shared'
 
 /**
  * POST /api/resumes/generate-from-analysis
@@ -247,7 +249,7 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
     }
 
     // Parse the generated content robustly (handles ``` fences, extra text, trailing commas)
-    let resumeContent
+    let resumeContent: Record<string, unknown>
     try {
       const { parseJsonFromAI, cleanJsonResponse } = await import('@/lib/json-utils')
       const cleanedPreview = cleanJsonResponse(generatedContent)
@@ -260,6 +262,117 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
       console.error('Raw content:', generatedContent)
       throw new Error('Invalid resume format generated')
     }
+
+    // Transform AI output to ResumeContent format for validation
+    const normalizedResumeContent = transformToResumeContent(resumeContent)
+
+    // Build FullProfile for validation
+    const fullProfile: FullProfile = {
+      id: profileResult.data.id,
+      userId: user.id,
+      fullName: profileResult.data.full_name || '',
+      email: profileResult.data.email || user.email || '',
+      phone: profileResult.data.phone || null,
+      location: profileResult.data.location || null,
+      professionalSummary: profileResult.data.professional_summary || null,
+      linkedinUrl: profileResult.data.linkedin_url || null,
+      githubUrl: profileResult.data.github_url || null,
+      portfolioUrl: profileResult.data.portfolio_url || null,
+      targetRoles: profileResult.data.target_roles || [],
+      targetLocations: profileResult.data.target_locations || [],
+      preferredJobTypes: profileResult.data.preferred_job_types || [],
+      expectedSalaryMin: profileResult.data.expected_salary_min || null,
+      expectedSalaryMax: profileResult.data.expected_salary_max || null,
+      salaryCurrency: profileResult.data.salary_currency || 'USD',
+      createdAt: new Date(profileResult.data.created_at),
+      updatedAt: new Date(profileResult.data.updated_at),
+      workExperiences: (workResult.data || []).map((we: Record<string, unknown>) => ({
+        id: we.id as string,
+        userId: user.id,
+        company: (we.company_name as string) || '',
+        position: (we.job_title as string) || '',
+        location: (we.location as string) || null,
+        startDate: new Date(we.start_date as string),
+        endDate: we.end_date ? new Date(we.end_date as string) : null,
+        isCurrent: !we.end_date,
+        description: (we.description as string) || null,
+        achievements: (we.achievements as string[]) || [],
+        technologies: [],
+        createdAt: new Date(we.created_at as string),
+        updatedAt: new Date(we.updated_at as string),
+      })),
+      educationRecords: (educationResult.data || []).map((edu: Record<string, unknown>) => ({
+        id: edu.id as string,
+        userId: user.id,
+        institution: (edu.institution_name as string) || '',
+        degree: (edu.degree as string) || '',
+        major: (edu.field_of_study as string) || '',
+        location: (edu.location as string) || null,
+        startDate: edu.start_date ? new Date(edu.start_date as string) : null,
+        graduationDate: edu.end_date ? new Date(edu.end_date as string) : null,
+        gpa: (edu.gpa as number) || null,
+        achievements: (edu.honors as string[]) || [],
+        createdAt: new Date(edu.created_at as string),
+        updatedAt: new Date(edu.updated_at as string),
+      })),
+      skills: (skillsResult.data || []).map((skill: Record<string, unknown>) => ({
+        id: skill.id as string,
+        userId: user.id,
+        name: (skill.skill_name as string) || '',
+        category: (skill.category as string) || null,
+        level: (skill.proficiency_level as string) || null,
+        yearsOfExperience: (skill.years_of_experience as number) || null,
+        createdAt: new Date(skill.created_at as string),
+        updatedAt: new Date(skill.updated_at as string),
+      })),
+      projects: (projectsResult.data || []).map((proj: Record<string, unknown>) => ({
+        id: proj.id as string,
+        userId: user.id,
+        projectName: (proj.project_name as string) || '',
+        description: (proj.description as string) || null,
+        role: (proj.role as string) || null,
+        startDate: proj.start_date ? new Date(proj.start_date as string) : null,
+        endDate: proj.end_date ? new Date(proj.end_date as string) : null,
+        technologiesUsed: (proj.technologies as string[]) || [],
+        achievements: (proj.achievements as string[]) || [],
+        projectUrl: (proj.project_url as string) || null,
+        createdAt: new Date(proj.created_at as string),
+        updatedAt: new Date(proj.updated_at as string),
+      })),
+      certifications: (certificationsResult.data || []).map((cert: Record<string, unknown>) => ({
+        id: cert.id as string,
+        userId: user.id,
+        name: (cert.certification_name as string) || '',
+        issuingOrganization: (cert.issuing_organization as string) || null,
+        issuedDate: cert.issue_date ? new Date(cert.issue_date as string) : null,
+        expirationDate: cert.expiration_date ? new Date(cert.expiration_date as string) : null,
+        credentialId: (cert.credential_id as string) || null,
+        credentialUrl: (cert.credential_url as string) || null,
+        createdAt: new Date(cert.created_at as string),
+        updatedAt: new Date(cert.updated_at as string),
+      })),
+    }
+
+    // Run quality validation
+    console.log('🔍 Running quality validation...')
+    const qualityReport = await validateResumeContent(
+      normalizedResumeContent,
+      fullProfile,
+      {
+        checkHallucinations: true,
+        checkCompleteness: true,
+        checkRelevance: false,
+        strictMode: false,
+        minQualityScore: 50,
+        maxHallucinationCount: 10,
+      }
+    )
+
+    console.log(`📊 Quality Score: ${qualityReport.qualityScore}/100`)
+    console.log(`   - Accuracy: ${qualityReport.accuracy}%`)
+    console.log(`   - Completeness: ${qualityReport.completeness}%`)
+    console.log(`   - Hallucinations: ${qualityReport.hallucinations.length}`)
+    console.log(`   - Warnings: ${qualityReport.stats.warningCount}`)
 
     // Generate title
     const resumeTitle = `简历 - ${job.title} at ${job.company}`
@@ -285,6 +398,10 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
           source: 'ai_generated',
           version: (existingResume.version || 1) + 1,
           updated_at: new Date().toISOString(),
+          // Quality validation fields
+          quality_score: qualityReport.qualityScore,
+          validation_flags: qualityReport.flags,
+          source_mapping: qualityReport.sourceMapping,
         })
         .eq('id', existingResume.id)
         .select()
@@ -309,6 +426,10 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
           source: 'ai_generated',
           version: 1,
           is_primary: false,
+          // Quality validation fields
+          quality_score: qualityReport.qualityScore,
+          validation_flags: qualityReport.flags,
+          source_mapping: qualityReport.sourceMapping,
         })
         .select()
         .single()
@@ -325,7 +446,7 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
 
     console.log('✅ Resume generated and saved:', resume.id)
 
-    // Log the generation details
+    // Log the generation details with quality metrics
     try {
       await supabase.from('resume_generation_logs').insert({
         user_id: user.id,
@@ -344,9 +465,27 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
           profile: profile,
           analysis: session.analysis
         },
-        generated_content: generatedContent
+        generated_content: generatedContent,
+        // Quality validation results
+        validation_result: {
+          qualityScore: qualityReport.qualityScore,
+          accuracy: qualityReport.accuracy,
+          completeness: qualityReport.completeness,
+          hallucinationCount: qualityReport.hallucinations.length,
+          flags: qualityReport.flags,
+        },
+        quality_metrics: {
+          accuracy: qualityReport.accuracy,
+          completeness: qualityReport.completeness,
+          relevance: qualityReport.relevance,
+          hallucination_count: qualityReport.hallucinations.length,
+          error_count: qualityReport.stats.errorCount,
+          warning_count: qualityReport.stats.warningCount,
+          validated_at: qualityReport.validatedAt.toISOString(),
+          validator_version: qualityReport.validator,
+        },
       })
-      console.log('📝 Generation log saved')
+      console.log('📝 Generation log saved with quality metrics')
     } catch (logError) {
       // Don't fail the request if logging fails, just log the error
       console.error('⚠️ Failed to save generation log:', logError)
@@ -356,6 +495,16 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
       resumeId: resume.id,
       content: resumeContent,
       title: resumeTitle,
+      // Include quality report in response
+      qualityReport: {
+        score: qualityReport.qualityScore,
+        accuracy: qualityReport.accuracy,
+        completeness: qualityReport.completeness,
+        hallucinations: qualityReport.hallucinations.length,
+        warnings: qualityReport.stats.warningCount,
+        errors: qualityReport.stats.errorCount,
+        suggestions: qualityReport.suggestions,
+      },
     })
   } catch (error) {
     console.error('Error generating resume:', error)
@@ -515,4 +664,69 @@ ${JSON.stringify(certificationsFormatted, null, 2)}
 
 Please strictly output in JSON format.
 `
+}
+
+/**
+ * Transform AI-generated resume content to ResumeContent format
+ * AI生成的简历格式转换为标准ResumeContent格式
+ */
+function transformToResumeContent(aiOutput: Record<string, unknown>): ResumeContent {
+  const personalInfo = aiOutput.personal_info as Record<string, unknown> | undefined
+  const workExperience = aiOutput.work_experience as Array<Record<string, unknown>> | undefined
+  const education = aiOutput.education as Array<Record<string, unknown>> | undefined
+  const skills = aiOutput.skills as Record<string, string[]> | undefined
+  const projects = aiOutput.projects as Array<Record<string, unknown>> | undefined
+  const certifications = aiOutput.certifications as Array<Record<string, unknown>> | undefined
+
+  return {
+    personalInfo: {
+      fullName: (personalInfo?.full_name as string) || '',
+      email: (personalInfo?.email as string) || '',
+      phone: (personalInfo?.phone as string) || '',
+      location: (personalInfo?.location as string) || '',
+      linkedin: personalInfo?.linkedin as string | undefined,
+      github: personalInfo?.github as string | undefined,
+      website: personalInfo?.website as string | undefined,
+    },
+    careerObjective: (aiOutput.professional_summary as string) || undefined,
+    skills: [
+      ...(skills?.technical || []).map((name: string) => ({ name, category: 'technical' })),
+      ...(skills?.soft || []).map((name: string) => ({ name, category: 'soft' })),
+      ...(skills?.languages || []).map((name: string) => ({ name, category: 'languages' })),
+      ...(skills?.tools || []).map((name: string) => ({ name, category: 'tools' })),
+    ],
+    workExperience: (workExperience || []).map((exp) => ({
+      company: (exp.company as string) || '',
+      position: (exp.position as string) || '',
+      location: exp.location as string | undefined,
+      startDate: (exp.start_date as string) || '',
+      endDate: exp.end_date as string | undefined,
+      description: exp.description as string | undefined,
+      achievements: (exp.achievements as string[]) || [],
+    })),
+    projects: (projects || []).map((proj) => ({
+      name: (proj.name as string) || '',
+      role: proj.role as string | undefined,
+      description: proj.description as string | undefined,
+      technologies: (proj.technologies as string[]) || [],
+      startDate: proj.start_date as string | undefined,
+      endDate: proj.end_date as string | undefined,
+      url: proj.url as string | undefined,
+    })),
+    education: (education || []).map((edu) => ({
+      institution: (edu.institution as string) || '',
+      degree: (edu.degree as string) || '',
+      major: (edu.field as string) || '',
+      location: edu.location as string | undefined,
+      graduationDate: edu.end_date as string | undefined,
+      gpa: edu.gpa as number | undefined,
+      honors: edu.honors as string[] | undefined,
+    })),
+    certifications: (certifications || []).map((cert) => ({
+      name: (cert.name as string) || '',
+      issuer: cert.issuer as string | undefined,
+      issuedDate: cert.date as string | undefined,
+      credentialId: cert.credential_id as string | undefined,
+    })),
+  }
 }
