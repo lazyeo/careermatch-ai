@@ -388,6 +388,10 @@ function validateWorkExperiences(
 ): FieldValidation[] {
   const validations: FieldValidation[] = []
 
+  if (!sourceExperiences || sourceExperiences.length === 0) {
+    return validations
+  }
+
   workExperiences.forEach((exp, index) => {
     // 查找匹配的源数据
     const sourceExp = sourceExperiences.find(
@@ -481,6 +485,10 @@ function validateEducation(
 ): FieldValidation[] {
   const validations: FieldValidation[] = []
 
+  if (!sourceEducation || sourceEducation.length === 0) {
+    return validations
+  }
+
   education.forEach((edu, index) => {
     const sourceEdu = sourceEducation.find(
       (se) =>
@@ -537,6 +545,11 @@ function validateSkills(
   sourceSkills: FlattenedProfile['skills']
 ): FieldValidation[] {
   const validations: FieldValidation[] = []
+
+  if (!sourceSkills || sourceSkills.length === 0) {
+    return validations
+  }
+
   const sourceSkillNames = sourceSkills.map((s) => s.name.toLowerCase())
 
   skills.forEach((skill, index) => {

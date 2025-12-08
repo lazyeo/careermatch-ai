@@ -168,8 +168,9 @@ export async function GET(
     if (format === 'pdf') {
       const fileName = `${resumeContent.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`
       const pdfBuffer = output as Buffer
+      const uint8Array = new Uint8Array(pdfBuffer)
 
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(uint8Array, {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
@@ -279,8 +280,9 @@ export async function POST(
     if (format === 'pdf') {
       const fileName = `${content.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`
       const pdfBuffer = output as Buffer
+      const uint8Array = new Uint8Array(pdfBuffer)
 
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(uint8Array, {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
