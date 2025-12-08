@@ -113,3 +113,60 @@ export type {
   UpdateJobV2Request,
   JobV2ListParams,
 } from './document'
+
+// =====================================================
+// Template Types (模板系统类型 - Phase 1)
+// =====================================================
+export type {
+  // 模板配置
+  TemplateColors,
+  TemplateFonts,
+  TemplateSpacing,
+  TemplateConfig,
+  // 模板实体
+  ResumeTemplate,
+  UserCustomTemplate,
+  TemplateCategory,
+  TemplateLayout,
+  ResumeSectionType,
+  // 渲染相关
+  OutputFormat,
+  RenderOptions,
+  // 数据库类型
+  DatabaseResumeTemplate,
+  DatabaseUserCustomTemplate,
+  // 转换器
+  TemplateTransformer,
+  UserTemplateTransformer,
+} from './template'
+
+// =====================================================
+// Resume Quality Types (简历质量验证类型 - Phase 1)
+// =====================================================
+export type {
+  // 幻觉检测
+  Hallucination,
+  HallucinationType,
+  // 验证结果
+  ValidationFlag,
+  ValidationCategory,
+  QualityReport,
+  DetailedValidationResult,
+  // 字段验证
+  FieldValidation,
+  FieldComparisonResult,
+  WorkExperienceValidation,
+  EducationValidation,
+  SkillValidation,
+  // 数据来源映射
+  SourceMapping,
+  // 质量修正
+  QualityCorrection,
+  CorrectionResult,
+  // 验证配置
+  ValidationOptions,
+  ValidationContext,
+  // 数据库类型
+  DatabaseValidationResult,
+  DatabaseQualityMetrics,
+} from './resume-quality'
