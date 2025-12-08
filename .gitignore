@@ -1,6 +1,5 @@
 # Override parent .gitignore rules
-# This project should track its own CLAUDE.md and docs/
-!CLAUDE.md
+# This project should track its own docs/
 !docs/
 
 # Dependencies
@@ -66,4 +65,7 @@ temp/
 
 # Keep original Paraflow files reference
 workspace/paraflow/product-index.json
+
+# Agent configuration files (local only, not committed)
+CLAUDE.md
 AGENTS.md
