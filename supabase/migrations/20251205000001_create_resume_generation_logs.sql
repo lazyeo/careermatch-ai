@@ -1,6 +1,6 @@
 -- Create resume_generation_logs table
 CREATE TABLE IF NOT EXISTS public.resume_generation_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
     resume_id UUID REFERENCES public.resumes(id) ON DELETE SET NULL,
     job_id UUID REFERENCES public.jobs(id) ON DELETE SET NULL,
