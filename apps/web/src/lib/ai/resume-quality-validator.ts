@@ -9,14 +9,75 @@ import type {
   Hallucination,
   SourceMapping,
   FieldValidation,
-  WorkExperienceValidation,
-  EducationValidation,
-  SkillValidation,
   ValidationOptions,
-  FieldComparisonResult,
+  ResumeContent,
 } from '@careermatch/shared'
-import type { ResumeContent } from '@careermatch/shared'
-import type { FullProfile } from '@careermatch/shared'
+
+/**
+ * 扁平化的Profile类型，用于验证
+ * 与数据库结构保持一致
+ */
+export interface FlattenedProfile {
+  id: string
+  fullName: string
+  email: string
+  phone?: string | null
+  location?: string | null
+  professionalSummary?: string | null
+  linkedinUrl?: string | null
+  githubUrl?: string | null
+  portfolioUrl?: string | null
+  targetRoles?: string[]
+  workExperiences?: Array<{
+    id: string
+    company: string
+    position: string
+    location?: string | null
+    startDate: Date
+    endDate?: Date | null
+    isCurrent?: boolean
+    description?: string | null
+    achievements?: string[]
+  }>
+  educationRecords?: Array<{
+    id: string
+    institution: string
+    degree: string
+    major: string
+    location?: string | null
+    startDate?: Date | null
+    graduationDate?: Date | null
+    gpa?: number | null
+    achievements?: string[]
+  }>
+  skills?: Array<{
+    id: string
+    name: string
+    category?: string | null
+    level?: string | null
+    yearsOfExperience?: number | null
+  }>
+  projects?: Array<{
+    id: string
+    projectName: string
+    description?: string | null
+    role?: string | null
+    startDate?: Date | null
+    endDate?: Date | null
+    technologiesUsed?: string[]
+    achievements?: string[]
+    projectUrl?: string | null
+  }>
+  certifications?: Array<{
+    id: string
+    name: string
+    issuingOrganization?: string | null
+    issuedDate?: Date | null
+    expirationDate?: Date | null
+    credentialId?: string | null
+    credentialUrl?: string | null
+  }>
+}
 
 /**
  * 默认验证选项
@@ -37,7 +98,7 @@ const DEFAULT_OPTIONS: ValidationOptions = {
  */
 export async function validateResumeContent(
   resumeContent: ResumeContent,
-  profile: FullProfile,
+  profile: FlattenedProfile,
   options: Partial<ValidationOptions> = {}
 ): Promise<QualityReport> {
   const opts = { ...DEFAULT_OPTIONS, ...options }
@@ -102,7 +163,7 @@ export async function validateResumeContent(
  */
 export function generateSourceMapping(
   resumeContent: ResumeContent,
-  profile: FullProfile
+  profile: FlattenedProfile
 ): SourceMapping {
   return {
     personal_info: {
@@ -200,7 +261,7 @@ export function generateSourceMapping(
  */
 async function validateFields(
   resumeContent: ResumeContent,
-  profile: FullProfile,
+  profile: FlattenedProfile,
   options: ValidationOptions
 ): Promise<FieldValidation[]> {
   const validations: FieldValidation[] = []
@@ -249,7 +310,7 @@ async function validateFields(
  */
 function validatePersonalInfo(
   personalInfo: ResumeContent['personalInfo'],
-  profile: FullProfile
+  profile: FlattenedProfile
 ): FieldValidation[] {
   const validations: FieldValidation[] = []
 
@@ -323,7 +384,7 @@ function validatePersonalInfo(
  */
 function validateWorkExperiences(
   workExperiences: ResumeContent['workExperience'],
-  sourceExperiences: FullProfile['workExperiences']
+  sourceExperiences: FlattenedProfile['workExperiences']
 ): FieldValidation[] {
   const validations: FieldValidation[] = []
 
@@ -416,7 +477,7 @@ function validateWorkExperiences(
  */
 function validateEducation(
   education: ResumeContent['education'],
-  sourceEducation: FullProfile['educationRecords']
+  sourceEducation: FlattenedProfile['educationRecords']
 ): FieldValidation[] {
   const validations: FieldValidation[] = []
 
@@ -473,7 +534,7 @@ function validateEducation(
  */
 function validateSkills(
   skills: ResumeContent['skills'],
-  sourceSkills: FullProfile['skills']
+  sourceSkills: FlattenedProfile['skills']
 ): FieldValidation[] {
   const validations: FieldValidation[] = []
   const sourceSkillNames = sourceSkills.map((s) => s.name.toLowerCase())
@@ -507,7 +568,7 @@ function validateSkills(
  */
 export function detectHallucinations(
   resumeContent: ResumeContent,
-  profile: FullProfile
+  profile: FlattenedProfile
 ): Hallucination[] {
   const hallucinations: Hallucination[] = []
 
@@ -618,7 +679,7 @@ function calculateQualityScore(
   fieldValidations: FieldValidation[],
   hallucinations: Hallucination[],
   resumeContent: ResumeContent,
-  profile: FullProfile
+  profile: FlattenedProfile
 ): {
   qualityScore: number
   accuracy: number

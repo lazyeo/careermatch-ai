@@ -6,15 +6,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase-server'
 import { getResumeRenderer } from '@/lib/resume-renderers'
 import type {
   ResumeTemplate,
   OutputFormat,
   DatabaseResumeTemplate,
   TemplateConfig,
+  ResumeContent,
 } from '@careermatch/shared'
-import type { ResumeContent } from '@careermatch/shared'
 
 // 默认模板配置（当数据库中找不到模板时使用）
 const DEFAULT_TEMPLATE: ResumeTemplate = {
@@ -167,12 +167,14 @@ export async function GET(
     // 8. 返回响应
     if (format === 'pdf') {
       const fileName = `${resumeContent.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`
+      const pdfBuffer = output as Buffer
 
-      return new NextResponse(output as Buffer, {
+      return new NextResponse(pdfBuffer, {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${fileName}"`,
+          'Content-Length': pdfBuffer.length.toString(),
           'Cache-Control': 'no-cache',
         },
       })
@@ -276,12 +278,14 @@ export async function POST(
     // 返回响应
     if (format === 'pdf') {
       const fileName = `${content.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`
+      const pdfBuffer = output as Buffer
 
-      return new NextResponse(output as Buffer, {
+      return new NextResponse(pdfBuffer, {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${fileName}"`,
+          'Content-Length': pdfBuffer.length.toString(),
         },
       })
     } else {

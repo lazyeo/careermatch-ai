@@ -7,9 +7,9 @@ import {
   TEMPERATURE_PRESETS,
   type AIProviderType,
 } from '@/lib/ai-providers'
-import { validateResumeContent } from '@/lib/ai/resume-quality-validator'
+import { validateResumeContent, type FlattenedProfile } from '@/lib/ai/resume-quality-validator'
 import { NextRequest, NextResponse } from 'next/server'
-import type { FullProfile, ResumeContent } from '@careermatch/shared'
+import type { ResumeContent } from '@careermatch/shared'
 
 /**
  * POST /api/resumes/generate-from-analysis
@@ -266,10 +266,9 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
     // Transform AI output to ResumeContent format for validation
     const normalizedResumeContent = transformToResumeContent(resumeContent)
 
-    // Build FullProfile for validation
-    const fullProfile: FullProfile = {
+    // Build FlattenedProfile for validation
+    const fullProfile: FlattenedProfile = {
       id: profileResult.data.id,
-      userId: user.id,
       fullName: profileResult.data.full_name || '',
       email: profileResult.data.email || user.email || '',
       phone: profileResult.data.phone || null,
@@ -279,16 +278,8 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
       githubUrl: profileResult.data.github_url || null,
       portfolioUrl: profileResult.data.portfolio_url || null,
       targetRoles: profileResult.data.target_roles || [],
-      targetLocations: profileResult.data.target_locations || [],
-      preferredJobTypes: profileResult.data.preferred_job_types || [],
-      expectedSalaryMin: profileResult.data.expected_salary_min || null,
-      expectedSalaryMax: profileResult.data.expected_salary_max || null,
-      salaryCurrency: profileResult.data.salary_currency || 'USD',
-      createdAt: new Date(profileResult.data.created_at),
-      updatedAt: new Date(profileResult.data.updated_at),
       workExperiences: (workResult.data || []).map((we: Record<string, unknown>) => ({
         id: we.id as string,
-        userId: user.id,
         company: (we.company_name as string) || '',
         position: (we.job_title as string) || '',
         location: (we.location as string) || null,
@@ -297,13 +288,9 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
         isCurrent: !we.end_date,
         description: (we.description as string) || null,
         achievements: (we.achievements as string[]) || [],
-        technologies: [],
-        createdAt: new Date(we.created_at as string),
-        updatedAt: new Date(we.updated_at as string),
       })),
       educationRecords: (educationResult.data || []).map((edu: Record<string, unknown>) => ({
         id: edu.id as string,
-        userId: user.id,
         institution: (edu.institution_name as string) || '',
         degree: (edu.degree as string) || '',
         major: (edu.field_of_study as string) || '',
@@ -312,22 +299,16 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
         graduationDate: edu.end_date ? new Date(edu.end_date as string) : null,
         gpa: (edu.gpa as number) || null,
         achievements: (edu.honors as string[]) || [],
-        createdAt: new Date(edu.created_at as string),
-        updatedAt: new Date(edu.updated_at as string),
       })),
       skills: (skillsResult.data || []).map((skill: Record<string, unknown>) => ({
         id: skill.id as string,
-        userId: user.id,
         name: (skill.skill_name as string) || '',
         category: (skill.category as string) || null,
         level: (skill.proficiency_level as string) || null,
         yearsOfExperience: (skill.years_of_experience as number) || null,
-        createdAt: new Date(skill.created_at as string),
-        updatedAt: new Date(skill.updated_at as string),
       })),
       projects: (projectsResult.data || []).map((proj: Record<string, unknown>) => ({
         id: proj.id as string,
-        userId: user.id,
         projectName: (proj.project_name as string) || '',
         description: (proj.description as string) || null,
         role: (proj.role as string) || null,
@@ -336,20 +317,15 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
         technologiesUsed: (proj.technologies as string[]) || [],
         achievements: (proj.achievements as string[]) || [],
         projectUrl: (proj.project_url as string) || null,
-        createdAt: new Date(proj.created_at as string),
-        updatedAt: new Date(proj.updated_at as string),
       })),
       certifications: (certificationsResult.data || []).map((cert: Record<string, unknown>) => ({
         id: cert.id as string,
-        userId: user.id,
         name: (cert.certification_name as string) || '',
         issuingOrganization: (cert.issuing_organization as string) || null,
         issuedDate: cert.issue_date ? new Date(cert.issue_date as string) : null,
         expirationDate: cert.expiration_date ? new Date(cert.expiration_date as string) : null,
         credentialId: (cert.credential_id as string) || null,
         credentialUrl: (cert.credential_url as string) || null,
-        createdAt: new Date(cert.created_at as string),
-        updatedAt: new Date(cert.updated_at as string),
       })),
     }
 
