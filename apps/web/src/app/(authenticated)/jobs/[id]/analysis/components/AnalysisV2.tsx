@@ -3,12 +3,14 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
-import { Sparkles, Loader2, User, FileText, Zap, RefreshCw } from 'lucide-react'
+import { Sparkles, Loader2, User, FileText, Zap, RefreshCw, Palette } from 'lucide-react'
 import { AIProviderSelector, type AIProviderType } from './AIProviderSelector'
 import { DimensionsDisplay } from './DimensionsDisplay'
 import { ScoreCard } from './ScoreCard'
 import { MarkdownAnalysis } from './MarkdownAnalysis'
+import { TemplateSelector } from './TemplateSelector'
 import type { AnalysisDimensions, AnalysisRecommendation } from '@careermatch/shared'
+import type { TemplateRecommendation } from '@/lib/ai/template-recommender'
 
 interface AnalysisV2Props {
   jobId: string
@@ -66,6 +68,8 @@ export function AnalysisV2({
   )
   const [error, setError] = useState<string | null>(null)
   const [isGeneratingResume, setIsGeneratingResume] = useState(false)
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false)
+  const [templateRecommendation, setTemplateRecommendation] = useState<TemplateRecommendation | null>(null)
 
   // 执行V2分析
   const startAnalysis = useCallback(async (force = false) => {
@@ -108,8 +112,42 @@ export function AnalysisV2({
     }
   }, [jobId, selectedProvider, router])
 
-  // 生成简历
-  const generateResume = async () => {
+  // 打开模板选择器
+  const openTemplateSelector = async () => {
+    if (!result) return
+
+    // 获取模板推荐
+    try {
+      const response = await fetch(`/api/jobs/${jobId}/analyze-v2`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.dimensions?.cvStrategy) {
+          // 从CV策略推断模板推荐
+          const tone = data.dimensions.cvStrategy.tone
+          const toneTemplateMap: Record<string, string> = {
+            technical: 'tech-engineer',
+            executive: 'executive-minimal',
+            creative: 'creative-designer',
+            conversational: 'modern-blue',
+            formal: 'classic-serif',
+          }
+          setTemplateRecommendation({
+            templateId: toneTemplateMap[tone] || 'modern-blue',
+            reason: `基于CV策略分析，推荐使用${tone === 'technical' ? '技术' : tone === 'executive' ? '高管' : tone === 'creative' ? '创意' : tone === 'conversational' ? '现代' : '经典'}风格模板`,
+            confidence: 80,
+            alternatives: [],
+          } as TemplateRecommendation)
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to get template recommendation:', err)
+    }
+
+    setShowTemplateSelector(true)
+  }
+
+  // 生成简历（带模板选择）
+  const generateResume = async (templateId: string) => {
     if (!result) return
 
     setIsGeneratingResume(true)
@@ -120,6 +158,7 @@ export function AnalysisV2({
         body: JSON.stringify({
           sessionId: result.sessionId,
           provider: selectedProvider,
+          templateId,
         }),
       })
 
@@ -129,6 +168,8 @@ export function AnalysisV2({
       }
 
       const data = await response.json()
+      // 关闭模板选择器
+      setShowTemplateSelector(false)
       // 跳转到简历预览页面
       window.location.href = `/resumes/preview/${data.resumeId}`
     } catch (err) {
@@ -332,23 +373,22 @@ export function AnalysisV2({
         </Button>
         <Button
           variant="primary"
-          onClick={generateResume}
-          disabled={isGeneratingResume}
+          onClick={openTemplateSelector}
           className="gap-2"
         >
-          {isGeneratingResume ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              AI正在生成简历...
-            </>
-          ) : (
-            <>
-              <FileText className="w-4 h-4" />
-              根据策略生成简历
-            </>
-          )}
+          <Palette className="w-4 h-4" />
+          选择模板并生成简历
         </Button>
       </div>
+
+      {/* 模板选择器 */}
+      <TemplateSelector
+        isOpen={showTemplateSelector}
+        onClose={() => setShowTemplateSelector(false)}
+        onSelect={generateResume}
+        recommendation={templateRecommendation}
+        isLoading={isGeneratingResume}
+      />
     </div>
   )
 }
