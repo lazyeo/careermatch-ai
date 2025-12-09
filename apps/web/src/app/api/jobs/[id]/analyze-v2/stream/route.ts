@@ -217,7 +217,6 @@ export async function POST(
     // 11. 创建流式响应
     const encoder = new TextEncoder()
     let fullResponse = ''
-    let chunkCount = 0
 
     const readable = new ReadableStream({
       async start(controller) {
@@ -226,21 +225,19 @@ export async function POST(
             const content = chunk.choices[0]?.delta?.content || ''
             if (content) {
               fullResponse += content
-              chunkCount++
 
-              // 每5个chunk发送一次进度更新
-              if (chunkCount % 5 === 0) {
-                try {
-                  const progressData = JSON.stringify({
-                    content,
-                    progress: Math.min(95, Math.floor(fullResponse.length / 500)),
-                    done: false,
-                  })
-                  controller.enqueue(encoder.encode(`data: ${progressData}\n\n`))
-                } catch {
-                  console.log('Client disconnected during streaming')
-                  return
-                }
+              // 实时发送每个内容块
+              try {
+                const progressData = JSON.stringify({
+                  content,
+                  fullContent: fullResponse,
+                  progress: Math.min(95, Math.floor(fullResponse.length / 500)),
+                  done: false,
+                })
+                controller.enqueue(encoder.encode(`data: ${progressData}\n\n`))
+              } catch {
+                console.log('Client disconnected during streaming')
+                return
               }
             }
           }

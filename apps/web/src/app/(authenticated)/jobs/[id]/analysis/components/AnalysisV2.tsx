@@ -75,6 +75,7 @@ export function AnalysisV2({
   )
   const [error, setError] = useState<string | null>(null)
   const [streamProgress, setStreamProgress] = useState<StreamProgress>({ progress: 0, status: '准备中...' })
+  const [streamingContent, setStreamingContent] = useState<string>('')
   const [isGeneratingResume, setIsGeneratingResume] = useState(false)
   const [showTemplateSelector, setShowTemplateSelector] = useState(false)
   const [templateRecommendation, setTemplateRecommendation] = useState<TemplateRecommendation | null>(null)
@@ -90,6 +91,7 @@ export function AnalysisV2({
     setState('streaming')
     setError(null)
     setStreamProgress({ progress: 0, status: '正在连接AI服务...' })
+    setStreamingContent('')
 
     try {
       const response = await fetch(`/api/jobs/${jobId}/analyze-v2/stream`, {
@@ -145,37 +147,29 @@ export function AnalysisV2({
 
               if (data.done) {
                 // 分析完成
-                if (data.cached) {
-                  // 缓存结果
-                  setResult({
-                    sessionId: data.sessionId,
-                    score: data.score,
-                    recommendation: data.recommendation,
-                    analysis: data.analysis,
-                    dimensions: data.dimensions,
-                    provider: data.provider,
-                    model: data.model,
-                  })
-                } else {
-                  // 新分析结果
-                  setResult({
-                    sessionId: data.sessionId,
-                    score: data.score,
-                    recommendation: data.recommendation,
-                    analysis: data.analysis,
-                    dimensions: data.dimensions,
-                    provider: data.provider,
-                    model: data.model,
-                  })
-                }
+                setResult({
+                  sessionId: data.sessionId,
+                  score: data.score,
+                  recommendation: data.recommendation,
+                  analysis: data.analysis,
+                  dimensions: data.dimensions,
+                  provider: data.provider,
+                  model: data.model,
+                })
                 setState('completed')
                 setStreamProgress({ progress: 100, status: '分析完成!' })
+                setStreamingContent('')
                 router.refresh()
-              } else if (data.progress !== undefined) {
-                // 更新进度
-                const progress = data.progress
-                const stage = progressStages.find(s => progress < s.threshold) || progressStages[progressStages.length - 1]
-                setStreamProgress({ progress, status: stage.status })
+              } else {
+                // 实时更新内容和进度
+                if (data.fullContent) {
+                  setStreamingContent(data.fullContent)
+                }
+                if (data.progress !== undefined) {
+                  const progress = data.progress
+                  const stage = progressStages.find(s => progress < s.threshold) || progressStages[progressStages.length - 1]
+                  setStreamProgress({ progress, status: stage.status })
+                }
               }
             } catch (parseError) {
               // 忽略解析错误，继续处理
@@ -337,62 +331,79 @@ export function AnalysisV2({
           onSelect={setSelectedProvider}
         />
 
+        {/* 进度状态卡片 */}
         <Card>
-          <CardContent className="py-16">
-            <div className="text-center">
-              <Loader2 className="w-12 h-12 text-primary-600 animate-spin mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                AI正在进行8维度深度分析...
-              </h3>
-              <p className="text-sm text-gray-500 mb-2">
-                {streamProgress.status}
-              </p>
-
-              {/* 进度条 */}
-              <div className="mt-6 max-w-md mx-auto">
-                <div className="bg-gray-100 rounded-full h-3 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${Math.max(5, streamProgress.progress)}%` }}
-                  />
-                </div>
-                <p className="mt-2 text-sm font-medium text-indigo-600">
-                  {streamProgress.progress}%
+          <CardContent className="py-8">
+            <div className="flex items-center gap-4 mb-6">
+              <Loader2 className="w-8 h-8 text-primary-600 animate-spin flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  AI正在进行8维度深度分析...
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {streamProgress.status}
                 </p>
               </div>
+              <span className="text-2xl font-bold text-indigo-600">
+                {streamProgress.progress}%
+              </span>
+            </div>
 
-              {/* 分析阶段指示 */}
-              <div className="mt-6 max-w-md mx-auto">
-                <div className="grid grid-cols-4 gap-2 text-xs">
-                  <ProgressStep
-                    label="角色定位"
-                    active={streamProgress.progress >= 0 && streamProgress.progress < 25}
-                    completed={streamProgress.progress >= 25}
-                  />
-                  <ProgressStep
-                    label="关键词匹配"
-                    active={streamProgress.progress >= 25 && streamProgress.progress < 50}
-                    completed={streamProgress.progress >= 50}
-                  />
-                  <ProgressStep
-                    label="SWOT分析"
-                    active={streamProgress.progress >= 50 && streamProgress.progress < 75}
-                    completed={streamProgress.progress >= 75}
-                  />
-                  <ProgressStep
-                    label="CV策略"
-                    active={streamProgress.progress >= 75 && streamProgress.progress < 100}
-                    completed={streamProgress.progress >= 100}
-                  />
-                </div>
+            {/* 进度条 */}
+            <div className="mb-6">
+              <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${Math.max(2, streamProgress.progress)}%` }}
+                />
               </div>
+            </div>
 
-              <p className="mt-6 text-xs text-gray-400">
-                流式传输中，避免超时问题
-              </p>
+            {/* 分析阶段指示 */}
+            <div className="grid grid-cols-4 gap-2 text-xs">
+              <ProgressStep
+                label="角色定位"
+                active={streamProgress.progress >= 0 && streamProgress.progress < 25}
+                completed={streamProgress.progress >= 25}
+              />
+              <ProgressStep
+                label="关键词匹配"
+                active={streamProgress.progress >= 25 && streamProgress.progress < 50}
+                completed={streamProgress.progress >= 50}
+              />
+              <ProgressStep
+                label="SWOT分析"
+                active={streamProgress.progress >= 50 && streamProgress.progress < 75}
+                completed={streamProgress.progress >= 75}
+              />
+              <ProgressStep
+                label="CV策略"
+                active={streamProgress.progress >= 75 && streamProgress.progress < 100}
+                completed={streamProgress.progress >= 100}
+              />
             </div>
           </CardContent>
         </Card>
+
+        {/* 实时内容显示 */}
+        {streamingContent && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse" />
+                AI分析中...
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+                  {streamingContent}
+                  <span className="inline-block w-2 h-4 bg-indigo-500 animate-pulse ml-1" />
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     )
   }
