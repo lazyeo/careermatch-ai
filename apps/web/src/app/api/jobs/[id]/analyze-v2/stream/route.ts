@@ -297,15 +297,27 @@ export async function POST(
 
           if (saveError) {
             console.error('Error saving V2 analysis session:', saveError)
-          } else {
-            console.log('✅ V2 Streaming Analysis completed and saved')
+            // 保存失败时发送错误
+            try {
+              const errorData = JSON.stringify({
+                error: `Failed to save analysis: ${saveError.message}`,
+                done: true,
+              })
+              controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
+              controller.close()
+            } catch {
+              console.log('Controller already closed')
+            }
+            return
           }
+
+          console.log('✅ V2 Streaming Analysis completed and saved:', savedSession.id)
 
           // 14. 发送最终结果
           try {
             const finalData = JSON.stringify({
               done: true,
-              sessionId: savedSession?.id,
+              sessionId: savedSession.id,
               score: parsed.score,
               recommendation: parsed.recommendation,
               analysis: parsed.analysis,

@@ -226,7 +226,10 @@ export function AnalysisV2({
 
   // 生成简历（带模板选择）
   const generateResume = async (templateId: string) => {
-    if (!result) return
+    if (!result?.sessionId) {
+      alert('分析会话不完整，请重新分析')
+      return
+    }
 
     setIsGeneratingResume(true)
     try {
@@ -488,6 +491,7 @@ export function AnalysisV2({
           variant="primary"
           onClick={openTemplateSelector}
           className="gap-2"
+          disabled={!result?.sessionId || !result?.dimensions}
         >
           <Palette className="w-4 h-4" />
           选择模板并生成简历
