@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { Sparkles, Loader2, User, FileText, Zap, RefreshCw, Palette } from 'lucide-react'
@@ -26,7 +26,7 @@ interface AnalysisV2Props {
   } | null
 }
 
-type AnalysisState = 'idle' | 'loading' | 'completed' | 'error'
+type AnalysisState = 'idle' | 'loading' | 'streaming' | 'completed' | 'error'
 
 interface AnalysisResult {
   sessionId: string
@@ -36,6 +36,12 @@ interface AnalysisResult {
   dimensions: AnalysisDimensions
   provider: string
   model: string
+}
+
+// 流式进度状态
+interface StreamProgress {
+  progress: number
+  status: string
 }
 
 /**
@@ -49,6 +55,7 @@ export function AnalysisV2({
   existingSession = null,
 }: AnalysisV2Props) {
   const router = useRouter()
+  const abortControllerRef = useRef<AbortController | null>(null)
   const [selectedProvider, setSelectedProvider] = useState<AIProviderType | undefined>(undefined)
   const [state, setState] = useState<AnalysisState>(() =>
     existingSession?.dimensions ? 'completed' : 'idle'
@@ -67,45 +74,121 @@ export function AnalysisV2({
       : null
   )
   const [error, setError] = useState<string | null>(null)
+  const [streamProgress, setStreamProgress] = useState<StreamProgress>({ progress: 0, status: '准备中...' })
   const [isGeneratingResume, setIsGeneratingResume] = useState(false)
   const [showTemplateSelector, setShowTemplateSelector] = useState(false)
   const [templateRecommendation, setTemplateRecommendation] = useState<TemplateRecommendation | null>(null)
 
-  // 执行V2分析
+  // 执行V2流式分析
   const startAnalysis = useCallback(async (force = false) => {
-    setState('loading')
+    // 取消之前的请求
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+    abortControllerRef.current = new AbortController()
+
+    setState('streaming')
     setError(null)
+    setStreamProgress({ progress: 0, status: '正在连接AI服务...' })
 
     try {
-      const response = await fetch(`/api/jobs/${jobId}/analyze-v2`, {
+      const response = await fetch(`/api/jobs/${jobId}/analyze-v2/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           provider: selectedProvider,
           force,
         }),
+        signal: abortControllerRef.current.signal,
       })
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to analyze')
+        throw new Error(data.error || 'Failed to start analysis')
       }
 
-      const data = await response.json()
-      setResult({
-        sessionId: data.sessionId,
-        score: data.score,
-        recommendation: data.recommendation,
-        analysis: data.analysis,
-        dimensions: data.dimensions,
-        provider: data.provider,
-        model: data.model,
-      })
-      setState('completed')
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('Failed to get response stream')
+      }
 
-      // 通知页面刷新
-      router.refresh()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      // 进度阶段映射
+      const progressStages = [
+        { threshold: 10, status: '正在分析角色定位...' },
+        { threshold: 25, status: '正在匹配核心职责...' },
+        { threshold: 40, status: '正在分析关键词匹配度...' },
+        { threshold: 55, status: '正在评估关键要求...' },
+        { threshold: 70, status: '正在进行SWOT分析...' },
+        { threshold: 85, status: '正在生成CV策略...' },
+        { threshold: 95, status: '正在准备面试建议...' },
+      ]
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+
+              if (data.error) {
+                throw new Error(data.error)
+              }
+
+              if (data.done) {
+                // 分析完成
+                if (data.cached) {
+                  // 缓存结果
+                  setResult({
+                    sessionId: data.sessionId,
+                    score: data.score,
+                    recommendation: data.recommendation,
+                    analysis: data.analysis,
+                    dimensions: data.dimensions,
+                    provider: data.provider,
+                    model: data.model,
+                  })
+                } else {
+                  // 新分析结果
+                  setResult({
+                    sessionId: data.sessionId,
+                    score: data.score,
+                    recommendation: data.recommendation,
+                    analysis: data.analysis,
+                    dimensions: data.dimensions,
+                    provider: data.provider,
+                    model: data.model,
+                  })
+                }
+                setState('completed')
+                setStreamProgress({ progress: 100, status: '分析完成!' })
+                router.refresh()
+              } else if (data.progress !== undefined) {
+                // 更新进度
+                const progress = data.progress
+                const stage = progressStages.find(s => progress < s.threshold) || progressStages[progressStages.length - 1]
+                setStreamProgress({ progress, status: stage.status })
+              }
+            } catch (parseError) {
+              // 忽略解析错误，继续处理
+              console.warn('Failed to parse SSE data:', parseError)
+            }
+          }
+        }
+      }
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('Analysis request was cancelled')
+        return
+      }
       console.error('Analysis error:', err)
       setError(err instanceof Error ? err.message : 'Analysis failed')
       setState('error')
@@ -245,8 +328,8 @@ export function AnalysisV2({
     )
   }
 
-  // 加载状态
-  if (state === 'loading') {
+  // 加载/流式状态
+  if (state === 'loading' || state === 'streaming') {
     return (
       <div className="space-y-6">
         <AIProviderSelector
@@ -261,19 +344,52 @@ export function AnalysisV2({
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 AI正在进行8维度深度分析...
               </h3>
-              <p className="text-sm text-gray-500">
-                这可能需要30-60秒，请耐心等待
+              <p className="text-sm text-gray-500 mb-2">
+                {streamProgress.status}
               </p>
+
+              {/* 进度条 */}
               <div className="mt-6 max-w-md mx-auto">
-                <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
-                  <div className="bg-primary-600 h-2 rounded-full animate-pulse w-2/3" />
+                <div className="bg-gray-100 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${Math.max(5, streamProgress.progress)}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-sm font-medium text-indigo-600">
+                  {streamProgress.progress}%
+                </p>
+              </div>
+
+              {/* 分析阶段指示 */}
+              <div className="mt-6 max-w-md mx-auto">
+                <div className="grid grid-cols-4 gap-2 text-xs">
+                  <ProgressStep
+                    label="角色定位"
+                    active={streamProgress.progress >= 0 && streamProgress.progress < 25}
+                    completed={streamProgress.progress >= 25}
+                  />
+                  <ProgressStep
+                    label="关键词匹配"
+                    active={streamProgress.progress >= 25 && streamProgress.progress < 50}
+                    completed={streamProgress.progress >= 50}
+                  />
+                  <ProgressStep
+                    label="SWOT分析"
+                    active={streamProgress.progress >= 50 && streamProgress.progress < 75}
+                    completed={streamProgress.progress >= 75}
+                  />
+                  <ProgressStep
+                    label="CV策略"
+                    active={streamProgress.progress >= 75 && streamProgress.progress < 100}
+                    completed={streamProgress.progress >= 100}
+                  />
                 </div>
               </div>
-              <div className="mt-4 text-xs text-gray-400 space-y-1">
-                <p>正在分析角色定位...</p>
-                <p>正在匹配关键词...</p>
-                <p>正在生成CV策略...</p>
-              </div>
+
+              <p className="mt-6 text-xs text-gray-400">
+                流式传输中，避免超时问题
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -410,6 +526,46 @@ function FeatureItem({
       </div>
       <h4 className="text-sm font-medium text-gray-900">{title}</h4>
       <p className="text-xs text-gray-500 mt-1">{desc}</p>
+    </div>
+  )
+}
+
+// 进度步骤指示器
+function ProgressStep({
+  label,
+  active,
+  completed,
+}: {
+  label: string
+  active: boolean
+  completed: boolean
+}) {
+  return (
+    <div className="flex flex-col items-center">
+      <div
+        className={`w-6 h-6 rounded-full flex items-center justify-center mb-1 transition-colors ${
+          completed
+            ? 'bg-green-500 text-white'
+            : active
+              ? 'bg-indigo-500 text-white animate-pulse'
+              : 'bg-gray-200 text-gray-400'
+        }`}
+      >
+        {completed ? (
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          </svg>
+        ) : (
+          <span className="text-xs">{active ? '•' : ''}</span>
+        )}
+      </div>
+      <span
+        className={`text-center ${
+          completed ? 'text-green-600' : active ? 'text-indigo-600 font-medium' : 'text-gray-400'
+        }`}
+      >
+        {label}
+      </span>
     </div>
   )
 }
