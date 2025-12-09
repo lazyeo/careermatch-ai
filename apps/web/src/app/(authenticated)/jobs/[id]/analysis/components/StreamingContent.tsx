@@ -10,6 +10,7 @@ interface StreamingContentProps {
 
 interface ParsedSections {
   thinking: string      // 思考过程（分隔符之前的内容）
+  thinkingSummary: string // 清理后的思考摘要
   score: string | null
   recommendation: string | null
   dimensions: string | null
@@ -18,11 +19,39 @@ interface ParsedSections {
 }
 
 /**
+ * 清理思考过程内容，移除JSON结构，只保留有意义的文本
+ */
+function cleanThinkingContent(thinking: string): string {
+  if (!thinking) return ''
+
+  // 移除JSON块 (```json ... ```)
+  let cleaned = thinking.replace(/```json[\s\S]*?```/g, '[JSON数据已省略]')
+
+  // 移除独立的JSON对象 ({ ... })
+  cleaned = cleaned.replace(/\{[\s\S]*?"[^"]+"\s*:[\s\S]*?\}/g, (match) => {
+    // 如果看起来像是一个大的JSON对象，用占位符替换
+    if (match.length > 200) {
+      return '[结构化数据已省略]'
+    }
+    return match
+  })
+
+  // 移除数组 [ ... ] 如果太长
+  cleaned = cleaned.replace(/\[[\s\S]{200,}?\]/g, '[数组数据已省略]')
+
+  // 清理多余的空行
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n')
+
+  return cleaned.trim()
+}
+
+/**
  * 实时解析流式内容
  */
 function parseStreamingContent(content: string): ParsedSections {
   const result: ParsedSections = {
     thinking: '',
+    thinkingSummary: '',
     score: null,
     recommendation: null,
     dimensions: null,
@@ -40,8 +69,10 @@ function parseStreamingContent(content: string): ParsedSections {
   // 提取思考过程（分隔符之前的所有内容）
   if (scoreIndex > 0) {
     result.thinking = content.substring(0, scoreIndex).trim()
+    result.thinkingSummary = cleanThinkingContent(result.thinking)
   } else {
     result.thinking = content
+    result.thinkingSummary = cleanThinkingContent(content)
     result.currentSection = 'thinking'
     return result
   }
@@ -128,7 +159,7 @@ export function StreamingContent({ content }: StreamingContentProps) {
   return (
     <div className="space-y-4">
       {/* 思考过程（可折叠） */}
-      {parsed.thinking && (
+      {parsed.thinkingSummary && (
         <Card className="border-gray-200">
           <CardHeader className="py-3 cursor-pointer" onClick={() => setShowThinking(!showThinking)}>
             <CardTitle className="text-sm flex items-center justify-between">
@@ -141,7 +172,7 @@ export function StreamingContent({ content }: StreamingContentProps) {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400 font-normal">
-                  {parsed.thinking.length} 字符
+                  点击{showThinking ? '收起' : '展开'}
                 </span>
                 {showThinking ? (
                   <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -154,8 +185,8 @@ export function StreamingContent({ content }: StreamingContentProps) {
           {showThinking && (
             <CardContent className="pt-0">
               <div className="bg-gray-50 rounded-lg p-3 max-h-48 overflow-y-auto">
-                <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono">
-                  {parsed.thinking}
+                <pre className="text-xs text-gray-600 whitespace-pre-wrap font-sans leading-relaxed">
+                  {parsed.thinkingSummary}
                   {parsed.currentSection === 'thinking' && (
                     <span className="inline-block w-1.5 h-3 bg-gray-400 animate-pulse ml-0.5" />
                   )}

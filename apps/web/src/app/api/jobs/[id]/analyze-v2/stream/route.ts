@@ -20,7 +20,7 @@ import {
 import { NextRequest } from 'next/server'
 import type { FullProfile, AnalysisDimensions } from '@careermatch/shared'
 import {
-  JOB_MATCHING_V2_SYSTEM_PROMPT,
+  getJobMatchingV2SystemPrompt,
   buildJobMatchingV2Prompt,
   parseJobMatchingV2Output,
   generateDefaultCVStrategy,
@@ -57,10 +57,14 @@ export async function POST(
 
     // 3. 解析请求参数
     const body = await request.json()
-    const { provider, force } = body as {
+    const { provider, force, locale } = body as {
       provider?: AIProviderType
       force?: boolean
+      locale?: string
     }
+
+    // 获取语言设置
+    const language = locale || 'zh'
 
     // 4. 检查缓存（除非force=true）
     if (!force) {
@@ -197,12 +201,15 @@ export async function POST(
 
     // 10. 创建AI流式请求
     const aiClient = createAIClient(provider)
+    const systemPrompt = getJobMatchingV2SystemPrompt(language)
+    console.log(`🌐 Using language: ${language}`)
+
     const stream = await aiClient.chat.completions.create({
       model,
       messages: [
         {
           role: 'system',
-          content: JOB_MATCHING_V2_SYSTEM_PROMPT,
+          content: systemPrompt,
         },
         {
           role: 'user',

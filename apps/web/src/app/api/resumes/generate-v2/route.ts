@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
       content: enhancedContent,
       analysis_session_id: session.id,
       template_id: finalTemplateId,
-      source: 'ai_generated_v2',
+      source: 'ai_generated',
       quality_score: qualityReport.qualityScore,
       validation_flags: qualityReport.flags,
       source_mapping: qualityReport.sourceMapping,

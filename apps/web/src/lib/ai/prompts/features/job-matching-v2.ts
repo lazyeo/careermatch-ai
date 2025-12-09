@@ -24,27 +24,56 @@ import type {
 // 8维度分析 System Prompt
 // ============================================
 
-export const JOB_MATCHING_V2_SYSTEM_PROMPT = `${PERSONAS.CAREER_CONSULTANT}
-
-你将进行深度的8维度简历-岗位匹配分析。你的分析将直接用于:
+// 多语言 System Prompt 内容
+const SYSTEM_PROMPT_CONTENT = {
+  zh: {
+    intro: `你将进行深度的8维度简历-岗位匹配分析。你的分析将直接用于:
 1. 生成针对性的简历（通过CV策略）
 2. 准备面试（通过面试准备模块）
-3. 帮助候选人了解自己的定位
+3. 帮助候选人了解自己的定位`,
+    formatRequirement: `**输出格式要求**：请严格使用分隔符格式输出。格式如下：`,
+    formatNote: `这种格式可以让你自由使用任何Markdown语法，同时提供结构化数据。`,
+  },
+  en: {
+    intro: `You will perform an in-depth 8-dimension resume-job matching analysis. Your analysis will be used for:
+1. Generating targeted resumes (via CV Strategy)
+2. Interview preparation (via Interview Preparation module)
+3. Helping candidates understand their positioning`,
+    formatRequirement: `**Output Format Requirement**: Please strictly use delimiter format for output as follows:`,
+    formatNote: `This format allows you to use any Markdown syntax while providing structured data.`,
+  },
+}
 
-${LANGUAGE_HINTS.CHINESE}
+/**
+ * 根据语言生成 System Prompt
+ */
+export function getJobMatchingV2SystemPrompt(locale: string = 'zh'): string {
+  const lang = locale.startsWith('en') ? 'en' : 'zh'
+  const content = SYSTEM_PROMPT_CONTENT[lang]
+  const languageHint = lang === 'en' ? LANGUAGE_HINTS.ENGLISH : LANGUAGE_HINTS.CHINESE
 
-**输出格式要求**：请严格使用分隔符格式输出。格式如下：
+  return `${PERSONAS.CAREER_CONSULTANT}
+
+${content.intro}
+
+${languageHint}
+
+${content.formatRequirement}
 ---SCORE---
-<分数>
+<score>
 ---RECOMMENDATION---
-<推荐等级>
+<recommendation level>
 ---DIMENSIONS---
-<8维度JSON数据>
+<8-dimension JSON data>
 ---ANALYSIS---
-<Markdown分析报告>
+<Markdown analysis report>
 ---END---
 
-这种格式可以让你自由使用任何Markdown语法，同时提供结构化数据。`
+${content.formatNote}`
+}
+
+// 默认中文版本（向后兼容）
+export const JOB_MATCHING_V2_SYSTEM_PROMPT = getJobMatchingV2SystemPrompt('zh')
 
 // ============================================
 // 8维度分析 User Prompt 模板

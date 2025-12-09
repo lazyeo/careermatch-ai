@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLocale } from 'next-intl'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { Sparkles, Loader2, User, FileText, Zap, RefreshCw, Palette } from 'lucide-react'
 import { AIProviderSelector, type AIProviderType } from './AIProviderSelector'
@@ -56,6 +57,7 @@ export function AnalysisV2({
   existingSession = null,
 }: AnalysisV2Props) {
   const router = useRouter()
+  const locale = useLocale()
   const abortControllerRef = useRef<AbortController | null>(null)
   const [selectedProvider, setSelectedProvider] = useState<AIProviderType | undefined>(undefined)
   const [state, setState] = useState<AnalysisState>(() =>
@@ -101,6 +103,7 @@ export function AnalysisV2({
         body: JSON.stringify({
           provider: selectedProvider,
           force,
+          locale,
         }),
         signal: abortControllerRef.current.signal,
       })
@@ -188,7 +191,7 @@ export function AnalysisV2({
       setError(err instanceof Error ? err.message : 'Analysis failed')
       setState('error')
     }
-  }, [jobId, selectedProvider, router])
+  }, [jobId, selectedProvider, router, locale])
 
   // 打开模板选择器
   const openTemplateSelector = async () => {
