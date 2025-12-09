@@ -285,6 +285,11 @@ export async function POST(
           }
 
           // 13. 保存到数据库
+          // 映射 recommendation 值以匹配数据库约束
+          // AI返回: strong_match, good_match, moderate_match, weak_match, not_recommended
+          // 数据库接受: strong, moderate, weak, not_recommended
+          const dbRecommendation = mapRecommendationForDB(parsed.recommendation)
+
           const { data: savedSession, error: saveError } = await supabase
             .from('analysis_sessions')
             .insert({
@@ -293,7 +298,7 @@ export async function POST(
               user_id: user.id,
               status: 'active',
               score: parsed.score,
-              recommendation: parsed.recommendation,
+              recommendation: dbRecommendation,
               analysis: parsed.analysis,
               dimensions: parsed.dimensions,
               provider: providerName,
@@ -493,4 +498,20 @@ function createDefaultDimensions(
       summary: 'Detailed analysis not available',
     },
   }
+}
+
+/**
+ * 将AI返回的recommendation值映射为数据库接受的格式
+ * AI返回: strong_match, good_match, moderate_match, weak_match, not_recommended
+ * 数据库接受: strong, moderate, weak, not_recommended
+ */
+function mapRecommendationForDB(aiRecommendation: string): string {
+  const mapping: Record<string, string> = {
+    'strong_match': 'strong',
+    'good_match': 'moderate',      // good_match 映射为 moderate
+    'moderate_match': 'moderate',
+    'weak_match': 'weak',
+    'not_recommended': 'not_recommended',
+  }
+  return mapping[aiRecommendation] || 'moderate'  // 默认返回 moderate
 }
