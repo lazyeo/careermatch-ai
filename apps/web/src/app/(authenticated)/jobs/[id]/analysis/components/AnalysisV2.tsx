@@ -9,6 +9,7 @@ import { DimensionsDisplay } from './DimensionsDisplay'
 import { ScoreCard } from './ScoreCard'
 import { MarkdownAnalysis } from './MarkdownAnalysis'
 import { TemplateSelector } from './TemplateSelector'
+import { StreamingContent } from './StreamingContent'
 import type { AnalysisDimensions, AnalysisRecommendation } from '@careermatch/shared'
 import type { TemplateRecommendation } from '@/lib/ai/template-recommender'
 
@@ -385,24 +386,9 @@ export function AnalysisV2({
           </CardContent>
         </Card>
 
-        {/* 实时内容显示 */}
+        {/* 实时解析内容显示 */}
         {streamingContent && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse" />
-                AI分析中...
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
-                  {streamingContent}
-                  <span className="inline-block w-2 h-4 bg-indigo-500 animate-pulse ml-1" />
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
+          <StreamingContent content={streamingContent} />
         )}
       </div>
     )
