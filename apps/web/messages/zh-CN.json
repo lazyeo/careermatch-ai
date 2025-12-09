@@ -697,6 +697,261 @@
     "actions": "操作",
     "viewAIAnalysis": "查看AI分析"
   },
+  "analysis": {
+    "v2": {
+      "title": "8维度智能分析",
+      "description": "基于AI的深度8维度分析，提供详细的CV策略、面试准备建议和匹配度评估",
+      "startButton": "开始8维度分析",
+      "analyzing": "AI正在进行8维度深度分析...",
+      "complete": "分析完成!",
+      "error": "分析失败",
+      "retry": "重试",
+      "reAnalyze": "重新分析",
+      "selectTemplateAndGenerate": "选择模板并生成简历",
+      "providedBy": "由",
+      "badge": "8维度智能分析 V2",
+      "sessionIncomplete": "分析会话不完整，请重新分析",
+      "connecting": "正在连接AI服务...",
+      "detailedReport": "详细分析报告",
+      "features": {
+        "cvStrategy": "CV策略",
+        "cvStrategyDesc": "智能简历撰写指导",
+        "keywordMatch": "关键词匹配",
+        "keywordMatchDesc": "ATS优化建议",
+        "swotAnalysis": "SWOT分析",
+        "swotAnalysisDesc": "全面优劣势评估",
+        "interviewPrep": "面试准备",
+        "interviewPrepDesc": "预测问题与回答"
+      },
+      "progress": {
+        "preparing": "准备中...",
+        "rolePositioning": "正在分析角色定位...",
+        "coreResponsibilities": "正在匹配核心职责...",
+        "keywordMatching": "正在分析关键词匹配度...",
+        "keyRequirements": "正在评估关键要求...",
+        "swotAnalysis": "正在进行SWOT分析...",
+        "cvStrategy": "正在生成CV策略...",
+        "interviewPrep": "正在准备面试建议...",
+        "complete": "分析完成!"
+      },
+      "steps": {
+        "rolePositioning": "角色定位",
+        "keywordMatching": "关键词匹配",
+        "swotAnalysis": "SWOT分析",
+        "cvStrategy": "CV策略"
+      }
+    },
+    "dimensions": {
+      "matchScore": {
+        "title": "匹配度评分",
+        "points": "分",
+        "recommendation": {
+          "strong_match": "强烈推荐申请",
+          "good_match": "推荐申请",
+          "moderate_match": "可以考虑",
+          "weak_match": "需提升后申请",
+          "not_recommended": "暂不推荐"
+        },
+        "breakdown": {
+          "skills": "技能匹配",
+          "experience": "经验匹配",
+          "education": "教育匹配",
+          "cultureFit": "文化契合",
+          "careerFit": "职业发展"
+        },
+        "confidence": {
+          "label": "分析置信度",
+          "high": "高",
+          "medium": "中",
+          "low": "低"
+        }
+      },
+      "cvStrategy": {
+        "title": "简历策略",
+        "badge": "核心",
+        "objectiveGuidance": "职业目标撰写指导",
+        "priorityOrder": "推荐章节顺序",
+        "skillsHighlight": "应突出的技能",
+        "projectFocus": "应突出的项目",
+        "actionVerbs": "推荐使用的动词",
+        "quantificationSuggestions": "量化建议",
+        "avoid": "应避免/淡化",
+        "tone": {
+          "label": "推荐语气",
+          "formal": "正式专业",
+          "conversational": "自然亲切",
+          "technical": "技术导向",
+          "creative": "创意活泼",
+          "executive": "高管风格"
+        }
+      },
+      "swot": {
+        "title": "SWOT分析",
+        "strengths": "优势",
+        "weaknesses": "劣势",
+        "opportunities": "机会",
+        "threats": "威胁",
+        "suggestion": "建议",
+        "mitigation": "应对",
+        "overallAssessment": "综合评估",
+        "timeframe": {
+          "short_term": "短期",
+          "medium_term": "中期",
+          "long_term": "长期"
+        }
+      },
+      "keywords": {
+        "title": "关键词匹配",
+        "matchRate": "% 匹配",
+        "requiredMatchRate": "必需关键词匹配率",
+        "atsFriendliness": "ATS友好度",
+        "keywordStatus": "关键词状态",
+        "suggestedAdditions": "建议添加",
+        "ats": {
+          "excellent": "优秀",
+          "good": "良好",
+          "fair": "一般",
+          "poor": "较差"
+        }
+      },
+      "requirements": {
+        "title": "关键要求",
+        "mandatoryRate": "必需满足",
+        "yourStrengths": "你的优势",
+        "needsImprovement": "需要提升",
+        "detailedRequirements": "详细要求",
+        "required": "*必需",
+        "evidence": "证据"
+      },
+      "interview": {
+        "title": "面试准备",
+        "likelyQuestions": "预计面试问题",
+        "technicalReview": "需要复习",
+        "questionsToAsk": "你可以问的问题",
+        "tips": "面试技巧",
+        "questionType": {
+          "behavioral": "行为题",
+          "technical": "技术题",
+          "situational": "情景题",
+          "competency": "能力题",
+          "motivation": "动机题"
+        },
+        "difficulty": {
+          "basic": "基础",
+          "intermediate": "中级",
+          "advanced": "高级"
+        }
+      },
+      "rolePositioning": {
+        "title": "角色定位",
+        "level": "级别",
+        "domain": "领域",
+        "primaryFunction": "主要职能",
+        "readiness": "匹配准备度",
+        "yourPositioning": "你的定位",
+        "currentLevel": "当前级别",
+        "targetLevel": "目标级别",
+        "gap": "差距",
+        "levels": {
+          "entry": "入门级",
+          "junior": "初级",
+          "mid": "中级",
+          "senior": "高级",
+          "lead": "负责人",
+          "principal": "首席",
+          "executive": "高管"
+        },
+        "readinessStatus": {
+          "ready": "已准备好",
+          "stretch": "有挑战",
+          "gap": "有差距",
+          "overqualified": "资历过高"
+        }
+      },
+      "responsibilities": {
+        "title": "核心职责",
+        "coverageRate": "覆盖率",
+        "evidence": "证据",
+        "importance": {
+          "critical": "关键",
+          "important": "重要",
+          "nice_to_have": "加分项"
+        }
+      },
+      "sections": {
+        "header": "个人信息",
+        "summary": "职业目标",
+        "skills": "技能",
+        "experience": "工作经历",
+        "projects": "项目",
+        "education": "教育背景",
+        "certifications": "证书",
+        "awards": "获奖",
+        "publications": "发表",
+        "languages": "语言",
+        "volunteer": "志愿者"
+      }
+    },
+    "scoreCard": {
+      "outOf": "/100",
+      "levels": {
+        "notRecommended": "0-39 不建议",
+        "hasChance": "40-64 有机会",
+        "worthTrying": "65-84 值得尝试",
+        "stronglyRecommend": "85-100 强烈推荐"
+      },
+      "recommendations": {
+        "strong": {
+          "label": "强烈推荐",
+          "description": "非常匹配，建议尽快申请"
+        },
+        "moderate": {
+          "label": "值得尝试",
+          "description": "有较好的匹配度"
+        },
+        "weak": {
+          "label": "有一定机会",
+          "description": "需要针对性优化简历"
+        },
+        "not_recommended": {
+          "label": "不建议申请",
+          "description": "匹配度较低"
+        }
+      }
+    },
+    "streaming": {
+      "thinkingProcess": "AI思考过程",
+      "clickToExpand": "点击展开",
+      "clickToCollapse": "点击收起",
+      "dimensionData": "8维度分析数据",
+      "detailedReport": "详细分析报告",
+      "processingResults": "分析完成，正在处理结果...",
+      "jsonOmitted": "[JSON数据已省略]",
+      "structuredDataOmitted": "[结构化数据已省略]",
+      "arrayDataOmitted": "[数组数据已省略]",
+      "charsGenerated": "已生成 {count} 字符的结构化数据..."
+    },
+    "templateSelector": {
+      "title": "选择简历模板",
+      "recommended": "推荐",
+      "recommendedReason": "基于CV策略分析",
+      "selectTemplate": "选择模板",
+      "generating": "生成中...",
+      "categories": {
+        "modern": "现代",
+        "classic": "经典",
+        "creative": "创意",
+        "industry": "行业"
+      }
+    },
+    "aiProvider": {
+      "title": "选择AI模型",
+      "autoSelect": "自动选择",
+      "autoSelectDesc": "系统自动选择最佳可用AI模型（优先级：Claude > OpenAI > Codex > Gemini）",
+      "recommended": "推荐",
+      "tip": "提示：不同AI模型可能产生不同的分析结果，建议首次使用「自动选择」模式。"
+    }
+  },
   "errors": {
     "generic": "出现错误，请重试",
     "network": "网络错误，请检查网络连接",

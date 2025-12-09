@@ -697,6 +697,261 @@
     "actions": "Actions",
     "viewAIAnalysis": "View AI Analysis"
   },
+  "analysis": {
+    "v2": {
+      "title": "8-Dimension Intelligent Analysis",
+      "description": "AI-powered deep 8-dimension analysis providing detailed CV strategy, interview preparation tips, and match assessment",
+      "startButton": "Start 8-Dimension Analysis",
+      "analyzing": "AI is performing 8-dimension deep analysis...",
+      "complete": "Analysis complete!",
+      "error": "Analysis failed",
+      "retry": "Retry",
+      "reAnalyze": "Re-analyze",
+      "selectTemplateAndGenerate": "Select Template & Generate Resume",
+      "providedBy": "Powered by",
+      "badge": "8-Dimension Intelligent Analysis V2",
+      "sessionIncomplete": "Analysis session incomplete, please re-analyze",
+      "connecting": "Connecting to AI service...",
+      "detailedReport": "Detailed Analysis Report",
+      "features": {
+        "cvStrategy": "CV Strategy",
+        "cvStrategyDesc": "Intelligent resume writing guidance",
+        "keywordMatch": "Keyword Matching",
+        "keywordMatchDesc": "ATS optimization suggestions",
+        "swotAnalysis": "SWOT Analysis",
+        "swotAnalysisDesc": "Comprehensive strengths & weaknesses assessment",
+        "interviewPrep": "Interview Prep",
+        "interviewPrepDesc": "Predicted questions & answers"
+      },
+      "progress": {
+        "preparing": "Preparing...",
+        "rolePositioning": "Analyzing role positioning...",
+        "coreResponsibilities": "Matching core responsibilities...",
+        "keywordMatching": "Analyzing keyword match rate...",
+        "keyRequirements": "Evaluating key requirements...",
+        "swotAnalysis": "Performing SWOT analysis...",
+        "cvStrategy": "Generating CV strategy...",
+        "interviewPrep": "Preparing interview suggestions...",
+        "complete": "Analysis complete!"
+      },
+      "steps": {
+        "rolePositioning": "Role Positioning",
+        "keywordMatching": "Keyword Matching",
+        "swotAnalysis": "SWOT Analysis",
+        "cvStrategy": "CV Strategy"
+      }
+    },
+    "dimensions": {
+      "matchScore": {
+        "title": "Match Score",
+        "points": "points",
+        "recommendation": {
+          "strong_match": "Strongly Recommend Applying",
+          "good_match": "Recommend Applying",
+          "moderate_match": "Worth Considering",
+          "weak_match": "Need Improvement Before Applying",
+          "not_recommended": "Not Recommended"
+        },
+        "breakdown": {
+          "skills": "Skills Match",
+          "experience": "Experience Match",
+          "education": "Education Match",
+          "cultureFit": "Culture Fit",
+          "careerFit": "Career Growth"
+        },
+        "confidence": {
+          "label": "Analysis Confidence",
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low"
+        }
+      },
+      "cvStrategy": {
+        "title": "Resume Strategy",
+        "badge": "Core",
+        "objectiveGuidance": "Career Objective Writing Guidance",
+        "priorityOrder": "Recommended Section Order",
+        "skillsHighlight": "Skills to Highlight",
+        "projectFocus": "Projects to Highlight",
+        "actionVerbs": "Recommended Action Verbs",
+        "quantificationSuggestions": "Quantification Suggestions",
+        "avoid": "Should Avoid/De-emphasize",
+        "tone": {
+          "label": "Recommended Tone",
+          "formal": "Formal Professional",
+          "conversational": "Natural Friendly",
+          "technical": "Technical Oriented",
+          "creative": "Creative Lively",
+          "executive": "Executive Style"
+        }
+      },
+      "swot": {
+        "title": "SWOT Analysis",
+        "strengths": "Strengths",
+        "weaknesses": "Weaknesses",
+        "opportunities": "Opportunities",
+        "threats": "Threats",
+        "suggestion": "Suggestion",
+        "mitigation": "Mitigation",
+        "overallAssessment": "Overall Assessment",
+        "timeframe": {
+          "short_term": "Short-term",
+          "medium_term": "Medium-term",
+          "long_term": "Long-term"
+        }
+      },
+      "keywords": {
+        "title": "Keyword Matching",
+        "matchRate": "% match",
+        "requiredMatchRate": "Required Keyword Match Rate",
+        "atsFriendliness": "ATS Friendliness",
+        "keywordStatus": "Keyword Status",
+        "suggestedAdditions": "Suggested Additions",
+        "ats": {
+          "excellent": "Excellent",
+          "good": "Good",
+          "fair": "Fair",
+          "poor": "Poor"
+        }
+      },
+      "requirements": {
+        "title": "Key Requirements",
+        "mandatoryRate": "Mandatory fulfilled",
+        "yourStrengths": "Your Strengths",
+        "needsImprovement": "Needs Improvement",
+        "detailedRequirements": "Detailed Requirements",
+        "required": "*Required",
+        "evidence": "Evidence"
+      },
+      "interview": {
+        "title": "Interview Preparation",
+        "likelyQuestions": "Likely Interview Questions",
+        "technicalReview": "Topics to Review",
+        "questionsToAsk": "Questions You Can Ask",
+        "tips": "Interview Tips",
+        "questionType": {
+          "behavioral": "Behavioral",
+          "technical": "Technical",
+          "situational": "Situational",
+          "competency": "Competency",
+          "motivation": "Motivation"
+        },
+        "difficulty": {
+          "basic": "Basic",
+          "intermediate": "Intermediate",
+          "advanced": "Advanced"
+        }
+      },
+      "rolePositioning": {
+        "title": "Role Positioning",
+        "level": "Level",
+        "domain": "Domain",
+        "primaryFunction": "Primary Function",
+        "readiness": "Match Readiness",
+        "yourPositioning": "Your Positioning",
+        "currentLevel": "Current Level",
+        "targetLevel": "Target Level",
+        "gap": "Gap",
+        "levels": {
+          "entry": "Entry",
+          "junior": "Junior",
+          "mid": "Mid-level",
+          "senior": "Senior",
+          "lead": "Lead",
+          "principal": "Principal",
+          "executive": "Executive"
+        },
+        "readinessStatus": {
+          "ready": "Ready",
+          "stretch": "Stretch",
+          "gap": "Has Gap",
+          "overqualified": "Overqualified"
+        }
+      },
+      "responsibilities": {
+        "title": "Core Responsibilities",
+        "coverageRate": "Coverage",
+        "evidence": "Evidence",
+        "importance": {
+          "critical": "Critical",
+          "important": "Important",
+          "nice_to_have": "Nice to Have"
+        }
+      },
+      "sections": {
+        "header": "Personal Info",
+        "summary": "Career Objective",
+        "skills": "Skills",
+        "experience": "Work Experience",
+        "projects": "Projects",
+        "education": "Education",
+        "certifications": "Certifications",
+        "awards": "Awards",
+        "publications": "Publications",
+        "languages": "Languages",
+        "volunteer": "Volunteer"
+      }
+    },
+    "scoreCard": {
+      "outOf": "/100",
+      "levels": {
+        "notRecommended": "0-39 Not Recommended",
+        "hasChance": "40-64 Has Chance",
+        "worthTrying": "65-84 Worth Trying",
+        "stronglyRecommend": "85-100 Strongly Recommend"
+      },
+      "recommendations": {
+        "strong": {
+          "label": "Strongly Recommend",
+          "description": "Excellent match, apply soon"
+        },
+        "moderate": {
+          "label": "Worth Trying",
+          "description": "Good match rate"
+        },
+        "weak": {
+          "label": "Has Some Chance",
+          "description": "Need to optimize resume"
+        },
+        "not_recommended": {
+          "label": "Not Recommended",
+          "description": "Low match rate"
+        }
+      }
+    },
+    "streaming": {
+      "thinkingProcess": "AI Thinking Process",
+      "clickToExpand": "Click to expand",
+      "clickToCollapse": "Click to collapse",
+      "dimensionData": "8-Dimension Analysis Data",
+      "detailedReport": "Detailed Analysis Report",
+      "processingResults": "Analysis complete, processing results...",
+      "jsonOmitted": "[JSON data omitted]",
+      "structuredDataOmitted": "[Structured data omitted]",
+      "arrayDataOmitted": "[Array data omitted]",
+      "charsGenerated": "{count} characters of structured data generated..."
+    },
+    "templateSelector": {
+      "title": "Select Resume Template",
+      "recommended": "Recommended",
+      "recommendedReason": "Based on CV strategy analysis",
+      "selectTemplate": "Select Template",
+      "generating": "Generating...",
+      "categories": {
+        "modern": "Modern",
+        "classic": "Classic",
+        "creative": "Creative",
+        "industry": "Industry"
+      }
+    },
+    "aiProvider": {
+      "title": "Select AI Model",
+      "autoSelect": "Auto Select",
+      "autoSelectDesc": "System auto-selects the best available AI model (Priority: Claude > OpenAI > Codex > Gemini)",
+      "recommended": "Recommended",
+      "tip": "Different AI models may produce different analysis results. Recommend using \"Auto Select\" mode for first time."
+    }
+  },
   "errors": {
     "generic": "An error occurred. Please try again",
     "network": "Network error. Please check your connection",

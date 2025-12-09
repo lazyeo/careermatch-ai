@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { Sparkles, Loader2, User, FileText, Zap, RefreshCw, Palette } from 'lucide-react'
 import { AIProviderSelector, type AIProviderType } from './AIProviderSelector'
@@ -58,6 +58,7 @@ export function AnalysisV2({
 }: AnalysisV2Props) {
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations('analysis')
   const abortControllerRef = useRef<AbortController | null>(null)
   const [selectedProvider, setSelectedProvider] = useState<AIProviderType | undefined>(undefined)
   const [state, setState] = useState<AnalysisState>(() =>
@@ -77,7 +78,7 @@ export function AnalysisV2({
       : null
   )
   const [error, setError] = useState<string | null>(null)
-  const [streamProgress, setStreamProgress] = useState<StreamProgress>({ progress: 0, status: '准备中...' })
+  const [streamProgress, setStreamProgress] = useState<StreamProgress>({ progress: 0, status: t('v2.progress.preparing') })
   const [streamingContent, setStreamingContent] = useState<string>('')
   const [isGeneratingResume, setIsGeneratingResume] = useState(false)
   const [showTemplateSelector, setShowTemplateSelector] = useState(false)
@@ -93,7 +94,7 @@ export function AnalysisV2({
 
     setState('streaming')
     setError(null)
-    setStreamProgress({ progress: 0, status: '正在连接AI服务...' })
+    setStreamProgress({ progress: 0, status: t('v2.connecting') })
     setStreamingContent('')
 
     try {
@@ -123,13 +124,13 @@ export function AnalysisV2({
 
       // 进度阶段映射
       const progressStages = [
-        { threshold: 10, status: '正在分析角色定位...' },
-        { threshold: 25, status: '正在匹配核心职责...' },
-        { threshold: 40, status: '正在分析关键词匹配度...' },
-        { threshold: 55, status: '正在评估关键要求...' },
-        { threshold: 70, status: '正在进行SWOT分析...' },
-        { threshold: 85, status: '正在生成CV策略...' },
-        { threshold: 95, status: '正在准备面试建议...' },
+        { threshold: 10, status: t('v2.progress.rolePositioning') },
+        { threshold: 25, status: t('v2.progress.coreResponsibilities') },
+        { threshold: 40, status: t('v2.progress.keywordMatching') },
+        { threshold: 55, status: t('v2.progress.keyRequirements') },
+        { threshold: 70, status: t('v2.progress.swotAnalysis') },
+        { threshold: 85, status: t('v2.progress.cvStrategy') },
+        { threshold: 95, status: t('v2.progress.interviewPrep') },
       ]
 
       while (true) {
@@ -161,7 +162,7 @@ export function AnalysisV2({
                   model: data.model,
                 })
                 setState('completed')
-                setStreamProgress({ progress: 100, status: '分析完成!' })
+                setStreamProgress({ progress: 100, status: t('v2.progress.complete') })
                 setStreamingContent('')
                 router.refresh()
               } else {
@@ -230,7 +231,7 @@ export function AnalysisV2({
   // 生成简历（带模板选择）
   const generateResume = async (templateId: string) => {
     if (!result?.sessionId) {
-      alert('分析会话不完整，请重新分析')
+      alert(t('v2.sessionIncomplete'))
       return
     }
 
@@ -281,10 +282,10 @@ export function AnalysisV2({
                 <Sparkles className="w-6 h-6 text-indigo-600 absolute -right-1 -bottom-1" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                8维度智能分析
+                {t('v2.title')}
               </h3>
               <p className="text-sm text-gray-600 max-w-md mx-auto">
-                基于AI的深度8维度分析，提供详细的CV策略、面试准备建议和匹配度评估
+                {t('v2.description')}
               </p>
             </div>
 
@@ -292,23 +293,23 @@ export function AnalysisV2({
             <div className="grid md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-8">
               <FeatureItem
                 icon={<Zap className="w-5 h-5" />}
-                title="CV策略"
-                desc="智能简历撰写指导"
+                title={t('v2.features.cvStrategy')}
+                desc={t('v2.features.cvStrategyDesc')}
               />
               <FeatureItem
                 icon={<FileText className="w-5 h-5" />}
-                title="关键词匹配"
-                desc="ATS优化建议"
+                title={t('v2.features.keywordMatch')}
+                desc={t('v2.features.keywordMatchDesc')}
               />
               <FeatureItem
                 icon={<User className="w-5 h-5" />}
-                title="SWOT分析"
-                desc="全面优劣势评估"
+                title={t('v2.features.swotAnalysis')}
+                desc={t('v2.features.swotAnalysisDesc')}
               />
               <FeatureItem
                 icon={<Sparkles className="w-5 h-5" />}
-                title="面试准备"
-                desc="预测问题与回答"
+                title={t('v2.features.interviewPrep')}
+                desc={t('v2.features.interviewPrepDesc')}
               />
             </div>
 
@@ -320,7 +321,7 @@ export function AnalysisV2({
                 className="gap-2"
               >
                 <Sparkles className="w-4 h-4" />
-                开始8维度分析
+                {t('v2.startButton')}
               </Button>
             </div>
           </CardContent>
@@ -345,7 +346,7 @@ export function AnalysisV2({
               <Loader2 className="w-8 h-8 text-primary-600 animate-spin flex-shrink-0" />
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  AI正在进行8维度深度分析...
+                  {t('v2.analyzing')}
                 </h3>
                 <p className="text-sm text-gray-500">
                   {streamProgress.status}
@@ -369,22 +370,22 @@ export function AnalysisV2({
             {/* 分析阶段指示 */}
             <div className="grid grid-cols-4 gap-2 text-xs">
               <ProgressStep
-                label="角色定位"
+                label={t('v2.steps.rolePositioning')}
                 active={streamProgress.progress >= 0 && streamProgress.progress < 25}
                 completed={streamProgress.progress >= 25}
               />
               <ProgressStep
-                label="关键词匹配"
+                label={t('v2.steps.keywordMatching')}
                 active={streamProgress.progress >= 25 && streamProgress.progress < 50}
                 completed={streamProgress.progress >= 50}
               />
               <ProgressStep
-                label="SWOT分析"
+                label={t('v2.steps.swotAnalysis')}
                 active={streamProgress.progress >= 50 && streamProgress.progress < 75}
                 completed={streamProgress.progress >= 75}
               />
               <ProgressStep
-                label="CV策略"
+                label={t('v2.steps.cvStrategy')}
                 active={streamProgress.progress >= 75 && streamProgress.progress < 100}
                 completed={streamProgress.progress >= 100}
               />
@@ -416,14 +417,14 @@ export function AnalysisV2({
                 <span className="text-2xl">!</span>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                分析失败
+                {t('v2.error')}
               </h3>
               <p className="text-sm text-gray-600 mb-4">{error}</p>
               <Button
                 variant="primary"
                 onClick={() => startAnalysis(true)}
               >
-                重试
+                {t('v2.retry')}
               </Button>
             </div>
           </CardContent>
@@ -445,10 +446,10 @@ export function AnalysisV2({
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-medium">
             <Zap className="w-3 h-3" />
-            8维度智能分析 V2
+            {t('v2.badge')}
           </span>
           <span className="text-xs text-gray-500">
-            由 {result?.provider?.toUpperCase()} 提供 · {result?.model}
+            {t('v2.providedBy')} {result?.provider?.toUpperCase()} · {result?.model}
           </span>
         </div>
       </div>
@@ -471,7 +472,7 @@ export function AnalysisV2({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              详细分析报告
+              {t('v2.detailedReport')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -488,7 +489,7 @@ export function AnalysisV2({
           className="gap-2"
         >
           <RefreshCw className="w-4 h-4" />
-          重新分析
+          {t('v2.reAnalyze')}
         </Button>
         <Button
           variant="primary"
@@ -497,7 +498,7 @@ export function AnalysisV2({
           disabled={!result?.sessionId || !result?.dimensions}
         >
           <Palette className="w-4 h-4" />
-          选择模板并生成简历
+          {t('v2.selectTemplateAndGenerate')}
         </Button>
       </div>
 
