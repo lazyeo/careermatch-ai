@@ -1,4 +1,35 @@
 {
+  "home": {
+    "title": "CareerMatch AI",
+    "welcomeTo": "Welcome to",
+    "tagline": "Your intelligent job search partner for the New Zealand market",
+    "goToDashboard": "Go to Dashboard",
+    "register": "Sign Up Free",
+    "login": "Login",
+    "features": {
+      "resumeBuilder": {
+        "title": "Smart Resume Builder",
+        "description": "Create and optimize your resume with AI-powered suggestions tailored to each job."
+      },
+      "jobMatching": {
+        "title": "AI Job Matching",
+        "description": "Get intelligent 8-dimension analysis to find your perfect job match."
+      },
+      "applicationTracking": {
+        "title": "Application Tracking",
+        "description": "Track your applications, interviews, and progress in one organized dashboard."
+      }
+    },
+    "extension": {
+      "badge": "Browser Extension",
+      "title": "Get AI Career Assistant Support Anywhere",
+      "description": "Install the CareerMatch AI browser extension to get job analysis and resume suggestions directly on Seek, LinkedIn and other job sites. One-click import jobs and seamlessly integrate with your job search workflow.",
+      "downloadButton": "Under Review",
+      "learnMore": "Learn More",
+      "analyzing": "CareerMatch AI Analyzing..."
+    },
+    "status": "Development in progress - MVP Phase"
+  },
   "dashboard": {
     "title": "Dashboard",
     "welcomeBack": "Welcome back, {name}!",

@@ -1,4 +1,35 @@
 {
+  "home": {
+    "title": "CareerMatch AI",
+    "welcomeTo": "欢迎使用",
+    "tagline": "您的智能求职助手，专为新西兰市场打造",
+    "goToDashboard": "进入仪表盘",
+    "register": "免费注册",
+    "login": "登录",
+    "features": {
+      "resumeBuilder": {
+        "title": "智能简历生成",
+        "description": "使用AI技术为每个岗位定制优化您的简历。"
+      },
+      "jobMatching": {
+        "title": "AI岗位匹配",
+        "description": "获取智能8维度分析，找到最适合您的工作。"
+      },
+      "applicationTracking": {
+        "title": "申请追踪",
+        "description": "在一个统一的仪表盘中追踪您的申请、面试和进度。"
+      }
+    },
+    "extension": {
+      "badge": "浏览器插件",
+      "title": "随时随地获取 AI 职场助手支持",
+      "description": "安装 CareerMatch AI 浏览器插件，在 Seek、LinkedIn 等招聘网站上直接获取岗位分析和简历建议。一键导入岗位，无缝对接您的求职工作流。",
+      "downloadButton": "提交审核中",
+      "learnMore": "了解更多",
+      "analyzing": "CareerMatch AI 分析中..."
+    },
+    "status": "开发进行中 - MVP阶段"
+  },
   "dashboard": {
     "title": "仪表盘",
     "welcomeBack": "欢迎回来，{name}！",
