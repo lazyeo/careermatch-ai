@@ -202,13 +202,16 @@ export const CHINESE_CONTEXT_HINT = `## 语言提示
 /**
  * 英文语境提示
  */
-export const ENGLISH_CONTEXT_HINT = `## Language Notice
+export const ENGLISH_CONTEXT_HINT = `## Language Requirement (IMPORTANT)
 
-Please respond in English:
-- Use professional but accessible language
+**You MUST respond entirely in English, regardless of the input language.**
+- Even if the job description or candidate profile is in Chinese/other languages, your analysis and output MUST be in English
+- Use professional but accessible English
 - Follow standard business writing conventions
 - Be concise and direct
-- Use appropriate industry terminology`
+- Use appropriate industry terminology
+- All JSON field values must be in English
+- All Markdown content must be in English`
 
 /**
  * 双语处理提示
