@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import type { AnalysisRecommendation } from '@careermatch/shared'
 
 interface ScoreCardProps {
@@ -11,7 +12,8 @@ interface ScoreCardProps {
  * 匹配度评分卡片 - 展示AI分析的总体评分
  */
 export function ScoreCard({ score, recommendation }: ScoreCardProps) {
-  const { label, description, bgColor, textColor, borderColor } = getRecommendationStyle(recommendation)
+  const t = useTranslations('analysis.scoreCard')
+  const { bgColor, textColor, borderColor } = getRecommendationStyle(recommendation)
   const scoreColor = getScoreColor(score)
 
   return (
@@ -28,10 +30,10 @@ export function ScoreCard({ score, recommendation }: ScoreCardProps) {
         {/* 推荐等级 */}
         <div className="text-right">
           <div className={`text-xl font-semibold ${textColor}`}>
-            {label}
+            {t(`recommendation.${recommendation}.label` as Parameters<typeof t>[0])}
           </div>
           <div className="text-sm text-gray-600 mt-1">
-            {description}
+            {t(`recommendation.${recommendation}.description` as Parameters<typeof t>[0])}
           </div>
         </div>
       </div>
@@ -48,10 +50,10 @@ export function ScoreCard({ score, recommendation }: ScoreCardProps) {
 
       {/* 等级说明 */}
       <div className="mt-4 flex justify-between text-xs text-gray-400">
-        <span>0-39 不建议</span>
-        <span>40-64 有机会</span>
-        <span>65-84 值得尝试</span>
-        <span>85-100 强烈推荐</span>
+        <span>{t('scale.notRecommended')}</span>
+        <span>{t('scale.hasChance')}</span>
+        <span>{t('scale.worthTrying')}</span>
+        <span>{t('scale.stronglyRecommended')}</span>
       </div>
     </div>
   )
@@ -64,24 +66,18 @@ function getRecommendationStyle(recommendation: AnalysisRecommendation) {
   switch (recommendation) {
     case 'strong':
       return {
-        label: '强烈推荐',
-        description: '非常匹配，建议尽快申请',
         bgColor: 'bg-success-50',
         textColor: 'text-success-700',
         borderColor: 'border-success-200',
       }
     case 'moderate':
       return {
-        label: '值得尝试',
-        description: '有较好的匹配度',
         bgColor: 'bg-primary-50',
         textColor: 'text-primary-700',
         borderColor: 'border-primary-200',
       }
     case 'weak':
       return {
-        label: '有一定机会',
-        description: '需要针对性优化简历',
         bgColor: 'bg-warning-50',
         textColor: 'text-warning-700',
         borderColor: 'border-warning-200',
@@ -89,8 +85,6 @@ function getRecommendationStyle(recommendation: AnalysisRecommendation) {
     case 'not_recommended':
     default:
       return {
-        label: '不建议申请',
-        description: '匹配度较低',
         bgColor: 'bg-error-50',
         textColor: 'text-error-700',
         borderColor: 'border-error-200',

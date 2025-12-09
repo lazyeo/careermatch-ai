@@ -894,13 +894,13 @@
     },
     "scoreCard": {
       "outOf": "/100",
-      "levels": {
+      "scale": {
         "notRecommended": "0-39 不建议",
         "hasChance": "40-64 有机会",
         "worthTrying": "65-84 值得尝试",
-        "stronglyRecommend": "85-100 强烈推荐"
+        "stronglyRecommended": "85-100 强烈推荐"
       },
-      "recommendations": {
+      "recommendation": {
         "strong": {
           "label": "强烈推荐",
           "description": "非常匹配，建议尽快申请"
@@ -920,16 +920,37 @@
       }
     },
     "streaming": {
-      "thinkingProcess": "AI思考过程",
-      "clickToExpand": "点击展开",
-      "clickToCollapse": "点击收起",
-      "dimensionData": "8维度分析数据",
-      "detailedReport": "详细分析报告",
-      "processingResults": "分析完成，正在处理结果...",
-      "jsonOmitted": "[JSON数据已省略]",
-      "structuredDataOmitted": "[结构化数据已省略]",
-      "arrayDataOmitted": "[数组数据已省略]",
-      "charsGenerated": "已生成 {count} 字符的结构化数据..."
+      "thinking": {
+        "title": "AI思考过程",
+        "expand": "点击展开",
+        "collapse": "点击收起"
+      },
+      "score": {
+        "matchRate": "匹配度：",
+        "points": "分",
+        "recommendation": "推荐："
+      },
+      "dimensions": {
+        "title": "8维度分析数据",
+        "generated": "已生成 {count} 字符的结构化数据..."
+      },
+      "report": {
+        "title": "详细分析报告"
+      },
+      "complete": "分析完成，正在处理结果...",
+      "analyzing": "分析中...",
+      "omitted": {
+        "json": "JSON数据已省略",
+        "structured": "结构化数据已省略",
+        "array": "数组数据已省略"
+      },
+      "recommendation": {
+        "strong_match": "强烈推荐",
+        "good_match": "推荐申请",
+        "moderate_match": "可以考虑",
+        "weak_match": "谨慎考虑",
+        "not_recommended": "不太匹配"
+      }
     },
     "templateSelector": {
       "title": "选择简历模板",

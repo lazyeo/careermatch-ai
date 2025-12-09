@@ -894,15 +894,15 @@
     },
     "scoreCard": {
       "outOf": "/100",
-      "levels": {
+      "scale": {
         "notRecommended": "0-39 Not Recommended",
         "hasChance": "40-64 Has Chance",
         "worthTrying": "65-84 Worth Trying",
-        "stronglyRecommend": "85-100 Strongly Recommend"
+        "stronglyRecommended": "85-100 Strongly Recommended"
       },
-      "recommendations": {
+      "recommendation": {
         "strong": {
-          "label": "Strongly Recommend",
+          "label": "Strongly Recommended",
           "description": "Excellent match, apply soon"
         },
         "moderate": {
@@ -920,16 +920,37 @@
       }
     },
     "streaming": {
-      "thinkingProcess": "AI Thinking Process",
-      "clickToExpand": "Click to expand",
-      "clickToCollapse": "Click to collapse",
-      "dimensionData": "8-Dimension Analysis Data",
-      "detailedReport": "Detailed Analysis Report",
-      "processingResults": "Analysis complete, processing results...",
-      "jsonOmitted": "[JSON data omitted]",
-      "structuredDataOmitted": "[Structured data omitted]",
-      "arrayDataOmitted": "[Array data omitted]",
-      "charsGenerated": "{count} characters of structured data generated..."
+      "thinking": {
+        "title": "AI Thinking Process",
+        "expand": "Click to expand",
+        "collapse": "Click to collapse"
+      },
+      "score": {
+        "matchRate": "Match Rate:",
+        "points": " pts",
+        "recommendation": "Recommendation:"
+      },
+      "dimensions": {
+        "title": "8-Dimension Analysis Data",
+        "generated": "{count} characters of structured data generated..."
+      },
+      "report": {
+        "title": "Detailed Analysis Report"
+      },
+      "complete": "Analysis complete, processing results...",
+      "analyzing": "Analyzing...",
+      "omitted": {
+        "json": "JSON data omitted",
+        "structured": "Structured data omitted",
+        "array": "Array data omitted"
+      },
+      "recommendation": {
+        "strong_match": "Strongly Recommended",
+        "good_match": "Recommended",
+        "moderate_match": "Worth Considering",
+        "weak_match": "Consider Carefully",
+        "not_recommended": "Not a Good Match"
+      }
     },
     "templateSelector": {
       "title": "Select Resume Template",

@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { Brain, FileText, Target, ChevronDown, ChevronUp, CheckCircle2, Loader2 } from 'lucide-react'
 
@@ -21,23 +22,23 @@ interface ParsedSections {
 /**
  * 清理思考过程内容，移除JSON结构，只保留有意义的文本
  */
-function cleanThinkingContent(thinking: string): string {
+function cleanThinkingContent(thinking: string, jsonOmitted: string, structuredOmitted: string, arrayOmitted: string): string {
   if (!thinking) return ''
 
   // 移除JSON块 (```json ... ```)
-  let cleaned = thinking.replace(/```json[\s\S]*?```/g, '[JSON数据已省略]')
+  let cleaned = thinking.replace(/```json[\s\S]*?```/g, `[${jsonOmitted}]`)
 
   // 移除独立的JSON对象 ({ ... })
   cleaned = cleaned.replace(/\{[\s\S]*?"[^"]+"\s*:[\s\S]*?\}/g, (match) => {
     // 如果看起来像是一个大的JSON对象，用占位符替换
     if (match.length > 200) {
-      return '[结构化数据已省略]'
+      return `[${structuredOmitted}]`
     }
     return match
   })
 
   // 移除数组 [ ... ] 如果太长
-  cleaned = cleaned.replace(/\[[\s\S]{200,}?\]/g, '[数组数据已省略]')
+  cleaned = cleaned.replace(/\[[\s\S]{200,}?\]/g, `[${arrayOmitted}]`)
 
   // 清理多余的空行
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n')
@@ -48,7 +49,7 @@ function cleanThinkingContent(thinking: string): string {
 /**
  * 实时解析流式内容
  */
-function parseStreamingContent(content: string): ParsedSections {
+function parseStreamingContent(content: string, jsonOmitted: string, structuredOmitted: string, arrayOmitted: string): ParsedSections {
   const result: ParsedSections = {
     thinking: '',
     thinkingSummary: '',
@@ -69,10 +70,10 @@ function parseStreamingContent(content: string): ParsedSections {
   // 提取思考过程（分隔符之前的所有内容）
   if (scoreIndex > 0) {
     result.thinking = content.substring(0, scoreIndex).trim()
-    result.thinkingSummary = cleanThinkingContent(result.thinking)
+    result.thinkingSummary = cleanThinkingContent(result.thinking, jsonOmitted, structuredOmitted, arrayOmitted)
   } else {
     result.thinking = content
-    result.thinkingSummary = cleanThinkingContent(content)
+    result.thinkingSummary = cleanThinkingContent(content, jsonOmitted, structuredOmitted, arrayOmitted)
     result.currentSection = 'thinking'
     return result
   }
@@ -121,20 +122,20 @@ function parseStreamingContent(content: string): ParsedSections {
 }
 
 /**
- * 获取推荐等级的中文和颜色
+ * 获取推荐等级的颜色
  */
-function getRecommendationDisplay(rec: string | null): { text: string; color: string } {
-  if (!rec) return { text: '分析中...', color: 'text-gray-500' }
+function getRecommendationColor(rec: string | null): string {
+  if (!rec) return 'text-gray-500'
 
-  const map: Record<string, { text: string; color: string }> = {
-    strong_match: { text: '强烈推荐', color: 'text-green-600' },
-    good_match: { text: '推荐申请', color: 'text-blue-600' },
-    moderate_match: { text: '可以考虑', color: 'text-yellow-600' },
-    weak_match: { text: '谨慎考虑', color: 'text-orange-600' },
-    not_recommended: { text: '不太匹配', color: 'text-red-600' },
+  const colorMap: Record<string, string> = {
+    strong_match: 'text-green-600',
+    good_match: 'text-blue-600',
+    moderate_match: 'text-yellow-600',
+    weak_match: 'text-orange-600',
+    not_recommended: 'text-red-600',
   }
 
-  return map[rec.toLowerCase()] || { text: rec, color: 'text-gray-600' }
+  return colorMap[rec.toLowerCase()] || 'text-gray-600'
 }
 
 /**
@@ -142,10 +143,20 @@ function getRecommendationDisplay(rec: string | null): { text: string; color: st
  * 实时解析并分区显示AI生成的内容
  */
 export function StreamingContent({ content }: StreamingContentProps) {
+  const t = useTranslations('analysis.streaming')
   const [showThinking, setShowThinking] = useState(false)
 
-  const parsed = useMemo(() => parseStreamingContent(content), [content])
-  const recDisplay = getRecommendationDisplay(parsed.recommendation)
+  const parsed = useMemo(() => parseStreamingContent(
+    content,
+    t('omitted.json'),
+    t('omitted.structured'),
+    t('omitted.array')
+  ), [content, t])
+
+  const recColor = getRecommendationColor(parsed.recommendation)
+  const recText = parsed.recommendation
+    ? t(`recommendation.${parsed.recommendation.toLowerCase()}` as Parameters<typeof t>[0])
+    : t('analyzing')
 
   // 计算当前阶段进度
   const sectionProgress = {
@@ -165,14 +176,14 @@ export function StreamingContent({ content }: StreamingContentProps) {
             <CardTitle className="text-sm flex items-center justify-between">
               <div className="flex items-center gap-2 text-gray-600">
                 <Brain className="w-4 h-4" />
-                AI思考过程
+                {t('thinking.title')}
                 {parsed.currentSection === 'thinking' && (
                   <Loader2 className="w-3 h-3 animate-spin text-indigo-500" />
                 )}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400 font-normal">
-                  点击{showThinking ? '收起' : '展开'}
+                  {showThinking ? t('thinking.collapse') : t('thinking.expand')}
                 </span>
                 {showThinking ? (
                   <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -206,10 +217,10 @@ export function StreamingContent({ content }: StreamingContentProps) {
                 {/* 分数 */}
                 <div className="flex items-center gap-2">
                   <Target className="w-5 h-5 text-indigo-500" />
-                  <span className="text-sm text-gray-600">匹配度：</span>
+                  <span className="text-sm text-gray-600">{t('score.matchRate')}</span>
                   <span className="text-2xl font-bold text-indigo-600">
                     {parsed.score || '...'}
-                    {parsed.score && <span className="text-sm font-normal">分</span>}
+                    {parsed.score && <span className="text-sm font-normal">{t('score.points')}</span>}
                   </span>
                 </div>
 
@@ -218,9 +229,9 @@ export function StreamingContent({ content }: StreamingContentProps) {
 
                 {/* 推荐等级 */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">推荐：</span>
-                  <span className={`font-semibold ${recDisplay.color}`}>
-                    {recDisplay.text}
+                  <span className="text-sm text-gray-600">{t('score.recommendation')}</span>
+                  <span className={`font-semibold ${recColor}`}>
+                    {recText}
                   </span>
                 </div>
               </div>
@@ -244,7 +255,7 @@ export function StreamingContent({ content }: StreamingContentProps) {
           <CardHeader className="py-3">
             <CardTitle className="text-sm flex items-center gap-2 text-purple-700">
               <FileText className="w-4 h-4" />
-              8维度分析数据
+              {t('dimensions.title')}
               {parsed.currentSection === 'dimensions' ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
               ) : (
@@ -264,7 +275,7 @@ export function StreamingContent({ content }: StreamingContentProps) {
             </div>
             {parsed.dimensions.length > 500 && (
               <p className="text-xs text-purple-500 mt-2">
-                已生成 {parsed.dimensions.length} 字符的结构化数据...
+                {t('dimensions.generated', { count: parsed.dimensions.length })}
               </p>
             )}
           </CardContent>
@@ -277,7 +288,7 @@ export function StreamingContent({ content }: StreamingContentProps) {
           <CardHeader className="py-3">
             <CardTitle className="text-sm flex items-center gap-2 text-green-700">
               <FileText className="w-4 h-4" />
-              详细分析报告
+              {t('report.title')}
               {parsed.currentSection === 'analysis' ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
               ) : (
@@ -305,7 +316,7 @@ export function StreamingContent({ content }: StreamingContentProps) {
         <div className="text-center py-2">
           <p className="text-sm text-green-600 flex items-center justify-center gap-2">
             <CheckCircle2 className="w-4 h-4" />
-            分析完成，正在处理结果...
+            {t('complete')}
           </p>
         </div>
       )}

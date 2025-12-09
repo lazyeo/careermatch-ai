@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader } from '@careermatch/ui'
 import {
   Target,
@@ -33,6 +34,7 @@ interface DimensionsDisplayProps {
  * 将AI分析的8个维度以交互式卡片形式展示
  */
 export function DimensionsDisplay({ dimensions }: DimensionsDisplayProps) {
+  const t = useTranslations('analysis.dimensions')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['matchScore', 'cvStrategy'])
   )
@@ -56,6 +58,7 @@ export function DimensionsDisplay({ dimensions }: DimensionsDisplayProps) {
         matchScore={dimensions.matchScore}
         expanded={expandedSections.has('matchScore')}
         onToggle={() => toggleSection('matchScore')}
+        t={t}
       />
 
       {/* 2. CV策略 - 核心 */}
@@ -63,6 +66,7 @@ export function DimensionsDisplay({ dimensions }: DimensionsDisplayProps) {
         cvStrategy={dimensions.cvStrategy}
         expanded={expandedSections.has('cvStrategy')}
         onToggle={() => toggleSection('cvStrategy')}
+        t={t}
       />
 
       {/* 3. SWOT分析 */}
@@ -70,6 +74,7 @@ export function DimensionsDisplay({ dimensions }: DimensionsDisplayProps) {
         swot={dimensions.swotAnalysis}
         expanded={expandedSections.has('swot')}
         onToggle={() => toggleSection('swot')}
+        t={t}
       />
 
       {/* 4. 关键词匹配 */}
@@ -77,6 +82,7 @@ export function DimensionsDisplay({ dimensions }: DimensionsDisplayProps) {
         keywords={dimensions.keywordMatching}
         expanded={expandedSections.has('keywords')}
         onToggle={() => toggleSection('keywords')}
+        t={t}
       />
 
       {/* 5. 关键要求 */}
@@ -84,6 +90,7 @@ export function DimensionsDisplay({ dimensions }: DimensionsDisplayProps) {
         requirements={dimensions.keyRequirements}
         expanded={expandedSections.has('requirements')}
         onToggle={() => toggleSection('requirements')}
+        t={t}
       />
 
       {/* 6. 面试准备 */}
@@ -91,6 +98,7 @@ export function DimensionsDisplay({ dimensions }: DimensionsDisplayProps) {
         interviewPrep={dimensions.interviewPreparation}
         expanded={expandedSections.has('interview')}
         onToggle={() => toggleSection('interview')}
+        t={t}
       />
 
       {/* 7. 角色定位 */}
@@ -98,6 +106,7 @@ export function DimensionsDisplay({ dimensions }: DimensionsDisplayProps) {
         positioning={dimensions.rolePositioning}
         expanded={expandedSections.has('role')}
         onToggle={() => toggleSection('role')}
+        t={t}
       />
 
       {/* 8. 核心职责 */}
@@ -105,6 +114,7 @@ export function DimensionsDisplay({ dimensions }: DimensionsDisplayProps) {
         responsibilities={dimensions.coreResponsibilities}
         expanded={expandedSections.has('responsibilities')}
         onToggle={() => toggleSection('responsibilities')}
+        t={t}
       />
     </div>
   )
@@ -155,15 +165,20 @@ function CollapsibleCard({
   )
 }
 
+// 翻译函数类型
+type TranslationFunction = ReturnType<typeof useTranslations>
+
 // 匹配度评分卡
 function ScoreSummaryCard({
   matchScore,
   expanded,
   onToggle,
+  t,
 }: {
   matchScore: AnalysisDimensions['matchScore']
   expanded: boolean
   onToggle: () => void
+  t: TranslationFunction
 }) {
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 bg-green-100'
@@ -173,27 +188,30 @@ function ScoreSummaryCard({
   }
 
   const getRecommendationLabel = (rec: string) => {
-    const labels: Record<string, { text: string; color: string }> = {
-      strong_match: { text: '强烈推荐申请', color: 'text-green-700 bg-green-100' },
-      good_match: { text: '推荐申请', color: 'text-blue-700 bg-blue-100' },
-      moderate_match: { text: '可以考虑', color: 'text-yellow-700 bg-yellow-100' },
-      weak_match: { text: '需提升后申请', color: 'text-orange-700 bg-orange-100' },
-      not_recommended: { text: '暂不推荐', color: 'text-red-700 bg-red-100' },
+    const colorMap: Record<string, string> = {
+      strong_match: 'text-green-700 bg-green-100',
+      good_match: 'text-blue-700 bg-blue-100',
+      moderate_match: 'text-yellow-700 bg-yellow-100',
+      weak_match: 'text-orange-700 bg-orange-100',
+      not_recommended: 'text-red-700 bg-red-100',
     }
-    return labels[rec] || { text: rec, color: 'text-gray-700 bg-gray-100' }
+    return {
+      text: t(`matchScore.recommendation.${rec}` as Parameters<typeof t>[0]),
+      color: colorMap[rec] || 'text-gray-700 bg-gray-100'
+    }
   }
 
   const recommendation = getRecommendationLabel(matchScore.recommendation)
 
   return (
     <CollapsibleCard
-      title="匹配度评分"
+      title={t('matchScore.title')}
       icon={<BarChart3 className="w-5 h-5 text-primary-600" />}
       expanded={expanded}
       onToggle={onToggle}
       badge={
         <span className={`ml-2 px-2 py-0.5 rounded-full text-sm font-bold ${getScoreColor(matchScore.overall)}`}>
-          {matchScore.overall}分
+          {matchScore.overall}{t('matchScore.points')}
         </span>
       }
     >
@@ -209,14 +227,14 @@ function ScoreSummaryCard({
         {/* 分项得分 */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
-            { label: '技能匹配', score: matchScore.breakdown.skillsScore },
-            { label: '经验匹配', score: matchScore.breakdown.experienceScore },
-            { label: '教育匹配', score: matchScore.breakdown.educationScore },
-            { label: '文化契合', score: matchScore.breakdown.cultureFitScore },
-            { label: '职业发展', score: matchScore.breakdown.careerFitScore },
+            { key: 'skills', score: matchScore.breakdown.skillsScore },
+            { key: 'experience', score: matchScore.breakdown.experienceScore },
+            { key: 'education', score: matchScore.breakdown.educationScore },
+            { key: 'cultureFit', score: matchScore.breakdown.cultureFitScore },
+            { key: 'careerFit', score: matchScore.breakdown.careerFitScore },
           ].map((item) => (
-            <div key={item.label} className="text-center p-2 bg-gray-50 rounded-lg">
-              <div className="text-xs text-gray-500">{item.label}</div>
+            <div key={item.key} className="text-center p-2 bg-gray-50 rounded-lg">
+              <div className="text-xs text-gray-500">{t(`matchScore.breakdown.${item.key}` as Parameters<typeof t>[0])}</div>
               <div className="text-lg font-semibold text-gray-900">{item.score}</div>
             </div>
           ))}
@@ -224,7 +242,7 @@ function ScoreSummaryCard({
 
         {/* 置信度 */}
         <div className="text-xs text-gray-500">
-          分析置信度：{matchScore.confidence === 'high' ? '高' : matchScore.confidence === 'medium' ? '中' : '低'}
+          {t('matchScore.confidence.label')}: {t(`matchScore.confidence.${matchScore.confidence}` as Parameters<typeof t>[0])}
         </div>
       </div>
     </CollapsibleCard>
@@ -236,20 +254,22 @@ function CVStrategyCard({
   cvStrategy,
   expanded,
   onToggle,
+  t,
 }: {
   cvStrategy: AnalysisDimensions['cvStrategy']
   expanded: boolean
   onToggle: () => void
+  t: TranslationFunction
 }) {
   return (
     <CollapsibleCard
-      title="简历策略"
+      title={t('cvStrategy.title')}
       icon={<FileEdit className="w-5 h-5 text-indigo-600" />}
       expanded={expanded}
       onToggle={onToggle}
       badge={
         <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
-          核心
+          {t('cvStrategy.badge')}
         </span>
       }
     >
@@ -257,14 +277,14 @@ function CVStrategyCard({
         {/* 职业目标指导 */}
         {cvStrategy.objectiveGuidance && (
           <div className="p-3 bg-indigo-50 rounded-lg">
-            <h4 className="text-sm font-medium text-indigo-900 mb-1">职业目标撰写指导</h4>
+            <h4 className="text-sm font-medium text-indigo-900 mb-1">{t('cvStrategy.objectiveGuidance')}</h4>
             <p className="text-sm text-indigo-700">{cvStrategy.objectiveGuidance}</p>
           </div>
         )}
 
         {/* 章节顺序 */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2">推荐章节顺序</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('cvStrategy.priorityOrder')}</h4>
           <div className="flex flex-wrap gap-2">
             {cvStrategy.priorityOrder.map((section, idx) => (
               <span
@@ -274,7 +294,7 @@ function CVStrategyCard({
                 <span className="w-4 h-4 flex items-center justify-center bg-primary-600 text-white rounded-full text-[10px]">
                   {idx + 1}
                 </span>
-                {getSectionLabel(section)}
+                {t(`sections.${section}` as Parameters<typeof t>[0])}
               </span>
             ))}
           </div>
@@ -283,7 +303,7 @@ function CVStrategyCard({
         {/* 技能突出 */}
         {cvStrategy.skillsHighlight.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">应突出的技能</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('cvStrategy.skillsHighlight')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {cvStrategy.skillsHighlight.map((skill) => (
                 <span
@@ -300,7 +320,7 @@ function CVStrategyCard({
         {/* 项目突出 */}
         {cvStrategy.projectFocus.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">应突出的项目</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('cvStrategy.projectFocus')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {cvStrategy.projectFocus.map((project) => (
                 <span
@@ -317,9 +337,9 @@ function CVStrategyCard({
         {/* 行动动词 */}
         {cvStrategy.actionVerbs.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">推荐使用的动词</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('cvStrategy.actionVerbs')}</h4>
             <p className="text-sm text-gray-600">
-              {cvStrategy.actionVerbs.slice(0, 10).join('、')}
+              {cvStrategy.actionVerbs.slice(0, 10).join(', ')}
             </p>
           </div>
         )}
@@ -327,7 +347,7 @@ function CVStrategyCard({
         {/* 量化建议 */}
         {cvStrategy.quantificationSuggestions.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">量化建议</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('cvStrategy.quantificationSuggestions')}</h4>
             <ul className="text-sm text-gray-600 space-y-1">
               {cvStrategy.quantificationSuggestions.slice(0, 5).map((suggestion, idx) => (
                 <li key={idx} className="flex items-start gap-2">
@@ -342,7 +362,7 @@ function CVStrategyCard({
         {/* 应避免的内容 */}
         {cvStrategy.avoid.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">应避免/淡化</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('cvStrategy.avoid')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {cvStrategy.avoid.map((item) => (
                 <span
@@ -358,7 +378,7 @@ function CVStrategyCard({
 
         {/* 语气 */}
         <div className="text-xs text-gray-500">
-          推荐语气：{getToneLabel(cvStrategy.tone)}
+          {t('cvStrategy.tone.label')}: {t(`cvStrategy.tone.${cvStrategy.tone}` as Parameters<typeof t>[0])}
         </div>
       </div>
     </CollapsibleCard>
@@ -370,14 +390,16 @@ function SWOTCard({
   swot,
   expanded,
   onToggle,
+  t,
 }: {
   swot: AnalysisDimensions['swotAnalysis']
   expanded: boolean
   onToggle: () => void
+  t: TranslationFunction
 }) {
   return (
     <CollapsibleCard
-      title="SWOT分析"
+      title={t('swot.title')}
       icon={<TrendingUp className="w-5 h-5 text-purple-600" />}
       expanded={expanded}
       onToggle={onToggle}
@@ -386,7 +408,7 @@ function SWOTCard({
         {/* 优势 */}
         <div className="p-3 bg-green-50 rounded-lg">
           <h4 className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
-            <Shield className="w-4 h-4" /> 优势
+            <Shield className="w-4 h-4" /> {t('swot.strengths')}
           </h4>
           <ul className="space-y-2">
             {swot.strengths.map((s, idx) => (
@@ -401,13 +423,13 @@ function SWOTCard({
         {/* 劣势 */}
         <div className="p-3 bg-red-50 rounded-lg">
           <h4 className="text-sm font-medium text-red-800 mb-2 flex items-center gap-1">
-            <AlertCircle className="w-4 h-4" /> 劣势
+            <AlertCircle className="w-4 h-4" /> {t('swot.weaknesses')}
           </h4>
           <ul className="space-y-2">
             {swot.weaknesses.map((w, idx) => (
               <li key={idx} className="text-sm">
                 <span className="font-medium text-red-700">{w.point}</span>
-                <p className="text-red-600 text-xs">建议：{w.suggestion}</p>
+                <p className="text-red-600 text-xs">{t('swot.suggestion')}: {w.suggestion}</p>
               </li>
             ))}
           </ul>
@@ -416,14 +438,14 @@ function SWOTCard({
         {/* 机会 */}
         <div className="p-3 bg-blue-50 rounded-lg">
           <h4 className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-1">
-            <Zap className="w-4 h-4" /> 机会
+            <Zap className="w-4 h-4" /> {t('swot.opportunities')}
           </h4>
           <ul className="space-y-2">
             {swot.opportunities.map((o, idx) => (
               <li key={idx} className="text-sm text-blue-700">
                 {o.point}
                 <span className="text-xs text-blue-500 ml-1">
-                  ({getTimeframeLabel(o.timeframe)})
+                  ({t(`swot.timeframe.${o.timeframe}` as Parameters<typeof t>[0])})
                 </span>
               </li>
             ))}
@@ -433,14 +455,14 @@ function SWOTCard({
         {/* 威胁 */}
         <div className="p-3 bg-yellow-50 rounded-lg">
           <h4 className="text-sm font-medium text-yellow-800 mb-2 flex items-center gap-1">
-            <AlertTriangle className="w-4 h-4" /> 威胁
+            <AlertTriangle className="w-4 h-4" /> {t('swot.threats')}
           </h4>
           <ul className="space-y-2">
-            {swot.threats.map((t, idx) => (
+            {swot.threats.map((threat, idx) => (
               <li key={idx} className="text-sm">
-                <span className="font-medium text-yellow-700">{t.point}</span>
-                {t.mitigation && (
-                  <p className="text-yellow-600 text-xs">应对：{t.mitigation}</p>
+                <span className="font-medium text-yellow-700">{threat.point}</span>
+                {threat.mitigation && (
+                  <p className="text-yellow-600 text-xs">{t('swot.mitigation')}: {threat.mitigation}</p>
                 )}
               </li>
             ))}
@@ -461,20 +483,22 @@ function KeywordsCard({
   keywords,
   expanded,
   onToggle,
+  t,
 }: {
   keywords: AnalysisDimensions['keywordMatching']
   expanded: boolean
   onToggle: () => void
+  t: TranslationFunction
 }) {
   return (
     <CollapsibleCard
-      title="关键词匹配"
+      title={t('keywords.title')}
       icon={<Tags className="w-5 h-5 text-cyan-600" />}
       expanded={expanded}
       onToggle={onToggle}
       badge={
         <span className="ml-2 text-xs text-gray-500">
-          {keywords.overallMatchRate}% 匹配
+          {keywords.overallMatchRate}{t('keywords.matchRate')}
         </span>
       }
     >
@@ -482,22 +506,22 @@ function KeywordsCard({
         {/* 匹配率 */}
         <div className="grid grid-cols-2 gap-3">
           <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-xs text-gray-500">必需关键词匹配率</div>
+            <div className="text-xs text-gray-500">{t('keywords.requiredMatchRate')}</div>
             <div className="text-lg font-semibold text-gray-900">
               {keywords.requiredMatchRate}%
             </div>
           </div>
           <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-xs text-gray-500">ATS友好度</div>
+            <div className="text-xs text-gray-500">{t('keywords.atsFriendliness')}</div>
             <div className="text-lg font-semibold text-gray-900">
-              {getATSLabel(keywords.atsFriendliness)}
+              {t(`keywords.ats.${keywords.atsFriendliness}` as Parameters<typeof t>[0])}
             </div>
           </div>
         </div>
 
         {/* 关键词列表 */}
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">关键词状态</h4>
+          <h4 className="text-sm font-medium text-gray-700">{t('keywords.keywordStatus')}</h4>
           <div className="flex flex-wrap gap-2">
             {keywords.keywords.slice(0, 20).map((kw) => (
               <span
@@ -524,7 +548,7 @@ function KeywordsCard({
         {/* 建议添加 */}
         {keywords.suggestedAdditions.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">建议添加</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('keywords.suggestedAdditions')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {keywords.suggestedAdditions.map((kw) => (
                 <span
@@ -547,20 +571,22 @@ function RequirementsCard({
   requirements,
   expanded,
   onToggle,
+  t,
 }: {
   requirements: AnalysisDimensions['keyRequirements']
   expanded: boolean
   onToggle: () => void
+  t: TranslationFunction
 }) {
   return (
     <CollapsibleCard
-      title="关键要求"
+      title={t('requirements.title')}
       icon={<ClipboardCheck className="w-5 h-5 text-amber-600" />}
       expanded={expanded}
       onToggle={onToggle}
       badge={
         <span className="ml-2 text-xs text-gray-500">
-          必需满足 {requirements.mandatoryFulfillmentRate}%
+          {t('requirements.mandatoryRate')} {requirements.mandatoryFulfillmentRate}%
         </span>
       }
     >
@@ -568,7 +594,7 @@ function RequirementsCard({
         {/* 主要优势 */}
         {requirements.majorStrengths.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-green-700 mb-2">你的优势</h4>
+            <h4 className="text-sm font-medium text-green-700 mb-2">{t('requirements.strengths')}</h4>
             <ul className="space-y-1">
               {requirements.majorStrengths.map((s, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-green-600">
@@ -583,7 +609,7 @@ function RequirementsCard({
         {/* 主要差距 */}
         {requirements.majorGaps.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-red-700 mb-2">需要提升</h4>
+            <h4 className="text-sm font-medium text-red-700 mb-2">{t('requirements.gaps')}</h4>
             <ul className="space-y-1">
               {requirements.majorGaps.map((g, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-red-600">
@@ -597,7 +623,7 @@ function RequirementsCard({
 
         {/* 详细要求列表 */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2">详细要求</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('requirements.details')}</h4>
           <div className="space-y-2">
             {requirements.requirements.slice(0, 10).map((req, idx) => (
               <div
@@ -615,7 +641,7 @@ function RequirementsCard({
                   <span className={req.mandatory ? 'font-medium' : ''}>
                     {req.description}
                     {req.mandatory && (
-                      <span className="ml-1 text-xs text-red-500">*必需</span>
+                      <span className="ml-1 text-xs text-red-500">*{t('requirements.required')}</span>
                     )}
                   </span>
                 </div>
@@ -636,14 +662,16 @@ function InterviewPrepCard({
   interviewPrep,
   expanded,
   onToggle,
+  t,
 }: {
   interviewPrep: AnalysisDimensions['interviewPreparation']
   expanded: boolean
   onToggle: () => void
+  t: TranslationFunction
 }) {
   return (
     <CollapsibleCard
-      title="面试准备"
+      title={t('interview.title')}
       icon={<MessageSquare className="w-5 h-5 text-rose-600" />}
       expanded={expanded}
       onToggle={onToggle}
@@ -652,17 +680,17 @@ function InterviewPrepCard({
         {/* 预计问题 */}
         {interviewPrep.likelyQuestions.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">预计面试问题</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('interview.likelyQuestions')}</h4>
             <div className="space-y-3">
               {interviewPrep.likelyQuestions.slice(0, 5).map((q, idx) => (
                 <div key={idx} className="p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm font-medium text-gray-900">{q.question}</p>
                   <div className="flex gap-2 mt-1">
                     <span className="text-xs px-1.5 py-0.5 bg-gray-200 rounded">
-                      {getQuestionTypeLabel(q.type)}
+                      {t(`interview.questionType.${q.type}` as Parameters<typeof t>[0])}
                     </span>
                     <span className="text-xs px-1.5 py-0.5 bg-gray-200 rounded">
-                      {getDifficultyLabel(q.difficulty)}
+                      {t(`interview.difficulty.${q.difficulty}` as Parameters<typeof t>[0])}
                     </span>
                   </div>
                   {q.answerPoints.length > 0 && (
@@ -681,7 +709,7 @@ function InterviewPrepCard({
         {/* 需要复习的技术点 */}
         {interviewPrep.technicalReview.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">需要复习</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('interview.technicalReview')}</h4>
             <div className="flex flex-wrap gap-2">
               {interviewPrep.technicalReview.map((item, idx) => (
                 <span
@@ -698,7 +726,7 @@ function InterviewPrepCard({
         {/* 应该问的问题 */}
         {interviewPrep.questionsToAsk.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">你可以问的问题</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('interview.questionsToAsk')}</h4>
             <ul className="space-y-1 text-sm text-gray-600">
               {interviewPrep.questionsToAsk.slice(0, 5).map((q, idx) => (
                 <li key={idx}>• {q}</li>
@@ -710,7 +738,7 @@ function InterviewPrepCard({
         {/* 面试技巧 */}
         {interviewPrep.tips.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">面试技巧</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('interview.tips')}</h4>
             <ul className="space-y-1 text-sm text-gray-600">
               {interviewPrep.tips.map((tip, idx) => (
                 <li key={idx} className="flex items-start gap-2">
@@ -731,14 +759,16 @@ function RolePositioningCard({
   positioning,
   expanded,
   onToggle,
+  t,
 }: {
   positioning: AnalysisDimensions['rolePositioning']
   expanded: boolean
   onToggle: () => void
+  t: TranslationFunction
 }) {
   return (
     <CollapsibleCard
-      title="角色定位"
+      title={t('rolePositioning.title')}
       icon={<Target className="w-5 h-5 text-teal-600" />}
       expanded={expanded}
       onToggle={onToggle}
@@ -748,38 +778,38 @@ function RolePositioningCard({
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-xs text-gray-500">级别</div>
+            <div className="text-xs text-gray-500">{t('rolePositioning.level')}</div>
             <div className="text-sm font-medium text-gray-900">
-              {getLevelLabel(positioning.level)}
+              {t(`rolePositioning.levels.${positioning.level}` as Parameters<typeof t>[0])}
             </div>
           </div>
           <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-xs text-gray-500">领域</div>
+            <div className="text-xs text-gray-500">{t('rolePositioning.domain')}</div>
             <div className="text-sm font-medium text-gray-900">
               {positioning.domain}
             </div>
           </div>
           <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-xs text-gray-500">主要职能</div>
+            <div className="text-xs text-gray-500">{t('rolePositioning.primaryFunction')}</div>
             <div className="text-sm font-medium text-gray-900">
               {positioning.primaryFunction}
             </div>
           </div>
           <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-xs text-gray-500">匹配准备度</div>
+            <div className="text-xs text-gray-500">{t('rolePositioning.readiness')}</div>
             <div className="text-sm font-medium text-gray-900">
-              {getReadinessLabel(positioning.candidateFit.readiness)}
+              {t(`rolePositioning.readinessStatus.${positioning.candidateFit.readiness}` as Parameters<typeof t>[0])}
             </div>
           </div>
         </div>
 
         {/* 候选人定位 */}
         <div className="p-3 bg-teal-50 rounded-lg">
-          <h4 className="text-sm font-medium text-teal-800 mb-2">你的定位</h4>
+          <h4 className="text-sm font-medium text-teal-800 mb-2">{t('rolePositioning.yourPositioning')}</h4>
           <div className="text-sm text-teal-700 space-y-1">
-            <p>当前级别：{positioning.candidateFit.currentLevel}</p>
-            <p>目标级别：{positioning.candidateFit.targetLevel}</p>
-            <p>差距：{positioning.candidateFit.gap}</p>
+            <p>{t('rolePositioning.currentLevel')}{positioning.candidateFit.currentLevel}</p>
+            <p>{t('rolePositioning.targetLevel')}{positioning.candidateFit.targetLevel}</p>
+            <p>{t('rolePositioning.gap')}{positioning.candidateFit.gap}</p>
           </div>
         </div>
       </div>
@@ -792,20 +822,22 @@ function ResponsibilitiesCard({
   responsibilities,
   expanded,
   onToggle,
+  t,
 }: {
   responsibilities: AnalysisDimensions['coreResponsibilities']
   expanded: boolean
   onToggle: () => void
+  t: TranslationFunction
 }) {
   return (
     <CollapsibleCard
-      title="核心职责"
+      title={t('responsibilities.title')}
       icon={<ListChecks className="w-5 h-5 text-orange-600" />}
       expanded={expanded}
       onToggle={onToggle}
       badge={
         <span className="ml-2 text-xs text-gray-500">
-          覆盖率 {responsibilities.coverageScore}%
+          {t('responsibilities.coverageRate')} {responsibilities.coverageScore}%
         </span>
       }
     >
@@ -838,7 +870,7 @@ function ResponsibilitiesCard({
                   </span>
                   {resp.candidateEvidence && (
                     <p className="text-xs text-gray-500 mt-1">
-                      证据：{resp.candidateEvidence}
+                      {t('responsibilities.evidence')}{resp.candidateEvidence}
                     </p>
                   )}
                 </div>
@@ -851,7 +883,7 @@ function ResponsibilitiesCard({
                         : 'bg-gray-100 text-gray-600'
                   }`}
                 >
-                  {getImportanceLabel(resp.importance)}
+                  {t(`responsibilities.importance.${resp.importance}` as Parameters<typeof t>[0])}
                 </span>
               </div>
             </div>
@@ -862,105 +894,3 @@ function ResponsibilitiesCard({
   )
 }
 
-// =====================================================
-// 工具函数
-// =====================================================
-
-function getSectionLabel(section: string): string {
-  const labels: Record<string, string> = {
-    header: '个人信息',
-    summary: '职业目标',
-    skills: '技能',
-    experience: '工作经历',
-    projects: '项目',
-    education: '教育背景',
-    certifications: '证书',
-    awards: '获奖',
-    publications: '发表',
-    languages: '语言',
-    volunteer: '志愿者',
-  }
-  return labels[section] || section
-}
-
-function getToneLabel(tone: string): string {
-  const labels: Record<string, string> = {
-    formal: '正式专业',
-    conversational: '自然亲切',
-    technical: '技术导向',
-    creative: '创意活泼',
-    executive: '高管风格',
-  }
-  return labels[tone] || tone
-}
-
-function getTimeframeLabel(timeframe: string): string {
-  const labels: Record<string, string> = {
-    short_term: '短期',
-    medium_term: '中期',
-    long_term: '长期',
-  }
-  return labels[timeframe] || timeframe
-}
-
-function getATSLabel(ats: string): string {
-  const labels: Record<string, string> = {
-    excellent: '优秀',
-    good: '良好',
-    fair: '一般',
-    poor: '较差',
-  }
-  return labels[ats] || ats
-}
-
-function getQuestionTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    behavioral: '行为题',
-    technical: '技术题',
-    situational: '情景题',
-    competency: '能力题',
-    motivation: '动机题',
-  }
-  return labels[type] || type
-}
-
-function getDifficultyLabel(difficulty: string): string {
-  const labels: Record<string, string> = {
-    basic: '基础',
-    intermediate: '中级',
-    advanced: '高级',
-  }
-  return labels[difficulty] || difficulty
-}
-
-function getLevelLabel(level: string): string {
-  const labels: Record<string, string> = {
-    entry: '入门级',
-    junior: '初级',
-    mid: '中级',
-    senior: '高级',
-    lead: '负责人',
-    principal: '首席',
-    executive: '高管',
-  }
-  return labels[level] || level
-}
-
-function getReadinessLabel(readiness: string): string {
-  const labels: Record<string, string> = {
-    ready: '已准备好',
-    stretch: '有挑战',
-    gap: '有差距',
-    overqualified: '资历过高',
-  }
-  return labels[readiness] || readiness
-}
-
-function getImportanceLabel(importance: string): string {
-  const labels: Record<string, string> = {
-    critical: '关键',
-    important: '重要',
-    nice_to_have: '加分项',
-  }
-  return labels[importance] || importance
-}
