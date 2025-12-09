@@ -27,7 +27,9 @@
     "newFeatures": "新功能：",
     "newFeaturesDesc": "申请列表、申请详情、时间线可视化、状态管理",
     "currentStatus": "当前状态：",
-    "currentStatusDesc": "Sprint 5 - 申请追踪系统（前端完成）"
+    "currentStatusDesc": "Sprint 5 - 申请追踪系统（前端完成）",
+    "recentJobs": "最近岗位",
+    "viewAll": "查看全部"
   },
   "common": {
     "loading": "加载中...",

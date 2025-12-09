@@ -27,7 +27,9 @@
     "newFeatures": "New Features:",
     "newFeaturesDesc": "Application list, details, timeline visualization, status management",
     "currentStatus": "Current Status:",
-    "currentStatusDesc": "Sprint 5 - Application Tracking (Frontend Complete)"
+    "currentStatusDesc": "Sprint 5 - Application Tracking (Frontend Complete)",
+    "recentJobs": "Recent Jobs",
+    "viewAll": "View All"
   },
   "common": {
     "loading": "Loading...",
