@@ -5,71 +5,181 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@careermatch/ui'
 import { Download, Edit, Save, ArrowLeft, Printer } from 'lucide-react'
 
+// 简化类型定义 - 使用 Record 来支持两种格式
 interface ResumeData {
   id: string
   title: string
-  content: {
-    personal_info?: {
-      full_name?: string
-      email?: string
-      phone?: string
-      location?: string
-      linkedin?: string
-      github?: string
-      website?: string
-    }
-    professional_summary?: string
-    work_experience?: Array<{
-      company: string
-      position: string
-      location?: string
-      start_date: string
-      end_date: string
-      achievements?: string[]
-    }>
-    education?: Array<{
-      institution: string
-      degree: string
-      field: string
-      location?: string
-      start_date: string
-      end_date: string
-      gpa?: string
-      honors?: string[]
-    }>
-    skills?: {
-      technical?: string[]
-      soft?: string[]
-      languages?: string[]
-      tools?: string[]
-    }
-    projects?: Array<{
-      name: string
-      role?: string
-      description: string
-      technologies?: string[]
-      achievements?: string[]
-      url?: string
-    }>
-    certifications?: Array<{
-      name: string
-      issuer: string
-      date: string
-      credential_id?: string
-    }>
-  }
+  content: Record<string, unknown>
   created_at: string
   updated_at: string
+}
+
+// 规范化的数据类型
+interface NormalizedWorkExp {
+  company: string
+  position: string
+  location?: string
+  startDate?: string
+  endDate?: string
+  isCurrent?: boolean
+  description?: string
+  achievements?: string[]
+}
+
+interface NormalizedEducation {
+  institution: string
+  degree: string
+  major?: string
+  location?: string
+  startDate?: string
+  endDate?: string
+  gpa?: string
+  achievements?: string[]
+}
+
+interface NormalizedProject {
+  name: string
+  role?: string
+  description?: string
+  technologies?: string[]
+  highlights?: string[]
+  url?: string
+}
+
+interface NormalizedCertification {
+  name: string
+  issuer?: string
+  issueDate?: string
+  credentialId?: string
+}
+
+interface NormalizedSkill {
+  name: string
+  level?: string
+  category?: string
+}
+
+interface SkillsObject {
+  technical?: string[]
+  soft?: string[]
+  languages?: string[]
+  tools?: string[]
 }
 
 interface ResumePreviewProps {
   resume: ResumeData
 }
 
+// 规范化的个人信息类型
+interface NormalizedPersonalInfo {
+  fullName?: string
+  email?: string
+  phone?: string
+  location?: string
+  linkedIn?: string
+  github?: string
+  website?: string
+}
+
+// 规范化个人信息
+function normalizePersonalInfo(info: unknown): NormalizedPersonalInfo | null {
+  if (!info || typeof info !== 'object') return null
+  const data = info as Record<string, unknown>
+  return {
+    fullName: (data.fullName || data.full_name) as string | undefined,
+    email: data.email as string | undefined,
+    phone: data.phone as string | undefined,
+    location: data.location as string | undefined,
+    linkedIn: (data.linkedIn || data.linkedin) as string | undefined,
+    github: data.github as string | undefined,
+    website: data.website as string | undefined,
+  }
+}
+
+// 规范化工作经历
+function normalizeWorkExperience(data: unknown[]): NormalizedWorkExp[] {
+  return data.map((item) => {
+    const exp = item as Record<string, unknown>
+    return {
+      company: exp.company as string,
+      position: exp.position as string,
+      location: exp.location as string | undefined,
+      startDate: (exp.startDate || exp.start_date) as string | undefined,
+      endDate: (exp.endDate || exp.end_date) as string | undefined,
+      isCurrent: exp.isCurrent as boolean | undefined,
+      description: exp.description as string | undefined,
+      achievements: exp.achievements as string[] | undefined,
+    }
+  })
+}
+
+// 规范化教育背景
+function normalizeEducation(data: unknown[]): NormalizedEducation[] {
+  return data.map((item) => {
+    const edu = item as Record<string, unknown>
+    return {
+      institution: edu.institution as string,
+      degree: edu.degree as string,
+      major: (edu.major || edu.field) as string | undefined,
+      location: edu.location as string | undefined,
+      startDate: (edu.startDate || edu.start_date) as string | undefined,
+      endDate: (edu.endDate || edu.end_date) as string | undefined,
+      gpa: edu.gpa as string | undefined,
+      achievements: (edu.achievements || edu.honors) as string[] | undefined,
+    }
+  })
+}
+
+// 规范化项目
+function normalizeProjects(data: unknown[]): NormalizedProject[] {
+  return data.map((item) => {
+    const proj = item as Record<string, unknown>
+    return {
+      name: proj.name as string,
+      role: proj.role as string | undefined,
+      description: proj.description as string | undefined,
+      technologies: proj.technologies as string[] | undefined,
+      highlights: (proj.highlights || proj.achievements) as string[] | undefined,
+      url: proj.url as string | undefined,
+    }
+  })
+}
+
+// 规范化证书
+function normalizeCertifications(data: unknown[]): NormalizedCertification[] {
+  return data.map((item) => {
+    const cert = item as Record<string, unknown>
+    return {
+      name: cert.name as string,
+      issuer: cert.issuer as string | undefined,
+      issueDate: (cert.issueDate || cert.date || cert.issue_date) as string | undefined,
+      credentialId: (cert.credentialId || cert.credential_id) as string | undefined,
+    }
+  })
+}
+
 export function ResumePreview({ resume }: ResumePreviewProps) {
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
-  const content = resume.content
+  const rawContent = resume.content
+
+  // 规范化内容 - 支持两种格式
+  const personalInfo = normalizePersonalInfo(rawContent.personalInfo || rawContent.personal_info)
+  const summary = (rawContent.careerObjective || rawContent.professional_summary) as string | undefined
+  const rawWorkExp = (rawContent.workExperience || rawContent.work_experience || []) as unknown[]
+  const rawEdu = (rawContent.education || []) as unknown[]
+  const rawProjects = (rawContent.projects || []) as unknown[]
+  const rawCerts = (rawContent.certifications || []) as unknown[]
+
+  const workExperience = normalizeWorkExperience(rawWorkExp)
+  const education = normalizeEducation(rawEdu)
+  const projects = normalizeProjects(rawProjects)
+  const certifications = normalizeCertifications(rawCerts)
+
+  // 处理skills - 可能是数组或对象
+  const rawSkills = rawContent.skills
+  const skills = Array.isArray(rawSkills) ? (rawSkills as NormalizedSkill[]) : null
+  const skillsObject = !Array.isArray(rawSkills) && rawSkills ? (rawSkills as SkillsObject) : null
 
   const handlePrint = () => {
     window.print()
@@ -171,52 +281,52 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
             }}
           >
             {/* Header - Personal Info */}
-            {content.personal_info && (
+            {personalInfo && (
               <div className="mb-8 border-b-2 border-gray-800 pb-4">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  {content.personal_info.full_name || 'Your Name'}
+                  {personalInfo.fullName || 'Your Name'}
                 </h1>
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
-                  {content.personal_info.email && (
-                    <span>📧 {content.personal_info.email}</span>
+                  {personalInfo.email && (
+                    <span>📧 {personalInfo.email}</span>
                   )}
-                  {content.personal_info.phone && (
-                    <span>📱 {content.personal_info.phone}</span>
+                  {personalInfo.phone && (
+                    <span>📱 {personalInfo.phone}</span>
                   )}
-                  {content.personal_info.location && (
-                    <span>📍 {content.personal_info.location}</span>
+                  {personalInfo.location && (
+                    <span>📍 {personalInfo.location}</span>
                   )}
-                  {content.personal_info.linkedin && (
-                    <span>🔗 {content.personal_info.linkedin}</span>
+                  {personalInfo.linkedIn && (
+                    <span>🔗 {personalInfo.linkedIn}</span>
                   )}
-                  {content.personal_info.github && (
-                    <span>💻 {content.personal_info.github}</span>
+                  {personalInfo.github && (
+                    <span>💻 {personalInfo.github}</span>
                   )}
-                  {content.personal_info.website && (
-                    <span>🌐 {content.personal_info.website}</span>
+                  {personalInfo.website && (
+                    <span>🌐 {personalInfo.website}</span>
                   )}
                 </div>
               </div>
             )}
 
             {/* Professional Summary */}
-            {content.professional_summary && (
+            {summary && (
               <section className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
                   Professional Summary
                 </h2>
-                <p className="text-gray-700">{content.professional_summary}</p>
+                <p className="text-gray-700">{summary}</p>
               </section>
             )}
 
             {/* Work Experience */}
-            {content.work_experience && content.work_experience.length > 0 && (
+            {workExperience.length > 0 && (
               <section className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
                   Work Experience
                 </h2>
                 <div className="space-y-4">
-                  {content.work_experience.map((exp, index) => (
+                  {workExperience.map((exp, index) => (
                     <div key={index}>
                       <div className="flex justify-between items-baseline mb-1">
                         <div>
@@ -229,9 +339,12 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
                           </p>
                         </div>
                         <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
-                          {exp.start_date} - {exp.end_date}
+                          {exp.startDate} - {exp.isCurrent ? 'Present' : exp.endDate}
                         </span>
                       </div>
+                      {exp.description && (
+                        <p className="text-gray-700 mt-1">{exp.description}</p>
+                      )}
                       {exp.achievements && exp.achievements.length > 0 && (
                         <ul className="list-disc list-outside ml-5 mt-2 space-y-1">
                           {exp.achievements.map((achievement, idx) => (
@@ -248,18 +361,18 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
             )}
 
             {/* Education */}
-            {content.education && content.education.length > 0 && (
+            {education.length > 0 && (
               <section className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
                   Education
                 </h2>
                 <div className="space-y-3">
-                  {content.education.map((edu, index) => (
+                  {education.map((edu, index) => (
                     <div key={index}>
                       <div className="flex justify-between items-baseline">
                         <div>
                           <h3 className="font-bold text-gray-900">
-                            {edu.degree} in {edu.field}
+                            {edu.degree}{edu.major && ` in ${edu.major}`}
                           </h3>
                           <p className="text-gray-700">
                             {edu.institution}
@@ -269,13 +382,15 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
                             <p className="text-sm text-gray-600">GPA: {edu.gpa}</p>
                           )}
                         </div>
-                        <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
-                          {edu.start_date} - {edu.end_date}
-                        </span>
+                        {(edu.startDate || edu.endDate) && (
+                          <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
+                            {edu.startDate && `${edu.startDate} - `}{edu.endDate || 'Present'}
+                          </span>
+                        )}
                       </div>
-                      {edu.honors && edu.honors.length > 0 && (
+                      {edu.achievements && edu.achievements.length > 0 && (
                         <p className="text-sm text-gray-600 mt-1">
-                          Honors: {edu.honors.join(', ')}
+                          Honors: {edu.achievements.join(', ')}
                         </p>
                       )}
                     </div>
@@ -284,50 +399,70 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
               </section>
             )}
 
-            {/* Skills */}
-            {content.skills && (
+            {/* Skills - 数组格式 */}
+            {skills && skills.length > 0 && (
+              <section className="mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
+                  Skills
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    >
+                      {skill.name}
+                      {skill.level && ` (${skill.level})`}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Skills - 对象格式 (旧格式兼容) */}
+            {skillsObject && (
               <section className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
                   Skills
                 </h2>
                 <div className="space-y-2">
-                  {content.skills.technical && content.skills.technical.length > 0 && (
+                  {skillsObject.technical && skillsObject.technical.length > 0 && (
                     <div>
                       <span className="font-semibold text-gray-900">
                         Technical:{' '}
                       </span>
                       <span className="text-gray-700">
-                        {content.skills.technical.join(', ')}
+                        {skillsObject.technical.join(', ')}
                       </span>
                     </div>
                   )}
-                  {content.skills.tools && content.skills.tools.length > 0 && (
+                  {skillsObject.tools && skillsObject.tools.length > 0 && (
                     <div>
                       <span className="font-semibold text-gray-900">
                         Tools & Frameworks:{' '}
                       </span>
                       <span className="text-gray-700">
-                        {content.skills.tools.join(', ')}
+                        {skillsObject.tools.join(', ')}
                       </span>
                     </div>
                   )}
-                  {content.skills.soft && content.skills.soft.length > 0 && (
+                  {skillsObject.soft && skillsObject.soft.length > 0 && (
                     <div>
                       <span className="font-semibold text-gray-900">
                         Soft Skills:{' '}
                       </span>
                       <span className="text-gray-700">
-                        {content.skills.soft.join(', ')}
+                        {skillsObject.soft.join(', ')}
                       </span>
                     </div>
                   )}
-                  {content.skills.languages && content.skills.languages.length > 0 && (
+                  {skillsObject.languages && skillsObject.languages.length > 0 && (
                     <div>
                       <span className="font-semibold text-gray-900">
                         Languages:{' '}
                       </span>
                       <span className="text-gray-700">
-                        {content.skills.languages.join(', ')}
+                        {skillsObject.languages.join(', ')}
                       </span>
                     </div>
                   )}
@@ -336,13 +471,13 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
             )}
 
             {/* Projects */}
-            {content.projects && content.projects.length > 0 && (
+            {projects.length > 0 && (
               <section className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
                   Projects
                 </h2>
                 <div className="space-y-3">
-                  {content.projects.map((project, index) => (
+                  {projects.map((project, index) => (
                     <div key={index}>
                       <div className="flex justify-between items-baseline mb-1">
                         <h3 className="font-bold text-gray-900">
@@ -355,18 +490,20 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
                           </span>
                         )}
                       </div>
-                      <p className="text-gray-700 mb-1">{project.description}</p>
+                      {project.description && (
+                        <p className="text-gray-700 mb-1">{project.description}</p>
+                      )}
                       {project.technologies && project.technologies.length > 0 && (
                         <p className="text-sm text-gray-600 mb-1">
                           <span className="font-semibold">Technologies: </span>
                           {project.technologies.join(', ')}
                         </p>
                       )}
-                      {project.achievements && project.achievements.length > 0 && (
+                      {project.highlights && project.highlights.length > 0 && (
                         <ul className="list-disc list-outside ml-5 space-y-1">
-                          {project.achievements.map((achievement, idx) => (
+                          {project.highlights.map((item, idx) => (
                             <li key={idx} className="text-gray-700">
-                              {achievement}
+                              {item}
                             </li>
                           ))}
                         </ul>
@@ -378,29 +515,33 @@ export function ResumePreview({ resume }: ResumePreviewProps) {
             )}
 
             {/* Certifications */}
-            {content.certifications && content.certifications.length > 0 && (
+            {certifications.length > 0 && (
               <section className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
                   Certifications
                 </h2>
                 <div className="space-y-2">
-                  {content.certifications.map((cert, index) => (
+                  {certifications.map((cert, index) => (
                     <div key={index} className="flex justify-between">
                       <div>
                         <span className="font-semibold text-gray-900">
                           {cert.name}
                         </span>
-                        <span className="text-gray-700"> - {cert.issuer}</span>
-                        {cert.credential_id && (
+                        {cert.issuer && (
+                          <span className="text-gray-700"> - {cert.issuer}</span>
+                        )}
+                        {cert.credentialId && (
                           <span className="text-sm text-gray-600">
                             {' '}
-                            (ID: {cert.credential_id})
+                            (ID: {cert.credentialId})
                           </span>
                         )}
                       </div>
-                      <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
-                        {cert.date}
-                      </span>
+                      {cert.issueDate && (
+                        <span className="text-sm text-gray-600 whitespace-nowrap ml-4">
+                          {cert.issueDate}
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -454,16 +454,28 @@ async function enhanceWithAI(
     messages: [
       {
         role: 'system',
-        content: `You are a professional resume writer. Your task is to enhance the resume content with better wording while keeping all information accurate.
+        content: `You are an expert professional resume writer with years of experience crafting compelling resumes that land interviews at top companies.
 
-**Rules**:
-1. DO NOT add any information that is not in the original content
-2. DO NOT change facts (dates, company names, numbers)
-3. Improve wording to be more impactful and professional
-4. Use action verbs from the CV strategy
-5. Ensure the tone matches the CV strategy
-6. Output must be in English
-7. Output must be valid JSON matching the input structure`,
+**Your Mission**: Transform the provided resume content into a powerful, interview-winning resume tailored for the target position.
+
+**Critical Rules**:
+1. **Accuracy First**: DO NOT invent facts, dates, company names, or metrics not in the original content
+2. **Expand & Enhance**:
+   - Each work experience MUST have 3-5 achievement bullets (expand if fewer provided)
+   - Each achievement should be 15-25 words, quantified when possible
+   - Add context and impact to make accomplishments stand out
+3. **Professional Summary**: Write a compelling 2-3 sentence summary highlighting key qualifications for the target role
+4. **Action Verbs**: Start each bullet with a strong action verb from the provided CV strategy
+5. **Tone**: Match the CV strategy tone (technical/executive/creative/formal/conversational)
+6. **Skills**: Keep skills categorized and relevant to the target job
+7. **Projects**: Include clear descriptions with technologies and outcomes
+8. **Output Format**: Return valid JSON matching the exact input structure
+
+**Enhancement Guidelines**:
+- Transform passive voice to active voice
+- Add specificity: "improved performance" → "improved application response time by optimizing database queries"
+- Highlight transferable skills relevant to the target role
+- Ensure consistent tense (past for completed roles, present for current)`,
       },
       {
         role: 'user',
@@ -471,7 +483,7 @@ async function enhanceWithAI(
       },
     ],
     temperature: TEMPERATURE_PRESETS.ANALYTICAL,
-    max_tokens: 8192,
+    max_tokens: 12000,
     response_format: { type: 'json_object' },
   })
 
@@ -496,40 +508,98 @@ function buildEnhancementPrompt(
   analysis: string,
   cvStrategy: CVStrategy
 ): string {
+  // 提取经历描述指导
+  const framingGuidance = Object.entries(cvStrategy.experienceFraming || {})
+    .map(([key, value]) => `- ${key}: ${value}`)
+    .join('\n')
+
   return `
-Enhance the following resume content for the target job. Keep all facts accurate, only improve wording.
+## Target Position
+- **Job Title**: ${job.title}
+- **Company**: ${job.company}
+- **Industry**: ${job.industry || 'Not specified'}
+${job.description ? `- **Key Requirements**: ${(job.description as string).substring(0, 500)}...` : ''}
 
-## Target Job
-- Title: ${job.title}
-- Company: ${job.company}
+## CV Strategy (Follow These Guidelines)
+- **Tone**: ${cvStrategy.tone} (${getToneDescription(cvStrategy.tone)})
+- **Action Verbs to Use**: ${cvStrategy.actionVerbs.join(', ')}
+- **Skills to Highlight**: ${cvStrategy.skillsHighlight.join(', ')}
+- **Focus Areas**: ${cvStrategy.projectFocus?.join(', ') || 'General'}
+- **Content to Avoid**: ${cvStrategy.avoid?.join(', ') || 'None specified'}
 
-## CV Strategy Guidelines
-- Tone: ${cvStrategy.tone}
-- Action Verbs to Use: ${cvStrategy.actionVerbs.join(', ')}
-- Skills to Highlight: ${cvStrategy.skillsHighlight.join(', ')}
+${framingGuidance ? `## Experience Framing Guidance\n${framingGuidance}` : ''}
 
-## Resume Content to Enhance
-
+## Original Resume Content
+\`\`\`json
 ${JSON.stringify(content, null, 2)}
+\`\`\`
 
-## Enhancement Instructions
+## Your Task: Enhance This Resume
 
-1. Professional Summary:
-   - Make it compelling and targeted to the job
-   - Keep it 2-3 sentences
-   - Include key skills from the CV strategy
+### 1. Professional Summary (careerObjective)
+Create a powerful 2-3 sentence professional summary that:
+- Opens with years of experience and primary expertise
+- Highlights 2-3 key skills matching the target job
+- Ends with career objective or value proposition
+- Use the ${cvStrategy.tone} tone
 
-2. Work Experience Achievements:
-   - Start each with an action verb
-   - Add quantification where possible (without inventing numbers)
-   - Focus on impact and results
+### 2. Work Experience (workExperience)
+For EACH work experience entry:
+- Write 3-5 achievement bullets (CRITICAL: expand if original has fewer)
+- Start each bullet with an action verb: ${cvStrategy.actionVerbs.slice(0, 5).join(', ')}
+- Include quantifiable results when the original mentions any metrics
+- Show impact: What was accomplished? What was the business result?
+- Keep descriptions professional and specific
 
-3. Skills:
-   - Keep the same skills, but ensure they're well-categorized
+### 3. Skills (skills)
+- Prioritize skills mentioned in CV strategy's skillsHighlight
+- Group by category if possible (technical, soft, tools)
+- Keep only skills present in original content
 
-4. Projects:
-   - Emphasize relevance to the target role
+### 4. Projects (projects)
+For EACH project:
+- Clear description of what was built (15-30 words)
+- Technologies used
+- Key outcomes or impact
+- Your specific role if mentioned
 
-Output the enhanced content in the same JSON structure.
+### 5. Education (education)
+- Keep factual information unchanged
+- Highlight relevant coursework or achievements if present
+
+### 6. Certifications (certifications)
+- Keep as provided, ensure dates are formatted consistently
+
+## Output Format
+Return a valid JSON object with the EXACT same structure as the input:
+{
+  "personalInfo": { ... },
+  "careerObjective": "Enhanced summary...",
+  "skills": [ ... ],
+  "workExperience": [ ... ],
+  "projects": [ ... ],
+  "education": [ ... ],
+  "certifications": [ ... ]
+}
+
+IMPORTANT:
+- Preserve all field names exactly (camelCase)
+- Keep all IDs if present
+- Maintain date formats as-is
+- Do NOT add fields not in original
 `
+}
+
+/**
+ * 获取tone描述
+ */
+function getToneDescription(tone: string): string {
+  const descriptions: Record<string, string> = {
+    technical: 'Use technical terminology, focus on implementation details and metrics',
+    executive: 'Emphasize strategic vision, business impact, and leadership',
+    creative: 'Show creative thinking and unique perspective',
+    conversational: 'Friendly and personable, while remaining professional',
+    formal: 'Professional and objective, factual statements',
+  }
+  return descriptions[tone] || 'Professional and clear'
 }

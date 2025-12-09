@@ -3,7 +3,32 @@ import { renderToStream, DocumentProps } from '@react-pdf/renderer'
 import type { ReactElement } from 'react'
 import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import { ResumePDFTemplate } from '@/components/ResumePDFTemplate'
-import type { ResumeContent } from '@careermatch/shared'
+import type {
+  ResumeContent,
+  ResumeTemplate,
+  DatabaseResumeTemplate,
+  TemplateConfig,
+} from '@careermatch/shared'
+import { PDFRenderer } from '@/lib/resume-renderers'
+
+/**
+ * 转换数据库模板到应用模板类型
+ */
+function transformTemplate(dbTemplate: DatabaseResumeTemplate): ResumeTemplate {
+  return {
+    id: dbTemplate.id,
+    name: dbTemplate.name,
+    description: dbTemplate.description,
+    category: dbTemplate.category,
+    config: dbTemplate.config as TemplateConfig,
+    previewUrl: dbTemplate.preview_url,
+    supportsPdf: dbTemplate.supports_pdf,
+    supportsHtml: dbTemplate.supports_html,
+    isActive: dbTemplate.is_active,
+    createdAt: new Date(dbTemplate.created_at),
+    updatedAt: new Date(dbTemplate.updated_at),
+  }
+}
 
 async function generatePDF(
   request: NextRequest,
@@ -58,22 +83,34 @@ async function generatePDF(
       interests: (rawContent.interests || []) as string[],
     }
 
-    const resumeData = {
-      title: resume.title,
-      content,
-    }
+    let buffer: Buffer
 
-    // 生成PDF
-    const stream = await renderToStream(
-      ResumePDFTemplate({ resume: resumeData }) as ReactElement<DocumentProps>
-    )
+    // 检查是否有指定模板
+    const templateId = resume.template_id
+    if (templateId) {
+      // 获取模板配置
+      const { data: templateData } = await supabase
+        .from('resume_templates')
+        .select('*')
+        .eq('id', templateId)
+        .eq('is_active', true)
+        .single()
 
-    // 将stream转换为Buffer
-    const chunks: Buffer[] = []
-    for await (const chunk of stream) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+      if (templateData) {
+        // 使用模板渲染器
+        console.log(`📋 Using template: ${templateData.name} (${templateId})`)
+        const template = transformTemplate(templateData as DatabaseResumeTemplate)
+        const renderer = new PDFRenderer(template)
+        buffer = await renderer.render(content)
+      } else {
+        // 模板不存在，使用默认模板
+        console.log('⚠️ Template not found, using default template')
+        buffer = await renderDefaultTemplate(resume.title, content)
+      }
+    } else {
+      // 没有指定模板，使用默认模板
+      buffer = await renderDefaultTemplate(resume.title, content)
     }
-    const buffer = Buffer.concat(chunks)
 
     // 返回PDF文件
     // 使用ASCII安全的文件名作为fallback，同时提供UTF-8编码的文件名
@@ -81,7 +118,7 @@ async function generatePDF(
     const safeFileName = `resume_${dateStr}.pdf`
     const utf8FileName = `${resume.title.replace(/\s+/g, '_')}_${dateStr}.pdf`
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
@@ -97,6 +134,22 @@ async function generatePDF(
       { status: 500 }
     )
   }
+}
+
+/**
+ * 使用默认模板渲染PDF
+ */
+async function renderDefaultTemplate(title: string, content: ResumeContent): Promise<Buffer> {
+  const resumeData = { title, content }
+  const stream = await renderToStream(
+    ResumePDFTemplate({ resume: resumeData }) as ReactElement<DocumentProps>
+  )
+
+  const chunks: Buffer[] = []
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+  }
+  return Buffer.concat(chunks)
 }
 
 // 支持GET方法
