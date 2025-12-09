@@ -442,25 +442,44 @@ export interface JobMatchingV2Input {
   }
 }
 
-export function buildJobMatchingV2Prompt(input: JobMatchingV2Input): string {
+// 多语言占位符内容
+const PLACEHOLDER_CONTENT = {
+  zh: {
+    notSpecified: '未指定',
+    notProvided: '未提供',
+  },
+  en: {
+    notSpecified: 'Not specified',
+    notProvided: 'Not provided',
+  },
+}
+
+/**
+ * 构建 V2 Prompt (支持多语言)
+ * @param input 输入参数
+ * @param locale 语言设置 (默认 'zh')
+ */
+export function buildJobMatchingV2Prompt(input: JobMatchingV2Input, locale: string = 'zh'): string {
   const { job, profile } = input
+  const lang = locale.startsWith('en') ? 'en' : 'zh'
+  const placeholders = PLACEHOLDER_CONTENT[lang]
 
   const salaryRange =
     job.salary_min && job.salary_max
       ? `${job.salary_currency || 'NZD'} ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`
-      : '未指定'
+      : placeholders.notSpecified
 
   return JOB_MATCHING_V2_USER_PROMPT.replace('{{jobTitle}}', job.title)
     .replace('{{company}}', job.company)
-    .replace('{{jobLocation}}', job.location || '未指定')
-    .replace('{{jobType}}', job.job_type || '未指定')
+    .replace('{{jobLocation}}', job.location || placeholders.notSpecified)
+    .replace('{{jobType}}', job.job_type || placeholders.notSpecified)
     .replace('{{salaryRange}}', salaryRange)
-    .replace('{{jobDescription}}', job.description || '未提供')
-    .replace('{{jobRequirements}}', job.requirements || '未提供')
-    .replace('{{jobBenefits}}', job.benefits || '未提供')
+    .replace('{{jobDescription}}', job.description || placeholders.notProvided)
+    .replace('{{jobRequirements}}', job.requirements || placeholders.notProvided)
+    .replace('{{jobBenefits}}', job.benefits || placeholders.notProvided)
     .replace('{{candidateName}}', profile.fullName)
-    .replace('{{candidateLocation}}', profile.location || '未指定')
-    .replace('{{careerObjective}}', profile.careerObjective || '未提供')
+    .replace('{{candidateLocation}}', profile.location || placeholders.notSpecified)
+    .replace('{{careerObjective}}', profile.careerObjective || placeholders.notProvided)
     .replace('{{skills}}', JSON.stringify(profile.skills || [], null, 2))
     .replace('{{workExperience}}', JSON.stringify(profile.workExperience || [], null, 2))
     .replace('{{education}}', JSON.stringify(profile.education || [], null, 2))

@@ -182,7 +182,7 @@ export async function POST(
       })),
     }
 
-    // 9. 构建Prompt
+    // 9. 构建Prompt (传递语言参数)
     const userPrompt = buildJobMatchingV2Prompt({
       job: {
         title: job.title as string,
@@ -197,7 +197,7 @@ export async function POST(
         benefits: job.benefits as string | undefined,
       },
       profile: profileData,
-    })
+    }, language)
 
     // 10. 创建AI流式请求
     const aiClient = createAIClient(provider)
