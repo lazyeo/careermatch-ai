@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@careermatch/ui'
 import {
   X,
@@ -19,8 +20,8 @@ import type { TemplateRecommendation } from '@/lib/ai/template-recommender'
 interface TemplateInfo {
   id: string
   name: string
-  description: string
-  bestFor: string[]
+  descriptionKey: string
+  bestForKeys: string[]
   layout: 'single-column' | 'two-column'
   style: 'modern' | 'classic' | 'creative' | 'professional'
   colors: {
@@ -29,13 +30,13 @@ interface TemplateInfo {
   }
 }
 
-// 预定义模板数据
+// 预定义模板数据 - 使用翻译键
 const TEMPLATES: TemplateInfo[] = [
   {
     id: 'modern-blue',
     name: 'Modern Blue',
-    description: '现代简约风格，适合大多数职位',
-    bestFor: ['产品经理', '市场', '综合岗位'],
+    descriptionKey: 'modernBlue',
+    bestForKeys: ['productManager', 'marketing', 'general'],
     layout: 'single-column',
     style: 'modern',
     colors: { primary: '#3B82F6', secondary: '#60A5FA' },
@@ -43,8 +44,8 @@ const TEMPLATES: TemplateInfo[] = [
   {
     id: 'classic-serif',
     name: 'Classic Serif',
-    description: '传统正式风格，适合正式行业',
-    bestFor: ['金融', '法律', '咨询', '政府'],
+    descriptionKey: 'classicSerif',
+    bestForKeys: ['finance', 'legal', 'consulting', 'government'],
     layout: 'single-column',
     style: 'classic',
     colors: { primary: '#1F2937', secondary: '#6B7280' },
@@ -52,8 +53,8 @@ const TEMPLATES: TemplateInfo[] = [
   {
     id: 'creative-gradient',
     name: 'Creative Gradient',
-    description: '创意渐变风格，适合创意岗位',
-    bestFor: ['设计师', '创意总监', '品牌'],
+    descriptionKey: 'creativeGradient',
+    bestForKeys: ['designer', 'creativeDirector', 'branding'],
     layout: 'two-column',
     style: 'creative',
     colors: { primary: '#8B5CF6', secondary: '#EC4899' },
@@ -61,8 +62,8 @@ const TEMPLATES: TemplateInfo[] = [
   {
     id: 'executive-minimal',
     name: 'Executive Minimal',
-    description: '极简高管风格，大量留白',
-    bestFor: ['高管', '总监', '副总裁'],
+    descriptionKey: 'executiveMinimal',
+    bestForKeys: ['executive', 'director', 'vicePresident'],
     layout: 'single-column',
     style: 'professional',
     colors: { primary: '#0F172A', secondary: '#334155' },
@@ -70,8 +71,8 @@ const TEMPLATES: TemplateInfo[] = [
   {
     id: 'tech-engineer',
     name: 'Tech Engineer',
-    description: '技术工程师专用模板',
-    bestFor: ['软件工程师', '后端开发', '架构师'],
+    descriptionKey: 'techEngineer',
+    bestForKeys: ['softwareEngineer', 'backendDev', 'architect'],
     layout: 'single-column',
     style: 'modern',
     colors: { primary: '#059669', secondary: '#10B981' },
@@ -79,8 +80,8 @@ const TEMPLATES: TemplateInfo[] = [
   {
     id: 'finance-analyst',
     name: 'Finance Analyst',
-    description: '金融分析师专用模板',
-    bestFor: ['金融分析师', '投资', '会计'],
+    descriptionKey: 'financeAnalyst',
+    bestForKeys: ['financialAnalyst', 'investment', 'accounting'],
     layout: 'single-column',
     style: 'professional',
     colors: { primary: '#0369A1', secondary: '#0284C7' },
@@ -88,8 +89,8 @@ const TEMPLATES: TemplateInfo[] = [
   {
     id: 'creative-designer',
     name: 'Creative Designer',
-    description: '创意设计师专用模板',
-    bestFor: ['UI/UX设计师', '视觉设计', '创意总监'],
+    descriptionKey: 'creativeDesigner',
+    bestForKeys: ['uiuxDesigner', 'visualDesign', 'creativeDirector'],
     layout: 'two-column',
     style: 'creative',
     colors: { primary: '#DC2626', secondary: '#F97316' },
@@ -97,8 +98,8 @@ const TEMPLATES: TemplateInfo[] = [
   {
     id: 'technical-dark',
     name: 'Technical Dark',
-    description: '深色技术风格，代码字体',
-    bestFor: ['工程师', '开发者', 'DevOps'],
+    descriptionKey: 'technicalDark',
+    bestForKeys: ['engineer', 'developer', 'devops'],
     layout: 'single-column',
     style: 'modern',
     colors: { primary: '#18181B', secondary: '#3F3F46' },
@@ -113,13 +114,8 @@ const styleIcons: Record<string, JSX.Element> = {
   professional: <Building2 className="w-4 h-4" />,
 }
 
-// 风格标签
-const styleLabels: Record<string, string> = {
-  modern: '现代',
-  classic: '经典',
-  creative: '创意',
-  professional: '专业',
-}
+// 风格键（用于翻译）
+const styleKeys = ['modern', 'classic', 'creative', 'professional'] as const
 
 interface TemplateSelectorProps {
   isOpen: boolean
@@ -140,6 +136,7 @@ export function TemplateSelector({
   recommendation,
   isLoading = false,
 }: TemplateSelectorProps) {
+  const t = useTranslations('analysis.templateSelector')
   const [selectedId, setSelectedId] = useState<string | null>(
     recommendation?.templateId || null
   )
@@ -157,12 +154,12 @@ export function TemplateSelector({
 
   // 过滤模板
   const filteredTemplates = filter
-    ? TEMPLATES.filter((t) => t.style === filter)
+    ? TEMPLATES.filter((tp) => tp.style === filter)
     : TEMPLATES
 
   // 获取推荐的模板
   const recommendedTemplate = recommendation
-    ? TEMPLATES.find((t) => t.id === recommendation.templateId)
+    ? TEMPLATES.find((tp) => tp.id === recommendation.templateId)
     : null
 
   return (
@@ -178,9 +175,9 @@ export function TemplateSelector({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">选择简历模板</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('title')}</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              选择一个适合目标岗位的模板风格
+              {t('subtitle')}
             </p>
           </div>
           <button
@@ -201,10 +198,10 @@ export function TemplateSelector({
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-indigo-900">
-                    AI推荐: {recommendedTemplate.name}
+                    {t('aiRecommendation', { name: recommendedTemplate.name })}
                   </span>
                   <span className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">
-                    {recommendation.confidence}% 匹配
+                    {t('matchPercentage', { percent: recommendation.confidence })}
                   </span>
                 </div>
                 <p className="text-xs text-indigo-700 mt-0.5">
@@ -220,7 +217,7 @@ export function TemplateSelector({
                 }}
                 className="gap-1"
               >
-                使用推荐
+                {t('useRecommended')}
                 <ChevronRight className="w-3 h-3" />
               </Button>
             </div>
@@ -238,9 +235,9 @@ export function TemplateSelector({
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              全部
+              {t('filterAll')}
             </button>
-            {Object.entries(styleLabels).map(([key, label]) => (
+            {styleKeys.map((key) => (
               <button
                 key={key}
                 onClick={() => setFilter(key)}
@@ -251,7 +248,7 @@ export function TemplateSelector({
                 }`}
               >
                 {styleIcons[key]}
-                {label}
+                {t(`styles.${key}` as Parameters<typeof t>[0])}
               </button>
             ))}
           </div>
@@ -268,6 +265,7 @@ export function TemplateSelector({
                 recommended={recommendation?.templateId === template.id}
                 onClick={() => setSelectedId(template.id)}
                 onPreview={() => setPreviewTemplate(template)}
+                t={t}
               />
             ))}
           </div>
@@ -278,15 +276,15 @@ export function TemplateSelector({
           <div className="text-sm text-gray-500">
             {selectedId ? (
               <span>
-                已选择: <strong>{TEMPLATES.find((t) => t.id === selectedId)?.name}</strong>
+                {t('selected')}: <strong>{TEMPLATES.find((tp) => tp.id === selectedId)?.name}</strong>
               </span>
             ) : (
-              <span>请选择一个模板</span>
+              <span>{t('selectPrompt')}</span>
             )}
           </div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={onClose}>
-              取消
+              {t('cancel')}
             </Button>
             <Button
               variant="primary"
@@ -297,12 +295,12 @@ export function TemplateSelector({
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  生成中...
+                  {t('generating')}
                 </>
               ) : (
                 <>
                   <FileText className="w-4 h-4" />
-                  使用此模板生成简历
+                  {t('useTemplate')}
                 </>
               )}
             </Button>
@@ -319,11 +317,15 @@ export function TemplateSelector({
             setSelectedId(previewTemplate.id)
             setPreviewTemplate(null)
           }}
+          t={t}
         />
       )}
     </div>
   )
 }
+
+// Translation function type
+type TranslationFunction = ReturnType<typeof useTranslations<'analysis.templateSelector'>>
 
 // 模板卡片组件
 function TemplateCard({
@@ -332,12 +334,14 @@ function TemplateCard({
   recommended,
   onClick,
   onPreview,
+  t,
 }: {
   template: TemplateInfo
   selected: boolean
   recommended: boolean
   onClick: () => void
   onPreview: () => void
+  t: TranslationFunction
 }) {
   return (
     <div
@@ -353,7 +357,7 @@ function TemplateCard({
       {/* 推荐标记 */}
       {recommended && (
         <span className="absolute -top-2 -right-2 z-10 px-2 py-0.5 bg-indigo-600 text-white text-[10px] font-medium rounded-full shadow">
-          推荐
+          {t('recommendedBadge')}
         </span>
       )}
 
@@ -430,11 +434,11 @@ function TemplateCard({
             <h3 className="font-medium text-gray-900 text-xs">{template.name}</h3>
             <span className="flex items-center gap-0.5 text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">
               {styleIcons[template.style]}
-              {styleLabels[template.style]}
+              {t(`styles.${template.style}` as Parameters<typeof t>[0])}
             </span>
           </div>
           <p className="text-[10px] text-gray-500 mt-0.5 line-clamp-1">
-            {template.description}
+            {t(`templates.${template.descriptionKey}.description` as Parameters<typeof t>[0])}
           </p>
         </div>
 
@@ -465,10 +469,12 @@ function TemplatePreview({
   template,
   onClose,
   onSelect,
+  t,
 }: {
   template: TemplateInfo
   onClose: () => void
   onSelect: () => void
+  t: TranslationFunction
 }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
@@ -493,7 +499,9 @@ function TemplatePreview({
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="text-xl font-semibold text-gray-900">{template.name}</h3>
-              <p className="text-sm text-gray-500 mt-1">{template.description}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {t(`templates.${template.descriptionKey}.description` as Parameters<typeof t>[0])}
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -571,24 +579,24 @@ function TemplatePreview({
           {/* 模板特性 */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <span className="text-xs font-medium text-gray-500">布局</span>
+              <span className="text-xs font-medium text-gray-500">{t('preview.layout')}</span>
               <p className="text-sm text-gray-900 capitalize">
-                {template.layout === 'single-column' ? '单栏布局' : '双栏布局'}
+                {template.layout === 'single-column' ? t('preview.singleColumn') : t('preview.twoColumn')}
               </p>
             </div>
             <div>
-              <span className="text-xs font-medium text-gray-500">风格</span>
-              <p className="text-sm text-gray-900">{styleLabels[template.style]}</p>
+              <span className="text-xs font-medium text-gray-500">{t('preview.style')}</span>
+              <p className="text-sm text-gray-900">{t(`styles.${template.style}` as Parameters<typeof t>[0])}</p>
             </div>
             <div className="col-span-2">
-              <span className="text-xs font-medium text-gray-500">适用岗位</span>
+              <span className="text-xs font-medium text-gray-500">{t('preview.bestFor')}</span>
               <div className="flex flex-wrap gap-1 mt-1">
-                {template.bestFor.map((item) => (
+                {template.bestForKeys.map((key) => (
                   <span
-                    key={item}
+                    key={key}
                     className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
                   >
-                    {item}
+                    {t(`roles.${key}` as Parameters<typeof t>[0])}
                   </span>
                 ))}
               </div>
@@ -598,10 +606,10 @@ function TemplatePreview({
           {/* 操作按钮 */}
           <div className="flex gap-3">
             <Button variant="outline" onClick={onClose} className="flex-1">
-              返回
+              {t('preview.back')}
             </Button>
             <Button variant="primary" onClick={onSelect} className="flex-1">
-              选择此模板
+              {t('preview.selectTemplate')}
             </Button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { Check } from 'lucide-react'
 
@@ -21,6 +22,7 @@ interface AIProviderSelectorProps {
 }
 
 export function AIProviderSelector({ selectedProvider, onSelect }: AIProviderSelectorProps) {
+  const t = useTranslations('analysis.aiProvider')
   const [providers, setProviders] = useState<AIProvider[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -42,7 +44,7 @@ export function AIProviderSelector({ selectedProvider, onSelect }: AIProviderSel
     return (
       <Card>
         <CardContent className="py-8">
-          <div className="text-center text-sm text-gray-500">加载AI提供商...</div>
+          <div className="text-center text-sm text-gray-500">{t('loading')}</div>
         </CardContent>
       </Card>
     )
@@ -55,10 +57,8 @@ export function AIProviderSelector({ selectedProvider, onSelect }: AIProviderSel
       <Card>
         <CardContent className="py-8">
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">暂无可用的AI提供商</p>
-            <p className="text-xs text-gray-500">
-              请在 .env.local 文件中配置至少一个AI提供商的API密钥
-            </p>
+            <p className="text-sm text-gray-600 mb-2">{t('noProviders')}</p>
+            <p className="text-xs text-gray-500">{t('configureHint')}</p>
           </div>
         </CardContent>
       </Card>
@@ -73,7 +73,7 @@ export function AIProviderSelector({ selectedProvider, onSelect }: AIProviderSel
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">选择AI模型</CardTitle>
+        <CardTitle className="text-base">{t('title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-3">
@@ -91,14 +91,12 @@ export function AIProviderSelector({ selectedProvider, onSelect }: AIProviderSel
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">⚡</span>
-                  <span className="font-semibold text-gray-900">自动选择</span>
+                  <span className="font-semibold text-gray-900">{t('autoSelect')}</span>
                   <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">
-                    推荐
+                    {t('recommended')}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">
-                  系统自动选择最佳可用AI模型（优先级：Claude &gt; OpenAI &gt; Codex &gt; Gemini）
-                </p>
+                <p className="text-sm text-gray-600">{t('autoSelectDesc')}</p>
               </div>
               {!selectedProvider && (
                 <Check className="w-5 h-5 text-primary-600 flex-shrink-0 ml-2" />
@@ -136,9 +134,7 @@ export function AIProviderSelector({ selectedProvider, onSelect }: AIProviderSel
 
         {availableProviders.length > 1 && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-800">
-              💡 提示：不同AI模型可能产生不同的分析结果。建议首次使用「自动选择」模式。
-            </p>
+            <p className="text-xs text-blue-800">💡 {t('tip')}</p>
           </div>
         )}
       </CardContent>

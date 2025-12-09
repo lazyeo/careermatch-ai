@@ -32,7 +32,7 @@ function transformTemplate(dbTemplate: DatabaseResumeTemplate): ResumeTemplate {
 
 async function generatePDF(
   request: NextRequest,
-  params: { id: string }
+  resumeId: string
 ) {
   try {
     // 验证用户身份
@@ -47,7 +47,7 @@ async function generatePDF(
     const { data: resume, error } = await supabase
       .from('resumes')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', resumeId)
       .eq('user_id', user.id)
       .single()
 
@@ -155,15 +155,17 @@ async function renderDefaultTemplate(title: string, content: ResumeContent): Pro
 // 支持GET方法
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  return generatePDF(request, params)
+  const { id } = await params
+  return generatePDF(request, id)
 }
 
 // 支持POST方法（前端调用的是POST）
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  return generatePDF(request, params)
+  const { id } = await params
+  return generatePDF(request, id)
 }

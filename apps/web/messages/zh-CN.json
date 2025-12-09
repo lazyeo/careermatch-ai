@@ -860,6 +860,22 @@
         "not_recommended": {
           "label": "不建议申请",
           "description": "匹配度较低"
+        },
+        "strong_match": {
+          "label": "强烈推荐",
+          "description": "非常匹配，建议尽快申请"
+        },
+        "good_match": {
+          "label": "推荐申请",
+          "description": "匹配度较高，值得申请"
+        },
+        "moderate_match": {
+          "label": "可以考虑",
+          "description": "存在一些差距但有潜力"
+        },
+        "weak_match": {
+          "label": "谨慎考虑",
+          "description": "差距较大，可能需要提升"
         }
       }
     },
@@ -898,15 +914,83 @@
     },
     "templateSelector": {
       "title": "选择简历模板",
-      "recommended": "推荐",
-      "recommendedReason": "基于CV策略分析",
-      "selectTemplate": "选择模板",
+      "subtitle": "选择一个适合目标岗位的模板风格",
+      "aiRecommendation": "AI推荐: {name}",
+      "matchPercentage": "{percent}% 匹配",
+      "useRecommended": "使用推荐",
+      "filterAll": "全部",
+      "selected": "已选择",
+      "selectPrompt": "请选择一个模板",
+      "cancel": "取消",
       "generating": "生成中...",
-      "categories": {
+      "useTemplate": "使用此模板生成简历",
+      "recommendedBadge": "推荐",
+      "styles": {
         "modern": "现代",
         "classic": "经典",
         "creative": "创意",
-        "industry": "行业"
+        "professional": "专业"
+      },
+      "preview": {
+        "layout": "布局",
+        "style": "风格",
+        "bestFor": "适用岗位",
+        "singleColumn": "单栏布局",
+        "twoColumn": "双栏布局",
+        "back": "返回",
+        "selectTemplate": "选择此模板"
+      },
+      "templates": {
+        "modernBlue": {
+          "description": "现代简约风格，适合大多数职位"
+        },
+        "classicSerif": {
+          "description": "传统正式风格，适合正式行业"
+        },
+        "creativeGradient": {
+          "description": "创意渐变风格，适合创意岗位"
+        },
+        "executiveMinimal": {
+          "description": "极简高管风格，大量留白"
+        },
+        "techEngineer": {
+          "description": "技术工程师专用模板"
+        },
+        "financeAnalyst": {
+          "description": "金融分析师专用模板"
+        },
+        "creativeDesigner": {
+          "description": "创意设计师专用模板"
+        },
+        "technicalDark": {
+          "description": "深色技术风格，代码字体"
+        }
+      },
+      "roles": {
+        "productManager": "产品经理",
+        "marketing": "市场",
+        "general": "综合岗位",
+        "finance": "金融",
+        "legal": "法律",
+        "consulting": "咨询",
+        "government": "政府",
+        "designer": "设计师",
+        "creativeDirector": "创意总监",
+        "branding": "品牌",
+        "executive": "高管",
+        "director": "总监",
+        "vicePresident": "副总裁",
+        "softwareEngineer": "软件工程师",
+        "backendDev": "后端开发",
+        "architect": "架构师",
+        "financialAnalyst": "金融分析师",
+        "investment": "投资",
+        "accounting": "会计",
+        "uiuxDesigner": "UI/UX设计师",
+        "visualDesign": "视觉设计",
+        "engineer": "工程师",
+        "developer": "开发者",
+        "devops": "DevOps"
       }
     },
     "aiProvider": {
@@ -914,7 +998,10 @@
       "autoSelect": "自动选择",
       "autoSelectDesc": "系统自动选择最佳可用AI模型（优先级：Claude > OpenAI > Codex > Gemini）",
       "recommended": "推荐",
-      "tip": "提示：不同AI模型可能产生不同的分析结果，建议首次使用「自动选择」模式。"
+      "tip": "不同AI模型可能产生不同的分析结果。建议首次使用「自动选择」模式。",
+      "loading": "加载AI提供商...",
+      "noProviders": "暂无可用的AI提供商",
+      "configureHint": "请在 .env.local 文件中配置至少一个AI提供商的API密钥"
     }
   },
   "settings": {

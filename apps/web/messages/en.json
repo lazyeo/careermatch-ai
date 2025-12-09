@@ -860,6 +860,22 @@
         "not_recommended": {
           "label": "Not Recommended",
           "description": "Low match rate"
+        },
+        "strong_match": {
+          "label": "Strongly Recommended",
+          "description": "Excellent match, apply soon"
+        },
+        "good_match": {
+          "label": "Recommended",
+          "description": "Good match, worth applying"
+        },
+        "moderate_match": {
+          "label": "Worth Considering",
+          "description": "Some gaps but has potential"
+        },
+        "weak_match": {
+          "label": "Consider Carefully",
+          "description": "Significant gaps, may need improvement"
         }
       }
     },
@@ -898,15 +914,83 @@
     },
     "templateSelector": {
       "title": "Select Resume Template",
-      "recommended": "Recommended",
-      "recommendedReason": "Based on CV strategy analysis",
-      "selectTemplate": "Select Template",
+      "subtitle": "Choose a template style that fits the target position",
+      "aiRecommendation": "AI Recommendation: {name}",
+      "matchPercentage": "{percent}% Match",
+      "useRecommended": "Use Recommended",
+      "filterAll": "All",
+      "selected": "Selected",
+      "selectPrompt": "Please select a template",
+      "cancel": "Cancel",
       "generating": "Generating...",
-      "categories": {
+      "useTemplate": "Generate Resume with This Template",
+      "recommendedBadge": "Recommended",
+      "styles": {
         "modern": "Modern",
         "classic": "Classic",
         "creative": "Creative",
-        "industry": "Industry"
+        "professional": "Professional"
+      },
+      "preview": {
+        "layout": "Layout",
+        "style": "Style",
+        "bestFor": "Best For",
+        "singleColumn": "Single Column",
+        "twoColumn": "Two Column",
+        "back": "Back",
+        "selectTemplate": "Select This Template"
+      },
+      "templates": {
+        "modernBlue": {
+          "description": "Modern minimalist style, suitable for most positions"
+        },
+        "classicSerif": {
+          "description": "Traditional formal style, suitable for formal industries"
+        },
+        "creativeGradient": {
+          "description": "Creative gradient style, suitable for creative positions"
+        },
+        "executiveMinimal": {
+          "description": "Minimalist executive style with ample whitespace"
+        },
+        "techEngineer": {
+          "description": "Template designed for technical engineers"
+        },
+        "financeAnalyst": {
+          "description": "Template designed for financial analysts"
+        },
+        "creativeDesigner": {
+          "description": "Template designed for creative designers"
+        },
+        "technicalDark": {
+          "description": "Dark technical style with code font"
+        }
+      },
+      "roles": {
+        "productManager": "Product Manager",
+        "marketing": "Marketing",
+        "general": "General",
+        "finance": "Finance",
+        "legal": "Legal",
+        "consulting": "Consulting",
+        "government": "Government",
+        "designer": "Designer",
+        "creativeDirector": "Creative Director",
+        "branding": "Branding",
+        "executive": "Executive",
+        "director": "Director",
+        "vicePresident": "Vice President",
+        "softwareEngineer": "Software Engineer",
+        "backendDev": "Backend Developer",
+        "architect": "Architect",
+        "financialAnalyst": "Financial Analyst",
+        "investment": "Investment",
+        "accounting": "Accounting",
+        "uiuxDesigner": "UI/UX Designer",
+        "visualDesign": "Visual Design",
+        "engineer": "Engineer",
+        "developer": "Developer",
+        "devops": "DevOps"
       }
     },
     "aiProvider": {
@@ -914,7 +998,10 @@
       "autoSelect": "Auto Select",
       "autoSelectDesc": "System auto-selects the best available AI model (Priority: Claude > OpenAI > Codex > Gemini)",
       "recommended": "Recommended",
-      "tip": "Different AI models may produce different analysis results. Recommend using \"Auto Select\" mode for first time."
+      "tip": "Different AI models may produce different analysis results. Recommend using \"Auto Select\" mode for first time.",
+      "loading": "Loading AI providers...",
+      "noProviders": "No AI providers available",
+      "configureHint": "Please configure at least one AI provider API key in .env.local file"
     }
   },
   "settings": {
