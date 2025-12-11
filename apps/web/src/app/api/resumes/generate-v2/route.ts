@@ -483,7 +483,7 @@ async function enhanceWithAI(
       },
     ],
     temperature: TEMPERATURE_PRESETS.ANALYTICAL,
-    max_tokens: 12000,
+    max_tokens: 16384,
     response_format: { type: 'json_object' },
   })
 

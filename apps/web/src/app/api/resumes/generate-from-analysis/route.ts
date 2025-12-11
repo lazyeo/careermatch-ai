@@ -239,7 +239,7 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
         },
       ],
       temperature: TEMPERATURE_PRESETS.ANALYTICAL,
-      max_tokens: 4096,
+      max_tokens: 16384,
       response_format: { type: 'json_object' },
     })
 
