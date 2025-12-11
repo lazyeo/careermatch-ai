@@ -454,28 +454,49 @@ async function enhanceWithAI(
     messages: [
       {
         role: 'system',
-        content: `You are an expert professional resume writer with years of experience crafting compelling resumes that land interviews at top companies.
+        content: `You are an elite resume strategist who has helped thousands land jobs at Google, Meta, Amazon, and Fortune 500 companies.
 
-**Your Mission**: Transform the provided resume content into a powerful, interview-winning resume tailored for the target position.
+**CORE MISSION**: Create a HIGHLY TARGETED resume that speaks directly to the specific job posting. This is NOT about listing everything - it's about strategic positioning.
 
-**Critical Rules**:
-1. **Accuracy First**: DO NOT invent facts, dates, company names, or metrics not in the original content
-2. **Expand & Enhance**:
-   - Each work experience MUST have 3-5 achievement bullets (expand if fewer provided)
-   - Each achievement should be 15-25 words, quantified when possible
-   - Add context and impact to make accomplishments stand out
-3. **Professional Summary**: Write a compelling 2-3 sentence summary highlighting key qualifications for the target role
-4. **Action Verbs**: Start each bullet with a strong action verb from the provided CV strategy
-5. **Tone**: Match the CV strategy tone (technical/executive/creative/formal/conversational)
-6. **Skills**: Keep skills categorized and relevant to the target job
-7. **Projects**: Include clear descriptions with technologies and outcomes
-8. **Output Format**: Return valid JSON matching the exact input structure
+**THE GOLDEN RULE**: Every single line must answer: "Why should THIS company hire THIS person for THIS specific role?"
 
-**Enhancement Guidelines**:
-- Transform passive voice to active voice
-- Add specificity: "improved performance" → "improved application response time by optimizing database queries"
-- Highlight transferable skills relevant to the target role
-- Ensure consistent tense (past for completed roles, present for current)`,
+## CRITICAL CUSTOMIZATION REQUIREMENTS:
+
+### 1. Professional Summary (MOST IMPORTANT)
+Write a compelling 3-4 sentence summary that:
+- Opens with exact years of experience in the SPECIFIC field the job requires
+- Names 2-3 skills that DIRECTLY match the job requirements
+- Mentions a quantified achievement relevant to the target role
+- Ends with why you're excited about THIS specific role/company
+- NEVER use generic phrases like "seeking new opportunities" or "passionate professional"
+
+### 2. Work Experience Transformation
+For EACH position, you MUST:
+- Reframe achievements to highlight skills the TARGET JOB requires
+- Add 4-5 bullet points (expand original content with specifics)
+- Start EVERY bullet with a STRONG action verb
+- Include AT LEAST one metric/number per bullet (estimate reasonably if needed)
+- Connect each achievement to a requirement in the job posting
+- Use the EXACT terminology from the job description where applicable
+
+### 3. Skills Prioritization
+- Put skills mentioned in the job posting FIRST
+- Remove or deprioritize skills not relevant to this specific role
+- Match the exact phrasing used in the job description
+
+### 4. Projects Selection
+- Highlight projects using technologies mentioned in the job
+- Reframe project outcomes to match job requirements
+- Add technical depth for technical roles, business impact for business roles
+
+## ACCURACY CONSTRAINTS:
+- DO NOT invent facts, but DO expand and add context
+- Transform vague statements into specific, impactful ones
+- Estimate reasonable metrics where the original implies success
+- Reframe existing experience to highlight relevant transferable skills
+
+## OUTPUT FORMAT:
+Return valid JSON with the exact input structure. All content must be in English.`,
       },
       {
         role: 'user',
@@ -513,80 +534,116 @@ function buildEnhancementPrompt(
     .map(([key, value]) => `- ${key}: ${value}`)
     .join('\n')
 
+  // 提取岗位关键词
+  const jobDescription = (job.description as string) || ''
+  const jobRequirements = (job.requirements as string) || ''
+  const fullJobContext = `${jobDescription}\n${jobRequirements}`.trim()
+
+  // 构建重点权重说明
+  const emphasisGuide = cvStrategy.emphasis
+    ? Object.entries(cvStrategy.emphasis)
+        .sort(([, a], [, b]) => (b as number) - (a as number))
+        .map(([section, weight]) => `- ${section}: ${weight}% importance`)
+        .join('\n')
+    : ''
+
   return `
-## Target Position
+# TARGET JOB ANALYSIS
+
+## Position Details
 - **Job Title**: ${job.title}
 - **Company**: ${job.company}
-- **Industry**: ${job.industry || 'Not specified'}
-${job.description ? `- **Key Requirements**: ${(job.description as string).substring(0, 500)}...` : ''}
+- **Location**: ${job.location || 'Not specified'}
+- **Job Type**: ${job.job_type || 'Not specified'}
 
-## CV Strategy (Follow These Guidelines)
-- **Tone**: ${cvStrategy.tone} (${getToneDescription(cvStrategy.tone)})
-- **Action Verbs to Use**: ${cvStrategy.actionVerbs.join(', ')}
-- **Skills to Highlight**: ${cvStrategy.skillsHighlight.join(', ')}
-- **Focus Areas**: ${cvStrategy.projectFocus?.join(', ') || 'General'}
-- **Content to Avoid**: ${cvStrategy.avoid?.join(', ') || 'None specified'}
+## Full Job Description & Requirements
+\`\`\`
+${fullJobContext || 'No detailed description available'}
+\`\`\`
 
-${framingGuidance ? `## Experience Framing Guidance\n${framingGuidance}` : ''}
+## KEY REQUIREMENTS EXTRACTED (Use these exact terms in resume!)
+Skills to highlight: ${cvStrategy.skillsHighlight.join(', ')}
+Project focus areas: ${cvStrategy.projectFocus?.join(', ') || 'General technical projects'}
+Content to AVOID: ${cvStrategy.avoid?.join(', ') || 'Nothing specific'}
 
-## Original Resume Content
+---
+
+# CV STRATEGY (MUST FOLLOW)
+
+## Writing Tone: ${cvStrategy.tone.toUpperCase()}
+${getToneDescription(cvStrategy.tone)}
+
+## Action Verbs to Use (Start EVERY bullet with one of these):
+${cvStrategy.actionVerbs.join(', ')}
+
+## Section Priority (Focus effort on high-weight sections):
+${emphasisGuide || 'All sections equal priority'}
+
+${framingGuidance ? `## Experience Framing Guidance:\n${framingGuidance}` : ''}
+
+---
+
+# CANDIDATE'S ORIGINAL CONTENT
+
 \`\`\`json
 ${JSON.stringify(content, null, 2)}
 \`\`\`
 
-## Your Task: Enhance This Resume
+---
 
-### 1. Professional Summary (careerObjective)
-Create a powerful 2-3 sentence professional summary that:
-- Opens with years of experience and primary expertise
-- Highlights 2-3 key skills matching the target job
-- Ends with career objective or value proposition
-- Use the ${cvStrategy.tone} tone
+# YOUR TRANSFORMATION TASK
 
-### 2. Work Experience (workExperience)
-For EACH work experience entry:
-- Write 3-5 achievement bullets (CRITICAL: expand if original has fewer)
-- Start each bullet with an action verb: ${cvStrategy.actionVerbs.slice(0, 5).join(', ')}
-- Include quantifiable results when the original mentions any metrics
-- Show impact: What was accomplished? What was the business result?
-- Keep descriptions professional and specific
+## 1. Professional Summary (careerObjective)
+WRITE a powerful 3-4 sentence summary that:
+- States exact years of relevant experience (calculate from work history)
+- Names ${cvStrategy.skillsHighlight.slice(0, 3).join(', ')} as core competencies
+- Includes ONE impressive metric from work history
+- Connects directly to "${job.title}" at "${job.company}"
+- Uses ${cvStrategy.tone} tone throughout
 
-### 3. Skills (skills)
-- Prioritize skills mentioned in CV strategy's skillsHighlight
-- Group by category if possible (technical, soft, tools)
-- Keep only skills present in original content
+Example format: "[X] years of experience in [field] with expertise in [skill1, skill2, skill3]. Proven track record of [quantified achievement]. Seeking to leverage [key strength] to drive [value proposition] at [Company]."
 
-### 4. Projects (projects)
-For EACH project:
-- Clear description of what was built (15-30 words)
-- Technologies used
-- Key outcomes or impact
-- Your specific role if mentioned
+## 2. Work Experience (CRITICAL - Most important section)
+For EACH position:
+- REWRITE description to highlight ${cvStrategy.skillsHighlight.slice(0, 5).join(', ')}
+- EXPAND to exactly 4-5 achievement bullets
+- Each bullet format: "[Action Verb] + [What you did] + [Quantified result] + [Business impact]"
+- USE terminology from the job description
+- EVERY bullet must start with: ${cvStrategy.actionVerbs.slice(0, 5).join(' / ')}
 
-### 5. Education (education)
-- Keep factual information unchanged
-- Highlight relevant coursework or achievements if present
+## 3. Skills (Reorder by relevance)
+Put these skills FIRST: ${cvStrategy.skillsHighlight.join(', ')}
+Then add other relevant skills from original content
 
-### 6. Certifications (certifications)
-- Keep as provided, ensure dates are formatted consistently
+## 4. Projects (Align with job requirements)
+- Emphasize technologies matching: ${cvStrategy.projectFocus?.join(', ') || 'job requirements'}
+- Add specific outcomes and metrics
+- Technical depth for technical roles
 
-## Output Format
-Return a valid JSON object with the EXACT same structure as the input:
+## 5. Education & Certifications
+- Keep factual, add relevant coursework if applicable
+
+---
+
+# OUTPUT REQUIREMENTS
+
+Return ONLY a valid JSON object:
 {
-  "personalInfo": { ... },
-  "careerObjective": "Enhanced summary...",
-  "skills": [ ... ],
-  "workExperience": [ ... ],
-  "projects": [ ... ],
-  "education": [ ... ],
-  "certifications": [ ... ]
+  "personalInfo": { fullName, email, phone, location, linkedIn, github, website },
+  "careerObjective": "Your enhanced 3-4 sentence summary...",
+  "skills": [{ "name": "skill", "category": "category" }, ...],
+  "workExperience": [{ company, position, startDate, endDate, isCurrent, description, achievements: ["bullet1", "bullet2", ...] }, ...],
+  "projects": [{ name, description, technologies: [], highlights: [] }, ...],
+  "education": [{ institution, degree, major, startDate, endDate, gpa }, ...],
+  "certifications": [{ name, issuer, issueDate }, ...]
 }
 
-IMPORTANT:
-- Preserve all field names exactly (camelCase)
-- Keep all IDs if present
-- Maintain date formats as-is
-- Do NOT add fields not in original
+CRITICAL RULES:
+- ALL text in English
+- Keep original field names (camelCase)
+- Keep IDs if present
+- Do NOT invent new facts, only enhance/expand existing ones
+- Each work experience MUST have 4-5 achievement bullets
 `
 }
 
@@ -595,11 +652,35 @@ IMPORTANT:
  */
 function getToneDescription(tone: string): string {
   const descriptions: Record<string, string> = {
-    technical: 'Use technical terminology, focus on implementation details and metrics',
-    executive: 'Emphasize strategic vision, business impact, and leadership',
-    creative: 'Show creative thinking and unique perspective',
-    conversational: 'Friendly and personable, while remaining professional',
-    formal: 'Professional and objective, factual statements',
+    technical: `Write like a senior engineer:
+- Use technical terminology precisely (APIs, microservices, CI/CD, etc.)
+- Include specific technologies, frameworks, and tools
+- Focus on system design, scalability, and performance metrics
+- Example: "Architected a distributed microservices system handling 10M+ daily requests with 99.9% uptime"`,
+
+    executive: `Write like a C-level executive:
+- Emphasize strategic vision and business outcomes
+- Focus on revenue impact, cost savings, and market growth
+- Highlight leadership and team-building achievements
+- Example: "Led digital transformation initiative that increased revenue by $5M annually"`,
+
+    creative: `Write like a creative professional:
+- Show innovation and unique problem-solving approaches
+- Emphasize design thinking and user-centric outcomes
+- Include portfolio-worthy project descriptions
+- Example: "Reimagined the user onboarding experience, increasing engagement by 40%"`,
+
+    conversational: `Write in a warm, personable tone:
+- Use active voice and accessible language
+- Show personality while maintaining professionalism
+- Focus on collaboration and team contributions
+- Example: "Partnered with cross-functional teams to ship features loved by 100K users"`,
+
+    formal: `Write in traditional professional style:
+- Use objective, factual statements
+- Maintain conservative formatting and language
+- Focus on credentials and established achievements
+- Example: "Managed portfolio of $50M in client assets with consistent above-benchmark returns"`,
   }
-  return descriptions[tone] || 'Professional and clear'
+  return descriptions[tone] || 'Professional and clear communication style'
 }
