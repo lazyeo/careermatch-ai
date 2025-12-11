@@ -213,15 +213,28 @@ export function ResumePreview({ resume, templateConfig, templateName }: ResumePr
         throw new Error('Failed to export PDF')
       }
 
-      const blob = await response.blob()
+      // 获取响应数据并创建正确类型的 Blob
+      const arrayBuffer = await response.arrayBuffer()
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' })
+
+      // 生成安全的文件名（移除特殊字符）
+      const safeTitle = resume.title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5\s_-]/g, '').trim() || 'resume'
+      const fileName = `${safeTitle}.pdf`
+
+      // 创建下载链接
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${resume.title}.pdf`
+      a.download = fileName
+      a.style.display = 'none'
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+
+      // 延迟清理，确保下载开始
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      }, 100)
     } catch (error) {
       console.error('Error exporting PDF:', error)
       alert('Export PDF failed, please try again')
