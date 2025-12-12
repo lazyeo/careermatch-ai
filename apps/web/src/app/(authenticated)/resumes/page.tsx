@@ -155,18 +155,18 @@ export default async function ResumesPage() {
                     </div>
                   </div>
 
-                  <div className="mt-6 flex gap-2">
-                    <Link href={`/resumes/${resume.id}`} className="flex-1">
-                      <Button variant="outline" className="w-full">
+                  <div className="mt-6 grid grid-cols-3 gap-2">
+                    <Link href={`/resumes/${resume.id}`}>
+                      <Button variant="outline" size="sm" className="w-full">
                         {t('view')}
                       </Button>
                     </Link>
-                    <Link href={`/resumes/${resume.id}/edit`} className="flex-1">
-                      <Button variant="primary" className="w-full">
+                    <Link href={`/resumes/${resume.id}/edit`}>
+                      <Button variant="primary" size="sm" className="w-full">
                         {t('edit')}
                       </Button>
                     </Link>
-                    <DeleteResumeButton resumeId={resume.id} />
+                    <DeleteResumeButton resumeId={resume.id} className="w-full" />
                   </div>
                 </CardContent>
               </Card>

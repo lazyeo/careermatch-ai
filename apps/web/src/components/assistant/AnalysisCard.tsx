@@ -8,6 +8,7 @@
  */
 
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Loader2, Sparkles, ExternalLink, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 export type AnalysisCardStatus = 'loading' | 'completed' | 'failed'
@@ -30,6 +31,7 @@ interface AnalysisCardProps {
 }
 
 export function AnalysisCard({ data, onNavigate }: AnalysisCardProps) {
+  const t = useTranslations('assistant.analysisCard')
   const router = useRouter()
 
   const handleClick = () => {
@@ -41,6 +43,41 @@ export function AnalysisCard({ data, onNavigate }: AnalysisCardProps) {
       // 加载中也可以跳转，查看流式输出
       router.push(`/jobs/${data.jobId}/analysis`)
       onNavigate?.()
+    }
+  }
+
+  // 获取推荐等级样式
+  const getRecommendationStyle = (recommendation: string) => {
+    switch (recommendation) {
+      case 'strong':
+        return {
+          label: t('recommendation.stronglyRecommended'),
+          bgColor: 'bg-success-50',
+          textColor: 'text-success-700',
+          borderColor: 'border-success-200',
+        }
+      case 'moderate':
+        return {
+          label: t('recommendation.worthTrying'),
+          bgColor: 'bg-primary-50',
+          textColor: 'text-primary-700',
+          borderColor: 'border-primary-200',
+        }
+      case 'weak':
+        return {
+          label: t('recommendation.someChance'),
+          bgColor: 'bg-warning-50',
+          textColor: 'text-warning-700',
+          borderColor: 'border-warning-200',
+        }
+      case 'not_recommended':
+      default:
+        return {
+          label: t('recommendation.notRecommended'),
+          bgColor: 'bg-error-50',
+          textColor: 'text-error-700',
+          borderColor: 'border-error-200',
+        }
     }
   }
 
@@ -64,7 +101,7 @@ export function AnalysisCard({ data, onNavigate }: AnalysisCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 text-primary-700 font-medium">
               <Sparkles className="w-4 h-4" />
-              <span>正在分析中...</span>
+              <span>{t('loading')}</span>
             </div>
             {data.jobTitle && (
               <p className="text-sm text-gray-600 truncate mt-1">
@@ -72,7 +109,7 @@ export function AnalysisCard({ data, onNavigate }: AnalysisCardProps) {
               </p>
             )}
             <p className="text-xs text-gray-500 mt-1">
-              点击查看实时分析进度
+              {t('loadingHint')}
             </p>
           </div>
 
@@ -97,9 +134,9 @@ export function AnalysisCard({ data, onNavigate }: AnalysisCardProps) {
             <AlertCircle className="w-5 h-5 text-error-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-error-700">分析失败</p>
+            <p className="font-medium text-error-700">{t('failed')}</p>
             <p className="text-sm text-error-600 mt-0.5">
-              {data.error || '请稍后重试'}
+              {data.error || t('retryHint')}
             </p>
           </div>
         </div>
@@ -167,7 +204,7 @@ export function AnalysisCard({ data, onNavigate }: AnalysisCardProps) {
 
         {/* 查看详情 */}
         <div className="flex-shrink-0 flex items-center gap-1 text-sm text-gray-500 group-hover:text-primary-600 transition-colors">
-          <span>详情</span>
+          <span>{t('viewDetails')}</span>
           <ExternalLink className="w-4 h-4" />
         </div>
       </div>
@@ -180,43 +217,6 @@ export function AnalysisCard({ data, onNavigate }: AnalysisCardProps) {
       )}
     </div>
   )
-}
-
-/**
- * 获取推荐等级样式
- */
-function getRecommendationStyle(recommendation: string) {
-  switch (recommendation) {
-    case 'strong':
-      return {
-        label: '强烈推荐',
-        bgColor: 'bg-success-50',
-        textColor: 'text-success-700',
-        borderColor: 'border-success-200',
-      }
-    case 'moderate':
-      return {
-        label: '值得尝试',
-        bgColor: 'bg-primary-50',
-        textColor: 'text-primary-700',
-        borderColor: 'border-primary-200',
-      }
-    case 'weak':
-      return {
-        label: '有一定机会',
-        bgColor: 'bg-warning-50',
-        textColor: 'text-warning-700',
-        borderColor: 'border-warning-200',
-      }
-    case 'not_recommended':
-    default:
-      return {
-        label: '不建议申请',
-        bgColor: 'bg-error-50',
-        textColor: 'text-error-700',
-        borderColor: 'border-error-200',
-      }
-  }
 }
 
 /**

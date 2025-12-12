@@ -11,6 +11,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Send, Loader2, RefreshCw, Square, Paperclip, Upload } from 'lucide-react'
 import { Button } from '@careermatch/ui'
+import { useTranslations } from 'next-intl'
 import { MessageBubble } from './MessageBubble'
 import {
   useAssistantStore,
@@ -52,6 +53,7 @@ function isAnalysisIntent(message: string, hasActiveJob: boolean): boolean {
 }
 
 export function AssistantChat() {
+  const t = useTranslations('assistant')
   const router = useRouter()
   const [input, setInput] = useState('')
   const [isDragging, setIsDragging] = useState(false)
@@ -142,7 +144,7 @@ export function AssistantChat() {
       'text/plain'
     ]
     if (!validTypes.includes(file.type)) {
-      setError('不支持的文件类型。请上传 PDF, Word 或 TXT 文件。')
+      setError(t('upload.fileTypeError'))
       return
     }
 
@@ -154,7 +156,7 @@ export function AssistantChat() {
     }
 
     if (!sessionId) {
-      setError('无法创建会话，请刷新页面重试')
+      setError(t('upload.sessionCreateFailed'))
       return
     }
 
@@ -165,7 +167,7 @@ export function AssistantChat() {
     addMessage({
       sessionId,
       role: 'assistant',
-      content: `正在分析简历 "${file.name}"... (可能需要 30-60 秒)`,
+      content: t('upload.analyzing', { fileName: file.name }),
     })
 
     try {
@@ -178,7 +180,7 @@ export function AssistantChat() {
       })
 
       if (!response.ok) {
-        throw new Error('上传失败')
+        throw new Error('Upload failed')
       }
 
       await response.json()
@@ -186,16 +188,16 @@ export function AssistantChat() {
       addMessage({
         sessionId,
         role: 'assistant',
-        content: `✅ 简历 "${file.name}" 解析成功！\n\n已更新您的个人资料和技能标签。您可以直接问我："我适合什么工作？" 或 "帮我写一封求职信"。`,
+        content: `✅ ${t('upload.analyzeSuccess', { fileName: file.name })}`,
       })
 
     } catch (err) {
       console.error('Upload failed:', err)
-      setError('简历上传/解析失败，请重试。')
+      setError(t('upload.fileTypeError'))
       addMessage({
         sessionId,
         role: 'assistant',
-        content: `❌ 简历 "${file.name}" 解析失败。请确保文件格式正确且未损坏。`,
+        content: `❌ ${t('upload.analyzeFailed', { fileName: file.name })}`,
       })
     } finally {
       setIsUploading(false)
@@ -326,11 +328,11 @@ export function AssistantChat() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || '请求失败')
+        throw new Error(data.error || t('status.requestFailed'))
       }
 
       const reader = response.body?.getReader()
-      if (!reader) throw new Error('无法读取响应流')
+      if (!reader) throw new Error(t('status.streamReadFailed'))
 
       const decoder = new TextDecoder()
       let streamContent = ''
@@ -380,7 +382,7 @@ export function AssistantChat() {
         console.log('Stream aborted by user')
         return
       }
-      setError(err instanceof Error ? err.message : '发送失败，请重试')
+      setError(err instanceof Error ? err.message : t('status.sendFailed'))
       useAssistantStore.getState().setStreaming(false)
       useAssistantStore.getState().clearStreamContent()
     } finally {
@@ -423,8 +425,8 @@ export function AssistantChat() {
         <div className="absolute inset-0 bg-primary-50/90 z-50 flex items-center justify-center border-2 border-dashed border-primary-500 m-2 rounded-xl">
           <div className="text-center text-primary-700">
             <Upload className="w-12 h-12 mx-auto mb-2" />
-            <p className="text-lg font-medium">释放以上传简历</p>
-            <p className="text-sm opacity-75">支持 PDF, Word, TXT</p>
+            <p className="text-lg font-medium">{t('upload.dragDropHint')}</p>
+            <p className="text-sm opacity-75">{t('upload.supportedFormats')}</p>
           </div>
         </div>
       )}
@@ -436,12 +438,12 @@ export function AssistantChat() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-50 flex items-center justify-center">
               <span className="text-3xl">👋</span>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">你好！我是 AI 助手</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('greeting')}</h3>
             <p className="text-sm text-gray-500 max-w-xs mx-auto">
-              我可以帮你分析岗位、优化简历、生成求职信，或回答任何求职相关问题。
+              {t('greetingDesc')}
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {['帮我分析这个岗位', '如何优化我的简历？', '生成求职信'].map((text) => (
+              {[t('suggestions.analyzeJob'), t('suggestions.optimizeResume'), t('suggestions.generateCoverLetter')].map((text) => (
                 <button
                   key={text}
                   onClick={() => handleSuggestionClick(text)}
@@ -452,14 +454,14 @@ export function AssistantChat() {
               ))}
             </div>
             <div className="mt-8 p-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-              <p className="text-sm text-gray-500 mb-2">或者直接拖入简历文件</p>
+              <p className="text-sm text-gray-500 mb-2">{t('upload.orDragFile')}</p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="w-4 h-4 mr-2" />
-                上传简历
+                {t('upload.uploadResume')}
               </Button>
             </div>
           </div>
@@ -490,14 +492,14 @@ export function AssistantChat() {
         {isLoading && !isStreaming && (
           <div className="flex items-center gap-2 text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">思考中...</span>
+            <span className="text-sm">{t('status.thinking')}</span>
           </div>
         )}
 
         {isUploading && (
           <div className="flex items-center gap-2 text-primary-600 bg-primary-50 p-3 rounded-lg self-start">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">正在分析简历...</span>
+            <span className="text-sm">{t('status.analyzing')}</span>
           </div>
         )}
 
@@ -511,7 +513,7 @@ export function AssistantChat() {
               className="mt-2 gap-1"
             >
               <RefreshCw className="w-3 h-3" />
-              重试
+              {t('actions.retry')}
             </Button>
           </div>
         )}
@@ -550,7 +552,7 @@ export function AssistantChat() {
             variant="ghost"
             className="w-10 h-10 p-0 flex-shrink-0 text-gray-500 hover:text-gray-700"
             onClick={() => fileInputRef.current?.click()}
-            title="上传简历"
+            title={t('upload.uploadResumeTitle')}
             disabled={isLoading || isStreaming || isUploading}
           >
             <Paperclip className="w-5 h-5" />
@@ -561,7 +563,7 @@ export function AssistantChat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="输入消息，或拖入简历..."
+            placeholder={t('input.placeholder')}
             className="flex-1 resize-none border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[40px] max-h-[120px]"
             rows={1}
             disabled={isLoading || isStreaming || isUploading}
@@ -572,7 +574,7 @@ export function AssistantChat() {
               variant="outline"
               onClick={handleStop}
               className="w-10 h-10 p-0 flex-shrink-0 bg-red-50 hover:bg-red-100 border-red-200"
-              title="停止生成"
+              title={t('actions.stopGenerating')}
             >
               <Square className="w-4 h-4 text-red-600 fill-red-600" />
             </Button>
@@ -592,7 +594,7 @@ export function AssistantChat() {
           )}
         </div>
         <p className="text-xs text-gray-400 mt-2 text-center">
-          按 Enter 发送，Shift + Enter 换行
+          {t('input.sendHint')}
         </p>
       </div>
     </div>

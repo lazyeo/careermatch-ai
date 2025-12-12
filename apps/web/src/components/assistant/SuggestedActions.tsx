@@ -8,6 +8,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import {
   Sparkles,
   FileText,
@@ -40,170 +41,68 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Loader2,
 }
 
-// 操作定义
-interface SuggestedAction {
+// 操作定义（不包含label和description，这些将从翻译中获取）
+interface ActionConfig {
   id: string
-  label: string
+  labelKey: string
+  descriptionKey?: string
   icon: string
   href?: string
-  apiAction?: string // API调用标识
+  apiAction?: string
   variant?: 'primary' | 'outline'
-  description?: string
 }
 
-// 页面类型对应的操作
-const PAGE_ACTIONS: Record<PageType, SuggestedAction[]> = {
+// 页面类型对应的操作配置
+const PAGE_ACTIONS: Record<PageType, ActionConfig[]> = {
   'job-detail': [
-    {
-      id: 'analyze-job',
-      label: '匹配分析',
-      icon: 'Sparkles',
-      href: '{{jobId}}/analysis',
-      variant: 'primary',
-      description: '分析此岗位与您的匹配度',
-    },
-    {
-      id: 'generate-cover-letter',
-      label: '生成求职信',
-      icon: 'FileText',
-      href: '{{jobId}}/cover-letter',
-      description: '生成针对此岗位的求职信',
-    },
+    { id: 'analyze-job', labelKey: 'matchAnalysis', descriptionKey: 'matchAnalysisDesc', icon: 'Sparkles', href: '{{jobId}}/analysis', variant: 'primary' },
+    { id: 'generate-cover-letter', labelKey: 'generateCoverLetter', descriptionKey: 'generateCoverLetterDesc', icon: 'FileText', href: '{{jobId}}/cover-letter' },
   ],
   'job-analysis': [
-    {
-      id: 'optimize-resume',
-      label: 'AI优化简历',
-      icon: 'Wand2',
-      apiAction: 'optimize-resume',
-      variant: 'primary',
-      description: '根据分析结果优化简历',
-    },
-    {
-      id: 'generate-cover-letter',
-      label: '生成求职信',
-      icon: 'FileText',
-      href: '{{jobId}}/cover-letter',
-      description: '生成针对此岗位的求职信',
-    },
+    { id: 'optimize-resume', labelKey: 'aiOptimizeResume', descriptionKey: 'aiOptimizeResumeDesc', icon: 'Wand2', apiAction: 'optimize-resume', variant: 'primary' },
+    { id: 'generate-cover-letter', labelKey: 'generateCoverLetter', descriptionKey: 'generateCoverLetterDesc', icon: 'FileText', href: '{{jobId}}/cover-letter' },
   ],
   'job-cover-letter': [
-    {
-      id: 'back-to-job',
-      label: '查看岗位',
-      icon: 'Briefcase',
-      href: '{{jobId}}',
-    },
-    {
-      id: 'analyze-job',
-      label: '匹配分析',
-      icon: 'Sparkles',
-      href: '{{jobId}}/analysis',
-    },
+    { id: 'back-to-job', labelKey: 'viewAnalysis', icon: 'Briefcase', href: '{{jobId}}' },
+    { id: 'analyze-job', labelKey: 'matchAnalysis', icon: 'Sparkles', href: '{{jobId}}/analysis' },
   ],
   jobs: [
-    {
-      id: 'import-job',
-      label: '导入岗位',
-      icon: 'Plus',
-      href: '/jobs/import',
-      variant: 'primary',
-      description: '从URL或文本导入岗位',
-    },
+    { id: 'import-job', labelKey: 'importJob', descriptionKey: 'importJobDesc', icon: 'Plus', href: '/jobs/import', variant: 'primary' },
   ],
   'job-import': [
-    {
-      id: 'view-jobs',
-      label: '查看岗位',
-      icon: 'Briefcase',
-      href: '/jobs',
-    },
+    { id: 'view-jobs', labelKey: 'viewAnalysis', icon: 'Briefcase', href: '/jobs' },
   ],
   'resume-detail': [
-    {
-      id: 'edit-resume',
-      label: '编辑简历',
-      icon: 'FileEdit',
-      href: '{{resumeId}}/edit',
-      variant: 'primary',
-    },
-    {
-      id: 'export-pdf',
-      label: '导出PDF',
-      icon: 'Download',
-      apiAction: 'export-pdf',
-      description: '导出为PDF文件',
-    },
+    { id: 'edit-resume', labelKey: 'aiOptimizeResume', icon: 'FileEdit', href: '{{resumeId}}/edit', variant: 'primary' },
+    { id: 'export-pdf', labelKey: 'applyNow', descriptionKey: 'applyNowDesc', icon: 'Download', apiAction: 'export-pdf' },
   ],
   'resume-edit': [
-    {
-      id: 'view-resume',
-      label: '预览简历',
-      icon: 'FileText',
-      href: '{{resumeId}}',
-    },
+    { id: 'view-resume', labelKey: 'viewAnalysis', icon: 'FileText', href: '{{resumeId}}' },
   ],
   resumes: [
-    {
-      id: 'create-resume',
-      label: '创建简历',
-      icon: 'Plus',
-      href: '/resumes/new',
-      variant: 'primary',
-    },
+    { id: 'create-resume', labelKey: 'aiOptimizeResume', icon: 'Plus', href: '/resumes/new', variant: 'primary' },
   ],
   dashboard: [
-    {
-      id: 'import-job',
-      label: '导入岗位',
-      icon: 'Plus',
-      href: '/jobs/import',
-    },
-    {
-      id: 'view-profile',
-      label: '完善档案',
-      icon: 'User',
-      href: '/profile',
-    },
+    { id: 'import-job', labelKey: 'importJob', icon: 'Plus', href: '/jobs/import' },
+    { id: 'view-profile', labelKey: 'viewAnalysis', icon: 'User', href: '/profile' },
   ],
   profile: [
-    {
-      id: 'upload-resume',
-      label: '上传简历',
-      icon: 'Upload',
-      href: '/profile/upload',
-      variant: 'primary',
-      description: 'AI解析简历填充档案',
-    },
+    { id: 'upload-resume', labelKey: 'aiOptimizeResume', descriptionKey: 'aiOptimizeResumeDesc', icon: 'Upload', href: '/profile/upload', variant: 'primary' },
   ],
   'profile-edit': [
-    {
-      id: 'back-to-profile',
-      label: '返回档案',
-      icon: 'User',
-      href: '/profile',
-    },
+    { id: 'back-to-profile', labelKey: 'viewAnalysis', icon: 'User', href: '/profile' },
   ],
   'profile-upload': [
-    {
-      id: 'back-to-profile',
-      label: '返回档案',
-      icon: 'User',
-      href: '/profile',
-    },
+    { id: 'back-to-profile', labelKey: 'viewAnalysis', icon: 'User', href: '/profile' },
   ],
   applications: [
-    {
-      id: 'view-jobs',
-      label: '浏览岗位',
-      icon: 'Briefcase',
-      href: '/jobs',
-    },
+    { id: 'view-jobs', labelKey: 'viewAnalysis', icon: 'Briefcase', href: '/jobs' },
   ],
   other: [],
 }
 
 export function SuggestedActions() {
+  const t = useTranslations('assistant')
   const router = useRouter()
   const context = useAssistantContext()
   const { addMessage } = useAssistantStore()
@@ -220,7 +119,7 @@ export function SuggestedActions() {
   if (actions.length === 0) return null
 
   // 处理API操作
-  const handleApiAction = async (action: SuggestedAction) => {
+  const handleApiAction = async (action: ActionConfig) => {
     setLoadingAction(action.id)
 
     try {
@@ -230,13 +129,13 @@ export function SuggestedActions() {
           addMessage({
             sessionId: '',
             role: 'user',
-            content: `请帮我优化简历以匹配当前岗位`,
+            content: t('quickActions.aiOptimizeResume'),
           })
           // TODO: 调用优化API
           addMessage({
             sessionId: '',
             role: 'assistant',
-            content: `简历优化功能正在开发中。您可以先查看分析结果中的建议来手动优化简历。`,
+            content: t('quickActions.optimizeResumeMessage'),
           })
           break
 
@@ -255,7 +154,7 @@ export function SuggestedActions() {
       addMessage({
         sessionId: '',
         role: 'assistant',
-        content: `操作失败：${error instanceof Error ? error.message : '未知错误'}`,
+        content: t('quickActions.actionFailed', { error: error instanceof Error ? error.message : 'Unknown error' }),
       })
     } finally {
       setLoadingAction(null)
@@ -263,7 +162,7 @@ export function SuggestedActions() {
   }
 
   // 处理操作点击
-  const handleAction = (action: SuggestedAction) => {
+  const handleAction = (action: ActionConfig) => {
     if (action.apiAction) {
       handleApiAction(action)
       return
@@ -288,11 +187,13 @@ export function SuggestedActions() {
 
   return (
     <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-      <p className="text-xs text-gray-500 mb-2">快捷操作</p>
+      <p className="text-xs text-gray-500 mb-2">{t('actions.suggestedActions')}</p>
       <div className="flex flex-wrap gap-2">
         {actions.map((action) => {
           const Icon = iconMap[action.icon] || Sparkles
           const isLoading = loadingAction === action.id
+          const label = t(`quickActions.${action.labelKey}`)
+          const description = action.descriptionKey ? t(`quickActions.${action.descriptionKey}`) : undefined
 
           return (
             <Button
@@ -302,14 +203,14 @@ export function SuggestedActions() {
               className="gap-1.5 text-xs"
               onClick={() => handleAction(action)}
               disabled={isLoading}
-              title={action.description}
+              title={description}
             >
               {isLoading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <Icon className="w-3.5 h-3.5" />
               )}
-              {action.label}
+              {label}
             </Button>
           )
         })}

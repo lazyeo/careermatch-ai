@@ -543,24 +543,81 @@
   "assistant": {
     "title": "AI Assistant",
     "subtitle": "Smart Career Advisor",
-    "greeting": "Hello! I'm your AI Assistant",
-    "greetingDesc": "I can help you analyze jobs, optimize resumes, generate cover letters, or answer any career-related questions.",
-    "inputPlaceholder": "Type a message...",
-    "sendHint": "Press Enter to send, Shift + Enter for new line",
+    "expandTitle": "Expand AI Assistant",
+    "openTitle": "Open AI Assistant (Cmd+/)",
     "clearSession": "Clear Session",
     "minimize": "Minimize",
-    "thinking": "Thinking...",
-    "analyzing": "Analyzing...",
-    "generating": "Generating...",
-    "stopGenerating": "Stop generating",
+    "close": "Close",
+    "greeting": "Hello! I'm your AI Assistant",
+    "greetingDesc": "I can help you analyze jobs, optimize resumes, generate cover letters, or answer any career-related questions.",
     "suggestions": {
       "analyzeJob": "Analyze this job for me",
       "optimizeResume": "How can I improve my resume?",
       "generateCoverLetter": "Generate a cover letter"
     },
+    "upload": {
+      "dragDropHint": "Release to upload resume",
+      "supportedFormats": "Supports PDF, Word, TXT",
+      "orDragFile": "Or drag and drop resume file",
+      "uploadResume": "Upload Resume",
+      "uploadResumeTitle": "Upload resume",
+      "analyzing": "Analyzing resume \"{fileName}\"... (may take 30-60 seconds)",
+      "analyzeSuccess": "Resume \"{fileName}\" parsed successfully!\n\nYour profile and skills have been updated. You can ask me: \"What jobs suit me?\" or \"Help me write a cover letter\".",
+      "analyzeFailed": "Resume \"{fileName}\" parsing failed. Please ensure the file format is correct and not corrupted.",
+      "fileTypeError": "Unsupported file type. Please upload PDF, Word or TXT file.",
+      "sessionCreateFailed": "Failed to create session, please refresh the page"
+    },
+    "status": {
+      "thinking": "Thinking...",
+      "analyzing": "Analyzing resume...",
+      "requestFailed": "Request failed",
+      "streamReadFailed": "Cannot read response stream",
+      "sendFailed": "Send failed, please retry"
+    },
     "actions": {
+      "retry": "Retry",
+      "stopGenerating": "Stop generating",
+      "suggestedActions": "Quick Actions",
       "quickAnalysis": "Quick Analysis",
       "analyzeCurrentJob": "Analyze Current Job"
+    },
+    "input": {
+      "placeholder": "Type a message, or drag resume...",
+      "sendHint": "Press Enter to send, Shift + Enter for new line"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{minutes} minutes ago",
+      "yesterday": "Yesterday"
+    },
+    "analysisCard": {
+      "loading": "Analyzing...",
+      "loadingHint": "Click to view real-time analysis progress",
+      "failed": "Analysis failed",
+      "retryHint": "Please try again later",
+      "viewDetails": "Details",
+      "recommendation": {
+        "stronglyRecommended": "Strongly Recommended",
+        "worthTrying": "Worth Trying",
+        "someChance": "Some Chance",
+        "notRecommended": "Not Recommended"
+      }
+    },
+    "quickActions": {
+      "matchAnalysis": "Match Analysis",
+      "matchAnalysisDesc": "AI-powered 8-dimension job matching analysis",
+      "generateCoverLetter": "Generate Cover Letter",
+      "generateCoverLetterDesc": "AI writes personalized cover letter for this job",
+      "aiOptimizeResume": "AI Optimize Resume",
+      "aiOptimizeResumeDesc": "Create a targeted resume for this job",
+      "importJob": "Import Job",
+      "importJobDesc": "Smart import job from URL or text",
+      "viewAnalysis": "View Analysis",
+      "viewAnalysisDesc": "View previous analysis results",
+      "applyNow": "Apply Now",
+      "applyNowDesc": "Create an application and start tracking",
+      "optimizeResumeMessage": "Resume optimization feature is under development. You can check the suggestions in the analysis results to manually optimize your resume.",
+      "actionFailed": "Action failed: {error}"
     }
   },
   "analysis": {

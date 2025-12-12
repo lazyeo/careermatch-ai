@@ -543,24 +543,81 @@
   "assistant": {
     "title": "AI 助手",
     "subtitle": "智能求职顾问",
-    "greeting": "你好！我是 AI 助手",
-    "greetingDesc": "我可以帮你分析岗位、优化简历、生成求职信，或回答任何求职相关问题。",
-    "inputPlaceholder": "输入消息...",
-    "sendHint": "按 Enter 发送，Shift + Enter 换行",
+    "expandTitle": "展开 AI 助手",
+    "openTitle": "打开 AI 助手 (Cmd+/)",
     "clearSession": "清除会话",
     "minimize": "最小化",
-    "thinking": "思考中...",
-    "analyzing": "正在分析...",
-    "generating": "生成中...",
-    "stopGenerating": "停止生成",
+    "close": "关闭",
+    "greeting": "你好！我是 AI 助手",
+    "greetingDesc": "我可以帮你分析岗位、优化简历、生成求职信，或回答任何求职相关问题。",
     "suggestions": {
       "analyzeJob": "帮我分析这个岗位",
       "optimizeResume": "如何优化我的简历？",
       "generateCoverLetter": "生成求职信"
     },
+    "upload": {
+      "dragDropHint": "释放以上传简历",
+      "supportedFormats": "支持 PDF, Word, TXT",
+      "orDragFile": "或者直接拖入简历文件",
+      "uploadResume": "上传简历",
+      "uploadResumeTitle": "上传简历",
+      "analyzing": "正在分析简历 \"{fileName}\"... (可能需要 30-60 秒)",
+      "analyzeSuccess": "简历 \"{fileName}\" 解析成功！\n\n已更新您的个人资料和技能标签。您可以直接问我：\"我适合什么工作？\" 或 \"帮我写一封求职信\"。",
+      "analyzeFailed": "简历 \"{fileName}\" 解析失败。请确保文件格式正确且未损坏。",
+      "fileTypeError": "不支持的文件类型。请上传 PDF, Word 或 TXT 文件。",
+      "sessionCreateFailed": "无法创建会话，请刷新页面重试"
+    },
+    "status": {
+      "thinking": "思考中...",
+      "analyzing": "正在分析简历...",
+      "requestFailed": "请求失败",
+      "streamReadFailed": "无法读取响应流",
+      "sendFailed": "发送失败，请重试"
+    },
     "actions": {
+      "retry": "重试",
+      "stopGenerating": "停止生成",
+      "suggestedActions": "快捷操作",
       "quickAnalysis": "快速分析",
       "analyzeCurrentJob": "分析当前岗位"
+    },
+    "input": {
+      "placeholder": "输入消息，或拖入简历...",
+      "sendHint": "按 Enter 发送，Shift + Enter 换行"
+    },
+    "time": {
+      "justNow": "刚刚",
+      "minutesAgo": "{minutes}分钟前",
+      "yesterday": "昨天"
+    },
+    "analysisCard": {
+      "loading": "正在分析中...",
+      "loadingHint": "点击查看实时分析进度",
+      "failed": "分析失败",
+      "retryHint": "请稍后重试",
+      "viewDetails": "详情",
+      "recommendation": {
+        "stronglyRecommended": "强烈推荐",
+        "worthTrying": "值得尝试",
+        "someChance": "有一定机会",
+        "notRecommended": "不建议申请"
+      }
+    },
+    "quickActions": {
+      "matchAnalysis": "匹配分析",
+      "matchAnalysisDesc": "AI 8维度岗位匹配分析",
+      "generateCoverLetter": "生成求职信",
+      "generateCoverLetterDesc": "AI 为该岗位撰写求职信",
+      "aiOptimizeResume": "AI优化简历",
+      "aiOptimizeResumeDesc": "为该岗位创建针对性简历",
+      "importJob": "导入岗位",
+      "importJobDesc": "从URL或文本智能导入岗位",
+      "viewAnalysis": "查看分析",
+      "viewAnalysisDesc": "查看之前的分析结果",
+      "applyNow": "立即申请",
+      "applyNowDesc": "创建申请记录并开始追踪",
+      "optimizeResumeMessage": "简历优化功能正在开发中。您可以先查看分析结果中的建议来手动优化简历。",
+      "actionFailed": "操作失败：{error}"
     }
   },
   "analysis": {

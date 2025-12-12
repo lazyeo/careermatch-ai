@@ -5,7 +5,12 @@ import { Button } from '@careermatch/ui'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 
-export function DeleteResumeButton({ resumeId }: { resumeId: string }) {
+interface DeleteResumeButtonProps {
+  resumeId: string
+  className?: string
+}
+
+export function DeleteResumeButton({ resumeId, className }: DeleteResumeButtonProps) {
   const t = useTranslations('forms.deleteResume')
   const tCommon = useTranslations('common')
   const router = useRouter()
@@ -45,13 +50,13 @@ export function DeleteResumeButton({ resumeId }: { resumeId: string }) {
 
   if (showConfirm) {
     return (
-      <div className="flex gap-1">
+      <div className={`flex gap-1 ${className || ''}`}>
         <Button
           variant="outline"
           size="sm"
           onClick={handleCancel}
           disabled={isDeleting}
-          className="text-xs px-2 py-1"
+          className="flex-1 text-xs"
         >
           {tCommon('cancel')}
         </Button>
@@ -60,7 +65,7 @@ export function DeleteResumeButton({ resumeId }: { resumeId: string }) {
           size="sm"
           onClick={handleDelete}
           disabled={isDeleting}
-          className="text-xs px-2 py-1 text-error-600 border-error-300 hover:bg-error-50"
+          className="flex-1 text-xs text-error-600 border-error-300 hover:bg-error-50"
         >
           {isDeleting ? t('deleting') : t('confirm')}
         </Button>
@@ -73,7 +78,7 @@ export function DeleteResumeButton({ resumeId }: { resumeId: string }) {
       variant="outline"
       size="sm"
       onClick={handleDelete}
-      className="text-error-600 border-error-300 hover:bg-error-50"
+      className={`text-error-600 border-error-300 hover:bg-error-50 ${className || ''}`}
     >
       {t('deleteButton')}
     </Button>

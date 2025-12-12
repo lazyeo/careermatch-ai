@@ -10,6 +10,7 @@
 import { useRouter } from 'next/navigation'
 import { User, Bot, ExternalLink, Play } from 'lucide-react'
 import { Button } from '@careermatch/ui'
+import { useTranslations, useLocale } from 'next-intl'
 import type { AssistantMessage, AgentAction } from '@/lib/ai/prompts/types'
 import ReactMarkdown from 'react-markdown'
 import { AnalysisCard, type AnalysisCardData } from './AnalysisCard'
@@ -28,12 +29,52 @@ export function MessageBubble({
   onSuggestionClick: _onSuggestionClick,
   onAnalysisNavigate,
 }: MessageBubbleProps) {
+  const t = useTranslations('assistant.time')
+  const locale = useLocale()
   const router = useRouter()
   const isUser = message.role === 'user'
   const actions = message.metadata?.actions || []
 
   // 检查是否是分析卡片消息
   const analysisCard = message.metadata?.analysisCard as AnalysisCardData | undefined
+
+  // 格式化时间
+  const formatTime = (timestamp: string): string => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+
+    // 小于1分钟
+    if (diff < 60 * 1000) {
+      return t('justNow')
+    }
+
+    // 小于1小时
+    if (diff < 60 * 60 * 1000) {
+      const minutes = Math.floor(diff / (60 * 1000))
+      return t('minutesAgo', { minutes })
+    }
+
+    // 今天
+    if (date.toDateString() === now.toDateString()) {
+      return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+    }
+
+    // 昨天
+    const yesterday = new Date(now)
+    yesterday.setDate(yesterday.getDate() - 1)
+    if (date.toDateString() === yesterday.toDateString()) {
+      return t('yesterday') + ' ' + date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+    }
+
+    // 更早
+    return date.toLocaleDateString(locale, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
 
   // 处理操作点击
   const handleActionClick = (action: AgentAction) => {
@@ -160,42 +201,3 @@ export function MessageBubble({
   )
 }
 
-/**
- * 格式化时间
- */
-function formatTime(timestamp: string): string {
-  const date = new Date(timestamp)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-
-  // 小于1分钟
-  if (diff < 60 * 1000) {
-    return '刚刚'
-  }
-
-  // 小于1小时
-  if (diff < 60 * 60 * 1000) {
-    const minutes = Math.floor(diff / (60 * 1000))
-    return `${minutes}分钟前`
-  }
-
-  // 今天
-  if (date.toDateString() === now.toDateString()) {
-    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  }
-
-  // 昨天
-  const yesterday = new Date(now)
-  yesterday.setDate(yesterday.getDate() - 1)
-  if (date.toDateString() === yesterday.toDateString()) {
-    return '昨天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  }
-
-  // 更早
-  return date.toLocaleDateString('zh-CN', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@careermatch/ui'
-import { Download, Edit, Save, ArrowLeft, Printer, Palette, ChevronDown, FileText, FileType } from 'lucide-react'
+import { Download, Edit, ArrowLeft, Printer, Palette, ChevronDown, FileText, FileType } from 'lucide-react'
 import type { TemplateConfig } from '@careermatch/shared'
 
 // 简化类型定义
@@ -824,6 +824,7 @@ export function ResumePreview({ resume, templateConfig, templateName }: ResumePr
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => router.push('/resumes')}
                 className="gap-2"
               >
@@ -842,8 +843,8 @@ export function ResumePreview({ resume, templateConfig, templateName }: ResumePr
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handlePrint} className="gap-2">
+            <div className="flex gap-3">
+              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
                 <Printer className="w-4 h-4" />
                 Print
               </Button>
@@ -851,7 +852,8 @@ export function ResumePreview({ resume, templateConfig, templateName }: ResumePr
               {/* Export Dropdown */}
               <div className="relative" ref={exportMenuRef}>
                 <Button
-                  variant="outline"
+                  variant="primary"
+                  size="sm"
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   disabled={isSaving}
                   className="gap-2"
@@ -888,16 +890,13 @@ export function ResumePreview({ resume, templateConfig, templateName }: ResumePr
               </div>
 
               <Button
-                variant="outline"
+                variant="primary"
+                size="sm"
                 onClick={() => router.push(`/resumes/${resume.id}/edit`)}
                 className="gap-2"
               >
                 <Edit className="w-4 h-4" />
                 Edit
-              </Button>
-              <Button variant="primary" className="gap-2">
-                <Save className="w-4 h-4" />
-                Save
               </Button>
             </div>
           </div>
