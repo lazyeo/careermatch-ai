@@ -7,11 +7,13 @@ import type { ResumeTemplate, OutputFormat } from '@careermatch/shared'
 import { BaseResumeRenderer } from './base-renderer'
 import { PDFRenderer } from './pdf-renderer'
 import { HTMLRenderer } from './html-renderer'
+import { DOCXRenderer } from './docx-renderer'
 
 // 导出所有渲染器类
 export { BaseResumeRenderer } from './base-renderer'
 export { PDFRenderer } from './pdf-renderer'
 export { HTMLRenderer } from './html-renderer'
+export { DOCXRenderer } from './docx-renderer'
 
 /**
  * 渲染器工厂函数
@@ -26,6 +28,8 @@ export function getResumeRenderer(
       return new PDFRenderer(template)
     case 'html':
       return new HTMLRenderer(template)
+    case 'docx':
+      return new DOCXRenderer(template)
     default:
       throw new Error(`Unsupported output format: ${format}`)
   }
@@ -37,4 +41,5 @@ export function getResumeRenderer(
 export type RendererMap = {
   pdf: PDFRenderer
   html: HTMLRenderer
+  docx: DOCXRenderer
 }

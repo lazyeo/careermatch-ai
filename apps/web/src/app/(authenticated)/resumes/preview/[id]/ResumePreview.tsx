@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@careermatch/ui'
-import { Download, Edit, Save, ArrowLeft, Printer, Palette } from 'lucide-react'
+import { Download, Edit, Save, ArrowLeft, Printer, Palette, ChevronDown, FileText, FileType } from 'lucide-react'
 import type { TemplateConfig } from '@careermatch/shared'
 
 // 简化类型定义
@@ -159,7 +159,20 @@ function normalizeCertifications(data: unknown[]): NormalizedCertification[] {
 export function ResumePreview({ resume, templateConfig, templateName }: ResumePreviewProps) {
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
+  const [showExportMenu, setShowExportMenu] = useState(false)
+  const exportMenuRef = useRef<HTMLDivElement>(null)
   const rawContent = resume.content
+
+  // 点击外部关闭菜单
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setShowExportMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // 规范化内容
   const personalInfo = normalizePersonalInfo(rawContent.personalInfo || rawContent.personal_info)
@@ -202,46 +215,94 @@ export function ResumePreview({ resume, templateConfig, templateName }: ResumePr
     window.print()
   }
 
-  const handleExportPDF = async () => {
+  // 通用导出函数
+  const handleExport = async (format: 'pdf' | 'docx') => {
     setIsSaving(true)
+    setShowExportMenu(false)
+
+    const mimeTypes = {
+      pdf: 'application/pdf',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    }
+
+    const descriptions = {
+      pdf: 'PDF Document',
+      docx: 'Word Document',
+    }
+
     try {
-      const response = await fetch(`/api/resumes/${resume.id}/export-pdf`, {
-        method: 'POST',
+      const response = await fetch(`/api/resumes/${resume.id}/export-${format}`, {
+        method: 'GET',
+        credentials: 'include',
       })
 
       if (!response.ok) {
-        throw new Error('Failed to export PDF')
+        const errorText = await response.text()
+        console.error(`${format.toUpperCase()} export failed:`, response.status, errorText)
+        throw new Error(`Failed to export ${format.toUpperCase()}`)
       }
 
-      // 获取响应数据并创建正确类型的 Blob
-      const arrayBuffer = await response.arrayBuffer()
-      const blob = new Blob([arrayBuffer], { type: 'application/pdf' })
+      // 生成文件名
+      const dateStr = new Date().toISOString().split('T')[0]
+      const safeTitle = resume.title
+        .replace(/[<>:"/\\|?*]/g, '')
+        .replace(/\s+/g, '_')
+        .substring(0, 50)
+      const fileName = `${safeTitle}_${dateStr}.${format}`
 
-      // 生成安全的文件名（移除特殊字符）
-      const safeTitle = resume.title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5\s_-]/g, '').trim() || 'resume'
-      const fileName = `${safeTitle}.pdf`
+      // 获取二进制数据
+      const blob = await response.blob()
+      const typedBlob = new Blob([blob], { type: mimeTypes[format] })
 
-      // 创建下载链接
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = fileName
-      a.style.display = 'none'
-      document.body.appendChild(a)
-      a.click()
+      // 尝试使用 showSaveFilePicker API
+      if ('showSaveFilePicker' in window) {
+        try {
+          const handle = await (window as unknown as {
+            showSaveFilePicker: (options: {
+              suggestedName: string
+              types: { description: string; accept: Record<string, string[]> }[]
+            }) => Promise<FileSystemFileHandle>
+          }).showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{
+              description: descriptions[format],
+              accept: { [mimeTypes[format]]: [`.${format}`] },
+            }],
+          })
+          const writable = await handle.createWritable()
+          await writable.write(typedBlob)
+          await writable.close()
+          return
+        } catch (e) {
+          if ((e as Error).name === 'AbortError') {
+            return
+          }
+        }
+      }
 
-      // 延迟清理，确保下载开始
+      // 传统下载方法
+      const url = URL.createObjectURL(typedBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      link.type = mimeTypes[format]
+      document.body.appendChild(link)
+      link.click()
       setTimeout(() => {
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-      }, 100)
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+      }, 250)
+
     } catch (error) {
-      console.error('Error exporting PDF:', error)
-      alert('Export PDF failed, please try again')
+      console.error(`Error exporting ${format}:`, error)
+      alert(`Export ${format.toUpperCase()} failed, please try again`)
     } finally {
       setIsSaving(false)
     }
   }
+
+  const handleExportPDF = () => handleExport('pdf')
+  const handleExportDOCX = () => handleExport('docx')
 
   // 单栏布局
   const renderSingleColumn = () => (
@@ -786,15 +847,46 @@ export function ResumePreview({ resume, templateConfig, templateName }: ResumePr
                 <Printer className="w-4 h-4" />
                 Print
               </Button>
-              <Button
-                variant="outline"
-                onClick={handleExportPDF}
-                disabled={isSaving}
-                className="gap-2"
-              >
-                <Download className="w-4 h-4" />
-                {isSaving ? 'Exporting...' : 'Export PDF'}
-              </Button>
+
+              {/* Export Dropdown */}
+              <div className="relative" ref={exportMenuRef}>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  disabled={isSaving}
+                  className="gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  {isSaving ? 'Exporting...' : 'Export'}
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+
+                {showExportMenu && (
+                  <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                    <button
+                      onClick={handleExportPDF}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
+                    >
+                      <FileText className="w-4 h-4 text-red-500" />
+                      <div>
+                        <div className="font-medium">Export as PDF</div>
+                        <div className="text-xs text-gray-500">Best for sharing</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={handleExportDOCX}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
+                    >
+                      <FileType className="w-4 h-4 text-blue-500" />
+                      <div>
+                        <div className="font-medium">Export as Word</div>
+                        <div className="text-xs text-gray-500">Editable document</div>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <Button
                 variant="outline"
                 onClick={() => router.push(`/resumes/${resume.id}/edit`)}

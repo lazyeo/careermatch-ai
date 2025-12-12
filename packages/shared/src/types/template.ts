@@ -115,6 +115,7 @@ export interface UserCustomTemplate {
 export type OutputFormat =
   | 'pdf'         // PDF文件
   | 'html'        // HTML网页
+  | 'docx'        // Word文档
 
 /**
  * 渲染选项

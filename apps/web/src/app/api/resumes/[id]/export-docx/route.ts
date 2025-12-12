@@ -1,15 +1,54 @@
+/**
+ * DOCX Export API
+ * 导出简历为可编辑的 Word 文档
+ */
+
 import { NextRequest, NextResponse } from 'next/server'
-import { renderToStream, DocumentProps } from '@react-pdf/renderer'
-import type { ReactElement } from 'react'
 import { getCurrentUser, createClient } from '@/lib/supabase-server'
-import { ResumePDFTemplate } from '@/components/ResumePDFTemplate'
+import { DOCXRenderer } from '@/lib/resume-renderers'
 import type {
   ResumeContent,
   ResumeTemplate,
   DatabaseResumeTemplate,
   TemplateConfig,
 } from '@careermatch/shared'
-import { PDFRenderer } from '@/lib/resume-renderers'
+
+// 默认模板配置
+const DEFAULT_TEMPLATE: ResumeTemplate = {
+  id: 'default',
+  name: 'Default',
+  description: 'Default template',
+  category: 'modern',
+  config: {
+    colors: {
+      primary: '#2563EB',
+      secondary: '#3B82F6',
+      text: '#1F2937',
+      textLight: '#6B7280',
+      background: '#FFFFFF',
+      accent: '#DBEAFE',
+    },
+    fonts: {
+      heading: 'Helvetica-Bold',
+      body: 'Helvetica',
+      headingSize: 14,
+      bodySize: 11,
+    },
+    layout: 'single-column',
+    sections_order: ['header', 'summary', 'skills', 'experience', 'projects', 'education', 'certifications'],
+    spacing: {
+      sectionGap: 16,
+      itemGap: 10,
+      lineHeight: 1.4,
+    },
+  },
+  previewUrl: null,
+  supportsPdf: true,
+  supportsHtml: true,
+  isActive: true,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}
 
 /**
  * 转换数据库模板到应用模板类型
@@ -30,7 +69,7 @@ function transformTemplate(dbTemplate: DatabaseResumeTemplate): ResumeTemplate {
   }
 }
 
-async function generatePDF(
+async function generateDOCX(
   request: NextRequest,
   resumeId: string
 ) {
@@ -58,10 +97,9 @@ async function generatePDF(
       )
     }
 
-    // 准备简历数据 - 处理 snake_case 和 camelCase 字段名兼容
+    // 准备简历数据
     const rawContent = resume.content as Record<string, unknown>
 
-    // Handle personalInfo field names
     const rawPersonalInfo = (rawContent.personalInfo || rawContent.personal_info || {}) as Record<string, unknown>
     const personalInfo = {
       fullName: (rawPersonalInfo.fullName || rawPersonalInfo.full_name || '') as string,
@@ -83,20 +121,16 @@ async function generatePDF(
       interests: (rawContent.interests || []) as string[],
     }
 
-    let buffer: Buffer
-
-    // 记录内容摘要用于调试
-    console.log('📝 Resume content summary:')
+    console.log('📝 DOCX Export - Resume content summary:')
     console.log(`  - Personal Info: ${content.personalInfo?.fullName || 'No name'}`)
     console.log(`  - Work Experience: ${content.workExperience?.length || 0} entries`)
-    console.log(`  - Education: ${content.education?.length || 0} entries`)
     console.log(`  - Skills: ${content.skills?.length || 0} entries`)
-    console.log(`  - Projects: ${content.projects?.length || 0} entries`)
 
-    // 检查是否有指定模板
+    // 获取模板配置
+    let template: ResumeTemplate = DEFAULT_TEMPLATE
     const templateId = resume.template_id
+
     if (templateId) {
-      // 获取模板配置
       const { data: templateData } = await supabase
         .from('resume_templates')
         .select('*')
@@ -105,62 +139,36 @@ async function generatePDF(
         .single()
 
       if (templateData) {
-        // 使用模板渲染器
         console.log(`📋 Using template: ${templateData.name} (${templateId})`)
-        const template = transformTemplate(templateData as DatabaseResumeTemplate)
-        const renderer = new PDFRenderer(template)
-        buffer = await renderer.render(content)
-        console.log(`✅ PDF generated: ${buffer.length} bytes`)
-      } else {
-        // 模板不存在，使用默认模板
-        console.log('⚠️ Template not found, using default template')
-        buffer = await renderDefaultTemplate(resume.title, content)
-        console.log(`✅ PDF generated (default): ${buffer.length} bytes`)
+        template = transformTemplate(templateData as DatabaseResumeTemplate)
       }
-    } else {
-      // 没有指定模板，使用默认模板
-      buffer = await renderDefaultTemplate(resume.title, content)
-      console.log(`✅ PDF generated (default): ${buffer.length} bytes`)
     }
 
-    // 返回PDF文件
-    // 使用ASCII安全的文件名作为fallback，同时提供UTF-8编码的文件名
+    // 生成 DOCX
+    const renderer = new DOCXRenderer(template)
+    const buffer = await renderer.render(content)
+    console.log(`✅ DOCX generated: ${buffer.length} bytes`)
+
+    // 生成文件名
     const dateStr = new Date().toISOString().split('T')[0]
-    const safeFileName = `resume_${dateStr}.pdf`
-    const utf8FileName = `${resume.title.replace(/\s+/g, '_')}_${dateStr}.pdf`
+    const safeFileName = `resume_${dateStr}.docx`
+    const utf8FileName = `${resume.title.replace(/\s+/g, '_')}_${dateStr}.docx`
 
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
-        'Content-Type': 'application/pdf',
-        // RFC 5987: 使用filename作为ASCII fallback，filename*作为UTF-8编码的实际文件名
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Disposition': `attachment; filename="${safeFileName}"; filename*=UTF-8''${encodeURIComponent(utf8FileName)}`,
         'Content-Length': buffer.length.toString(),
       },
     })
   } catch (error) {
-    console.error('PDF generation error:', error)
+    console.error('DOCX generation error:', error)
     return NextResponse.json(
-      { error: 'Failed to generate PDF' },
+      { error: 'Failed to generate DOCX', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
-}
-
-/**
- * 使用默认模板渲染PDF
- */
-async function renderDefaultTemplate(title: string, content: ResumeContent): Promise<Buffer> {
-  const resumeData = { title, content }
-  const stream = await renderToStream(
-    ResumePDFTemplate({ resume: resumeData }) as ReactElement<DocumentProps>
-  )
-
-  const chunks: Buffer[] = []
-  for await (const chunk of stream) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-  }
-  return Buffer.concat(chunks)
 }
 
 // 支持GET方法
@@ -169,14 +177,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  return generatePDF(request, id)
+  return generateDOCX(request, id)
 }
 
-// 支持POST方法（前端调用的是POST）
+// 支持POST方法
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  return generatePDF(request, id)
+  return generateDOCX(request, id)
 }
