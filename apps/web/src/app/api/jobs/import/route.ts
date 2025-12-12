@@ -26,11 +26,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('🔌 [API] Import Request Body:', JSON.stringify(body, null, 2))
 
-    const { url, urls, content, save_immediately } = body as {
+    const { url, urls, content, save_immediately, language } = body as {
       url?: string
       urls?: string[]
       content?: string
       save_immediately?: boolean
+      language?: string
     }
 
     console.log(`👤 [API] User: ${user.id}, Save Immediately: ${save_immediately}`)
@@ -66,12 +67,13 @@ export async function POST(request: NextRequest) {
           if (item.type === 'url') {
             console.log(`📥 [${index}] Importing job from URL: ${item.value}`)
             parsedData = await parseJobFromUrl(item.value, {
-              scraperUrl: process.env.SCRAPER_API_URL
+              scraperUrl: process.env.SCRAPER_API_URL,
+              language: language || 'zh'
             })
             parsedData.application_url = parsedData.application_url || item.value
           } else {
             console.log(`📝 [${index}] Parsing job from content (${item.value.length} chars)`)
-            parsedData = await parseJobContent(item.value)
+            parsedData = await parseJobContent(item.value, { language: language || 'zh' })
             console.log(`✅ [${index}] Parsed data - Title: ${parsedData.title}, Company: ${parsedData.company}`)
           }
 

@@ -41,15 +41,65 @@ turndownService.addRule('paragraphSpacing', {
   }
 })
 
-// AI解析Prompt
-const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务是从招聘信息中提取关键结构化数据。
+// AI解析Prompt构建函数
+function getJobParserPrompt(language: string = 'zh'): string {
+  const isEn = language === 'en'
+
+  if (isEn) {
+    return `You are a professional recruitment data extraction expert. Your task is to extract structured data from job postings.
+
+## Extraction Instructions
+1. **Basic Info**: Job Title, Company Name, Location
+2. **Job Type**: Full-time/Part-time/Contract/Internship/Casual
+3. **Salary**: Salary Range, Currency (Identify NZD/AUD/USD/CNY etc.)
+4. **Description**: Extract the FULL job description. Do not summarize unless it's extremely long (>2000 words), in which case keep the most important details.
+5. **Requirements**: Extract the FULL requirements list.
+6. **Dates**: Posted Date, Application Deadline
+7. **Skills**: Extract specific skills list
+8. **Company Info**: Company overview (if provided)
+
+## Job Content:
+{CONTENT}
+
+## Output Format
+Return strict JSON (no markdown blocks):
+{
+  "title": "Job Title",
+  "company": "Company Name",
+  "location": "Location",
+  "job_type": "full-time|part-time|contract|internship|casual",
+  "salary_min": 80000,
+  "salary_max": 120000,
+  "salary_currency": "NZD|AUD|USD|CNY",
+  "description": "Full description...",
+  "requirements": "Full requirements...",
+  "benefits": "Benefits...",
+  "posted_date": "YYYY-MM-DD",
+  "deadline": "YYYY-MM-DD",
+  "skills_required": ["Skill1", "Skill2"],
+  "experience_years": "3-5 years",
+  "education_requirement": "Bachelor's etc.",
+  "company_info": "Company overview",
+  "application_url": "Application URL"
+}
+
+Notes:
+1. Use null if a field is missing.
+2. Return RAW JSON only.
+3. Salary must be numbers.
+4. description and requirements should be Markdown formatted text.
+`
+  }
+
+  // Chinese Version (Default)
+  return `你是专业的招聘信息解析专家。你的任务是从招聘信息中提取关键结构化数据。
 
 ## 提取指令
 1. **基本信息**：岗位标题、公司名称、工作地点
 2. **岗位类型**：全职/兼职/合同/实习/临时
 3. **薪资信息**：薪资范围、货币类型（智能识别NZD/AUD/USD/CNY等）
-4. **岗位摘要**：请生成一个简短的岗位职责摘要（description），不超过300字。不要复制全文。
-5. **核心要求**：请生成一个简短的核心要求摘要（requirements），不超过300字。
+4. **岗位详情**：请尽可能提取**完整**的岗位职责描述（description）。不要过度摘要，保留原文的细节和语气。
+5. **核心要求**：请尽可能提取**完整**的核心要求（requirements）。
 6. **时间信息**：发布日期、申请截止日期
 7. **技能清单**：提取所需的具体技能列表
 8. **公司信息**：公司简介（如有提供）
@@ -67,8 +117,8 @@ const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务
   "salary_min": 80000,
   "salary_max": 120000,
   "salary_currency": "NZD|AUD|USD|CNY",
-  "description": "简短的职责摘要...",
-  "requirements": "简短的要求摘要...",
+  "description": "完整的职责描述...",
+  "requirements": "完整的要求描述...",
   "benefits": "福利待遇...",
   "posted_date": "YYYY-MM-DD",
   "deadline": "YYYY-MM-DD",
@@ -83,8 +133,9 @@ const PARSE_JOB_PROMPT = `你是专业的招聘信息解析专家。你的任务
 1. 如果某个字段找不到信息，使用null或省略该字段
 2. 不要返回markdown代码块，直接返回JSON
 3. 薪资字段必须是数字
-4. description 和 requirements 必须是纯文本或简单的Markdown，不要太长
+4. description 和 requirements 建议使用Markdown格式，保留列表结构
 `
+}
 
 /**
  * Fetch data specifically from Workable API
@@ -199,6 +250,7 @@ export interface JobParserConfig {
   apiKey?: string
   baseUrl?: string
   scraperUrl?: string
+  language?: string
 }
 
 /**
@@ -213,6 +265,7 @@ export async function parseJobContent(
     config?.baseUrl ||
     process.env.CLAUDE_BASE_URL ||
     'https://relay.a-dobe.club/api/v1'
+  const language = config?.language || 'zh'
 
   if (!apiKey) {
     throw new Error('CLAUDE_API_KEY is not configured')
@@ -253,8 +306,8 @@ export async function parseJobContent(
     .replace(/\s+/g, ' ')
     .trim()
 
-  // Limit to ~50k characters to stay well under 200k token limit
-  const MAX_CHARS = 50000
+  // Limit to ~80k characters to stay well under 200k token limit (increased for better preservation)
+  const MAX_CHARS = 80000
   if (cleanedContent.length > MAX_CHARS) {
     console.warn(`⚠️ Content length ${cleanedContent.length} exceeds ${MAX_CHARS}, truncating...`)
     cleanedContent = cleanedContent.substring(0, MAX_CHARS) + '...[内容已截断]'
@@ -278,10 +331,11 @@ export async function parseJobContent(
     markdownContent = content
   }
 
-  const prompt = PARSE_JOB_PROMPT.replace('{CONTENT}', cleanedContent)
+  const promptTemplate = getJobParserPrompt(language)
+  const prompt = promptTemplate.replace('{CONTENT}', cleanedContent)
 
   console.log('🔍 Parsing job posting with AI...')
-  console.log(`📊 Using model: ${model}`)
+  console.log(`📊 Using model: ${model}, Language: ${language}`)
 
   const response = await client.chat.completions.create({
     model,
@@ -344,6 +398,9 @@ export async function parseJobFromUrl(
     try {
       const workerUrl = new URL(config.scraperUrl)
       workerUrl.searchParams.set('url', url)
+      if (config.language) {
+        workerUrl.searchParams.set('language', config.language)
+      }
 
       const response = await fetch(workerUrl.toString(), {
         headers: {

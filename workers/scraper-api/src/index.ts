@@ -11,6 +11,7 @@ export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         const url = new URL(request.url)
         const targetUrl = url.searchParams.get('url')
+        const language = url.searchParams.get('language') || 'zh'
 
         if (!targetUrl) {
             return new Response('Missing url parameter', { status: 400 })
@@ -33,7 +34,8 @@ export default {
             // Use the shared package to parse the content
             const parsedData = await parseJobContent(content, {
                 apiKey: env.CLAUDE_API_KEY,
-                baseUrl: env.CLAUDE_BASE_URL
+                baseUrl: env.CLAUDE_BASE_URL,
+                language: language
             })
 
             return new Response(JSON.stringify(parsedData), {
