@@ -192,7 +192,7 @@ export function AnalysisV2({
       setError(err instanceof Error ? err.message : 'Analysis failed')
       setState('error')
     }
-  }, [jobId, selectedProvider, router, locale])
+  }, [jobId, selectedProvider, router, locale, t])
 
   // 打开模板选择器
   const openTemplateSelector = async () => {
