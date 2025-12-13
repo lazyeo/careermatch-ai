@@ -68,7 +68,7 @@ export function JobDetailTabs({ original, aiInsights }: JobDetailTabsProps) {
                     <div className="animate-in fade-in duration-300">
                         <Card>
                             <CardContent className="py-6">
-                                <div className="prose prose-sm max-w-none text-gray-700 bg-gray-50 p-4 rounded-lg">
+                                <div className="prose prose-sm max-w-none text-gray-700">
                                     {typeof original === 'string' ? (
                                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                             {original}
