@@ -64,7 +64,7 @@ export default async function ResumeDetailPage({
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-start">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{resume.title}</h1>
               <p className="text-sm text-gray-600 mt-1">
@@ -72,7 +72,7 @@ export default async function ResumeDetailPage({
                 {new Date(resume.updated_at).toLocaleDateString(locale)}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               <ExportPDFButton resumeId={params.id} resumeTitle={resume.title} />
               <Link href={`/resumes/${params.id}/edit`}>
                 <Button variant="primary">{t('edit')}</Button>

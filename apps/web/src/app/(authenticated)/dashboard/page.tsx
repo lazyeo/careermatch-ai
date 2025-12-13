@@ -98,14 +98,14 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* 简历管理卡片 */}
           <Link href="/resumes">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="text-2xl">📝</span>
                   {t('resumeManagement')}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col justify-between">
                 <p className="text-sm text-neutral-600 mb-4">
                   {t('resumeManagementDesc')}
                 </p>
@@ -118,14 +118,14 @@ export default async function DashboardPage() {
 
           {/* 岗位管理卡片 */}
           <Link href="/jobs">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="text-2xl">💼</span>
                   {t('jobManagement')}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col justify-between">
                 <p className="text-sm text-neutral-600 mb-4">
                   {t('jobManagementDesc')}
                 </p>
@@ -138,14 +138,14 @@ export default async function DashboardPage() {
 
           {/* 申请追踪卡片 */}
           <Link href="/applications">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="text-2xl">📊</span>
                   {t('applicationTracking')}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col justify-between">
                 <p className="text-sm text-neutral-600 mb-4">
                   {t('applicationTrackingDesc')}
                 </p>
