@@ -129,26 +129,36 @@ export function getAvailableProviders(): AIProviderConfig[] {
 
 /**
  * Get the default provider to use
- * Priority: claude > openai > codex > gemini
+ * Priority: claude > openai > gemini > codex
  */
 export function getDefaultProvider(): AIProviderConfig | null {
-  const available = getAvailableProviders()
-
-  if (available.length === 0) {
-    return null
+  // Prioritize Claude
+  const claudeConfig = getProviderConfig('claude')
+  if (claudeConfig.isConfigured) {
+    console.log('🧠 Using Claude as default provider')
+    return claudeConfig
   }
 
-  // Priority order
-  const priorityOrder: AIProviderType[] = ['claude', 'openai', 'codex', 'gemini']
-
-  for (const type of priorityOrder) {
-    const provider = available.find((p) => p.type === type)
-    if (provider) {
-      return provider
-    }
+  // Fallback order: OpenAI > Gemini > Codex
+  const openaiConfig = getProviderConfig('openai')
+  if (openaiConfig.isConfigured) {
+    console.log('🤖 Using OpenAI as fallback provider')
+    return openaiConfig
   }
 
-  return available[0]
+  const geminiConfig = getProviderConfig('gemini')
+  if (geminiConfig.isConfigured) {
+    console.log('💎 Using Gemini as fallback provider')
+    return geminiConfig
+  }
+
+  const codexConfig = getProviderConfig('codex')
+  if (codexConfig.isConfigured) {
+    console.log('🔧 Using Codex as fallback provider')
+    return codexConfig
+  }
+
+  return null
 }
 
 /**

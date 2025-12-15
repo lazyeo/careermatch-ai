@@ -28,7 +28,7 @@ import {
 import { NextRequest, NextResponse } from 'next/server'
 import type { FullProfile } from '@careermatch/shared'
 import {
-  JOB_MATCHING_V2_SYSTEM_PROMPT,
+  getJobMatchingV2SystemPrompt,
   buildJobMatchingV2Prompt,
   parseJobMatchingV2Output,
   generateDefaultCVStrategy,
@@ -70,10 +70,11 @@ export async function POST(
 
     // 3. 解析请求参数
     const body = await request.json()
-    const { resumeId, provider, force } = body as {
+    const { resumeId, provider, force, locale } = body as {
       resumeId?: string
       provider?: AIProviderType
       force?: boolean
+      locale?: string
     }
 
     // 4. 检查缓存（除非force=true）
@@ -153,7 +154,8 @@ export async function POST(
       job,
       profileData,
       resumeData,
-      provider
+      provider,
+      locale
     )
 
     // 8. 保存到数据库
@@ -414,7 +416,8 @@ async function perform8DimensionAnalysis(
   job: Record<string, unknown>,
   profile: FullProfile | null,
   resume: Record<string, unknown> | null,
-  provider?: AIProviderType
+  provider?: AIProviderType,
+  locale?: string
 ): Promise<JobMatchingV2Output> {
   try {
     // 构建profile数据
@@ -482,7 +485,7 @@ async function perform8DimensionAnalysis(
         benefits: job.benefits as string | undefined,
       },
       profile: profileData,
-    })
+    }, locale || 'zh')
 
     // 调用AI
     const aiClient = createAIClient(provider)
@@ -493,7 +496,7 @@ async function perform8DimensionAnalysis(
       messages: [
         {
           role: 'system',
-          content: JOB_MATCHING_V2_SYSTEM_PROMPT,
+          content: getJobMatchingV2SystemPrompt(locale || 'zh'),
         },
         {
           role: 'user',

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { Sparkles, Loader2, User, FileText, Zap, RefreshCw, Palette } from 'lucide-react'
-import { AIProviderSelector, type AIProviderType } from './AIProviderSelector'
 import { DimensionsDisplay } from './DimensionsDisplay'
 import { ScoreCard } from './ScoreCard'
 import { MarkdownAnalysis } from './MarkdownAnalysis'
@@ -60,7 +59,6 @@ export function AnalysisV2({
   const locale = useLocale()
   const t = useTranslations('analysis')
   const abortControllerRef = useRef<AbortController | null>(null)
-  const [selectedProvider, setSelectedProvider] = useState<AIProviderType | undefined>(undefined)
   const [state, setState] = useState<AnalysisState>(() =>
     existingSession?.dimensions ? 'completed' : 'idle'
   )
@@ -102,7 +100,6 @@ export function AnalysisV2({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          provider: selectedProvider,
           force,
           locale,
         }),
@@ -192,7 +189,7 @@ export function AnalysisV2({
       setError(err instanceof Error ? err.message : 'Analysis failed')
       setState('error')
     }
-  }, [jobId, selectedProvider, router, locale, t])
+  }, [jobId, router, locale, t])
 
   // 打开模板选择器
   const openTemplateSelector = async () => {
@@ -242,7 +239,6 @@ export function AnalysisV2({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId: result.sessionId,
-          provider: selectedProvider,
           templateId,
         }),
       })
@@ -269,10 +265,6 @@ export function AnalysisV2({
   if (state === 'idle') {
     return (
       <div className="space-y-6">
-        <AIProviderSelector
-          selectedProvider={selectedProvider}
-          onSelect={setSelectedProvider}
-        />
 
         <Card>
           <CardContent className="py-8">
@@ -334,10 +326,6 @@ export function AnalysisV2({
   if (state === 'loading' || state === 'streaming') {
     return (
       <div className="space-y-6">
-        <AIProviderSelector
-          selectedProvider={selectedProvider}
-          onSelect={setSelectedProvider}
-        />
 
         {/* 进度状态卡片 */}
         <Card>
@@ -405,10 +393,6 @@ export function AnalysisV2({
   if (state === 'error') {
     return (
       <div className="space-y-6">
-        <AIProviderSelector
-          selectedProvider={selectedProvider}
-          onSelect={setSelectedProvider}
-        />
 
         <Card>
           <CardContent className="py-12">
@@ -436,10 +420,6 @@ export function AnalysisV2({
   // 完成状态
   return (
     <div className="space-y-6">
-      <AIProviderSelector
-        selectedProvider={selectedProvider}
-        onSelect={setSelectedProvider}
-      />
 
       {/* 分析类型标识 */}
       <div className="flex items-center justify-between px-1">

@@ -79,7 +79,8 @@ export const JOB_MATCHING_V2_SYSTEM_PROMPT = getJobMatchingV2SystemPrompt('zh')
 // 8维度分析 User Prompt 模板
 // ============================================
 
-export const JOB_MATCHING_V2_USER_PROMPT = `请对以下求职者与目标岗位进行**8维度深度匹配分析**。
+// 中文版本 USER_PROMPT
+export const JOB_MATCHING_V2_USER_PROMPT_ZH = `请对以下求职者与目标岗位进行**8维度深度匹配分析**。
 
 ## 岗位信息
 - **职位**: {{jobTitle}}
@@ -339,6 +340,270 @@ Markdown分析报告应包含：
 3. 所有建议要基于候选人的实际情况
 4. 如果信息不足，可以标注"信息不足"并给出合理推测`
 
+// 英文版本 USER_PROMPT
+export const JOB_MATCHING_V2_USER_PROMPT_EN = `Please perform an **8-dimension in-depth matching analysis** for the following candidate and target position.
+
+## Job Information
+- **Position**: {{jobTitle}}
+- **Company**: {{company}}
+- **Location**: {{jobLocation}}
+- **Type**: {{jobType}}
+- **Salary Range**: {{salaryRange}}
+- **Job Description**:
+{{jobDescription}}
+
+- **Job Requirements**:
+{{jobRequirements}}
+
+- **Benefits**:
+{{jobBenefits}}
+
+---
+
+## Candidate Profile
+- **Name**: {{candidateName}}
+- **Location**: {{candidateLocation}}
+- **Career Objective**: {{careerObjective}}
+- **Skills**: {{skills}}
+- **Work Experience**: {{workExperience}}
+- **Education**: {{education}}
+- **Projects**: {{projects}}
+- **Certifications**: {{certifications}}
+
+---
+
+## 8-Dimension Analysis Framework
+
+Please analyze from the following 8 dimensions, each requiring structured data output:
+
+### 1. Role Positioning
+- Job level and positioning
+- Gap between candidate's current level and target
+- Career path alignment
+
+### 2. Core Responsibilities
+- Alignment between main responsibilities and candidate experience
+- Responsibility coverage assessment
+
+### 3. Keyword Matching
+- Technical keywords, soft skills, industry terminology
+- ATS friendliness assessment
+- Suggested missing keywords
+
+### 4. Key Requirements
+- Required vs. preferred qualifications
+- Candidate fulfillment status
+- Major gap identification
+
+### 5. SWOT Analysis
+- Strengths: Candidate's strong points
+- Weaknesses: Areas for improvement
+- Opportunities: Growth opportunities from this position
+- Threats: Potential challenges and risks
+
+### 6. CV Strategy ⭐ Core
+**This is the most important output**, will be directly used to generate targeted resumes:
+- Recommended section order
+- Section weights (determines level of detail)
+- Projects and skills to highlight
+- Guidance for describing each experience
+- Content to downplay/omit
+- Recommended tone and style
+
+### 7. Interview Preparation
+- Likely interview questions (with answer points)
+- Project stories to prepare (STAR format)
+- Technical topics to review
+- Interview tips
+
+### 8. Match Score
+- Overall and breakdown scores
+- Recommendation level
+- Confidence level
+
+---
+
+## Output Format (Important! Strictly follow)
+
+Please use the following **delimiter format** for output:
+
+\`\`\`
+---SCORE---
+<integer 0-100>
+---RECOMMENDATION---
+<strong_match|good_match|moderate_match|weak_match|not_recommended>
+---DIMENSIONS---
+<8-dimension structured JSON data, see format below>
+---ANALYSIS---
+<Markdown format detailed analysis report>
+---END---
+\`\`\`
+
+### DIMENSIONS JSON Format Example
+
+\`\`\`json
+{
+  "rolePositioning": {
+    "summary": "Mid-to-senior frontend engineer position, requires 5+ years experience",
+    "level": "senior",
+    "domain": "Frontend Development",
+    "primaryFunction": "Build and maintain large-scale Web applications",
+    "candidateFit": {
+      "currentLevel": "Mid-level Frontend Engineer",
+      "targetLevel": "Senior Frontend Engineer",
+      "gap": "Needs more team leadership experience",
+      "readiness": "stretch"
+    }
+  },
+  "coreResponsibilities": {
+    "responsibilities": [
+      {
+        "description": "Develop React applications",
+        "importance": "critical",
+        "candidateEvidence": "3 years React development at XX Company",
+        "matchStatus": "strong"
+      }
+    ],
+    "coverageScore": 75,
+    "summary": "Candidate covers most core responsibilities"
+  },
+  "keywordMatching": {
+    "keywords": [
+      {
+        "keyword": "React",
+        "category": "technical",
+        "importance": "required",
+        "found": true,
+        "context": "3 years React development experience"
+      }
+    ],
+    "requiredMatchRate": 80,
+    "overallMatchRate": 70,
+    "atsFriendliness": "good",
+    "suggestedAdditions": ["TypeScript", "Jest"]
+  },
+  "keyRequirements": {
+    "requirements": [
+      {
+        "description": "5+ years frontend development experience",
+        "type": "experience",
+        "mandatory": true,
+        "met": false,
+        "gap": "Candidate has 3 years, 2 year gap"
+      }
+    ],
+    "mandatoryFulfillmentRate": 70,
+    "overallFulfillmentRate": 75,
+    "majorGaps": ["Insufficient experience years"],
+    "majorStrengths": ["Strong tech stack alignment"]
+  },
+  "swotAnalysis": {
+    "strengths": [
+      {"point": "Strong React technical depth", "evidence": "Led multiple large projects", "impact": "high"}
+    ],
+    "weaknesses": [
+      {"point": "Limited team management experience", "suggestion": "Emphasize collaborative leadership in projects", "severity": "moderate"}
+    ],
+    "opportunities": [
+      {"point": "Exposure to large-scale systems", "timeframe": "short_term"}
+    ],
+    "threats": [
+      {"point": "Possible experience scrutiny", "mitigation": "Prepare detailed project outcome data", "likelihood": "medium"}
+    ],
+    "overallAssessment": "Overall good match, recommended to apply"
+  },
+  "cvStrategy": {
+    "priorityOrder": ["header", "summary", "skills", "experience", "projects", "education"],
+    "emphasis": {
+      "skills": 90,
+      "experience": 85,
+      "projects": 80,
+      "education": 40
+    },
+    "projectFocus": ["E-commerce platform refactoring", "Performance optimization project"],
+    "skillsHighlight": ["React", "TypeScript", "Performance optimization", "Team collaboration"],
+    "experienceFraming": {
+      "work_0": "Emphasize technical decisions and architecture contributions",
+      "work_1": "Highlight project outcomes and team collaboration"
+    },
+    "avoid": ["Irrelevant backend experience", "Outdated jQuery projects"],
+    "tone": "technical",
+    "objectiveGuidance": "Emphasize passion for large-scale applications and technical depth",
+    "quantificationSuggestions": ["Add performance improvement percentages", "User scale numbers"],
+    "actionVerbs": ["Led", "Optimized", "Architected", "Implemented", "Drove"]
+  },
+  "interviewPreparation": {
+    "likelyQuestions": [
+      {
+        "question": "Describe a complex React application you optimized",
+        "type": "technical",
+        "difficulty": "intermediate",
+        "answerPoints": ["Background", "Technical solution", "Result metrics"],
+        "relevantExperience": "E-commerce platform performance optimization project"
+      }
+    ],
+    "questionsToAsk": ["What are the team's tech stack evolution plans?"],
+    "technicalReview": ["React performance optimization", "State management patterns"],
+    "projectStories": [
+      {
+        "project": "E-commerce platform refactoring",
+        "angle": "Technical decision-making ability",
+        "starFormat": {
+          "situation": "Legacy system performance issues",
+          "task": "Lead technical solution selection",
+          "action": "Introduced micro-frontend architecture",
+          "result": "40% performance improvement"
+        }
+      }
+    ],
+    "tips": ["Prepare concrete data support", "Show technical enthusiasm"]
+  },
+  "matchScore": {
+    "overall": 75,
+    "breakdown": {
+      "skillsScore": 85,
+      "experienceScore": 70,
+      "educationScore": 80,
+      "cultureFitScore": 75,
+      "careerFitScore": 80
+    },
+    "confidence": "high",
+    "recommendation": "good_match",
+    "summary": "Strong skill match, slight experience gap, overall worth applying"
+  }
+}
+\`\`\`
+
+### ANALYSIS Section Requirements
+
+The Markdown analysis report should include:
+1. **Executive Summary** - One-sentence assessment
+2. **Key Findings** - 3-5 key insights
+3. **Application Recommendation** - Whether to apply and why
+4. **Resume Optimization Focus** - Resume suggestions for this position
+5. **Interview Preparation Focus** - Areas requiring special preparation
+
+---
+
+## Scoring Criteria
+
+- **strong_match (85-100)**: Highly aligned, strongly recommend applying
+- **good_match (70-84)**: Good match, worth trying
+- **moderate_match (55-69)**: Fair match, some opportunity
+- **weak_match (40-54)**: Low match, significant gaps
+- **not_recommended (0-39)**: Not recommended to apply
+
+---
+
+**Important Notes**:
+1. CV Strategy is the most important output, will be directly used for resume generation
+2. Interview questions should be specific and actionable
+3. All recommendations must be based on candidate's actual situation
+4. If information is insufficient, mark as "insufficient information" and provide reasonable inference`
+
+// 默认使用中文版本（向后兼容）
+export const JOB_MATCHING_V2_USER_PROMPT = JOB_MATCHING_V2_USER_PROMPT_ZH
+
 // ============================================
 // 岗位匹配分析 V2 Prompt 模板定义
 // ============================================
@@ -464,12 +729,17 @@ export function buildJobMatchingV2Prompt(input: JobMatchingV2Input, locale: stri
   const lang = locale.startsWith('en') ? 'en' : 'zh'
   const placeholders = PLACEHOLDER_CONTENT[lang]
 
+  // 根据语言选择模板
+  const userPromptTemplate = lang === 'en'
+    ? JOB_MATCHING_V2_USER_PROMPT_EN
+    : JOB_MATCHING_V2_USER_PROMPT_ZH
+
   const salaryRange =
     job.salary_min && job.salary_max
       ? `${job.salary_currency || 'NZD'} ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`
       : placeholders.notSpecified
 
-  return JOB_MATCHING_V2_USER_PROMPT.replace('{{jobTitle}}', job.title)
+  return userPromptTemplate.replace('{{jobTitle}}', job.title)
     .replace('{{company}}', job.company)
     .replace('{{jobLocation}}', job.location || placeholders.notSpecified)
     .replace('{{jobType}}', job.job_type || placeholders.notSpecified)
