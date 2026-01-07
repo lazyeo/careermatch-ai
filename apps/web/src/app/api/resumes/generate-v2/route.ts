@@ -20,7 +20,7 @@
 
 import { createClient } from '@/lib/supabase-server'
 import {
-  createAIClient,
+  createAICompletion,
   isAnyAIConfigured,
   getBestModel,
   getDefaultProvider,
@@ -292,10 +292,10 @@ export async function POST(request: NextRequest) {
       templateId: finalTemplateId,
       templateRecommendation: templateRecommendation
         ? {
-            templateId: templateRecommendation.templateId,
-            reason: templateRecommendation.reason,
-            confidence: templateRecommendation.confidence,
-          }
+          templateId: templateRecommendation.templateId,
+          reason: templateRecommendation.reason,
+          confidence: templateRecommendation.confidence,
+        }
         : undefined,
       qualityReport: {
         score: qualityReport.qualityScore,
@@ -444,13 +444,9 @@ async function enhanceWithAI(
   cvStrategy: CVStrategy,
   provider?: AIProviderType
 ): Promise<ResumeContent> {
-  const aiClient = createAIClient(provider)
-  const model = getBestModel(provider)
-
   const prompt = buildEnhancementPrompt(optimizedContent, job, analysis, cvStrategy)
 
-  const completion = await aiClient.chat.completions.create({
-    model,
+  const response = await createAICompletion({
     messages: [
       {
         role: 'system',
@@ -504,11 +500,10 @@ Return valid JSON with the exact input structure. All content must be in English
       },
     ],
     temperature: TEMPERATURE_PRESETS.ANALYTICAL,
-    max_tokens: 16384,
-    response_format: { type: 'json_object' },
-  })
+    maxTokens: 16384,
+  }, provider)
 
-  const responseText = completion.choices[0]?.message?.content
+  const responseText = response.content
   if (!responseText) {
     throw new Error('AI returned empty response')
   }
@@ -542,9 +537,9 @@ function buildEnhancementPrompt(
   // 构建重点权重说明
   const emphasisGuide = cvStrategy.emphasis
     ? Object.entries(cvStrategy.emphasis)
-        .sort(([, a], [, b]) => (b as number) - (a as number))
-        .map(([section, weight]) => `- ${section}: ${weight}% importance`)
-        .join('\n')
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .map(([section, weight]) => `- ${section}: ${weight}% importance`)
+      .join('\n')
     : ''
 
   return `

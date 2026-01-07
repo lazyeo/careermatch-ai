@@ -4,7 +4,7 @@
  * 使用AI从URL或文本内容中智能提取岗位信息
  */
 
-import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 import TurndownService from 'turndown'
 import {
   ParsedJobData,
@@ -260,22 +260,14 @@ export async function parseJobContent(
   content: string,
   config?: JobParserConfig
 ): Promise<ParsedJobData> {
-  const apiKey = config?.apiKey || process.env.CLAUDE_API_KEY
-  const baseUrl =
-    config?.baseUrl ||
-    process.env.CLAUDE_BASE_URL ||
-    'https://relay.a-dobe.club/api/v1'
+  const apiKey = config?.apiKey || process.env.ANTHROPIC_API_KEY
   const language = config?.language || 'zh'
 
   if (!apiKey) {
-    throw new Error('CLAUDE_API_KEY is not configured')
+    throw new Error('ANTHROPIC_API_KEY is not configured')
   }
 
-  const client = new OpenAI({
-    apiKey: apiKey,
-    baseURL: baseUrl,
-  })
-
+  const client = new Anthropic({ apiKey })
   const model = 'claude-sonnet-4-5-20250929'
 
   // Clean HTML aggressively to avoid token limits
@@ -337,19 +329,18 @@ export async function parseJobContent(
   console.log('🔍 Parsing job posting with AI...')
   console.log(`📊 Using model: ${model}, Language: ${language}`)
 
-  const response = await client.chat.completions.create({
+  const response = await client.messages.create({
     model,
+    max_tokens: 16000,
     messages: [
       {
         role: 'user',
         content: prompt,
       },
     ],
-    temperature: 0.1,
-    max_tokens: 16000,
   })
 
-  const responseText = response.choices[0]?.message?.content || ''
+  const responseText = response.content[0]?.type === 'text' ? response.content[0].text : ''
   console.log(`📝 AI response length: ${responseText.length}`)
 
   // 解析JSON

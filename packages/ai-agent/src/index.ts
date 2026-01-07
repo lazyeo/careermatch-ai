@@ -4,7 +4,7 @@
  * 根据用户Profile和岗位信息，生成个性化求职信
  */
 
-import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 
 // 用户资料接口
 export interface UserProfile {
@@ -117,19 +117,13 @@ const COVER_LETTER_PROMPT = `你是一位专业的求职顾问，擅长撰写个
 export async function generateCoverLetter(
   input: CoverLetterInput
 ): Promise<GeneratedCoverLetter> {
-  const apiKey = process.env.CLAUDE_API_KEY
-  const baseUrl =
-    process.env.CLAUDE_BASE_URL || 'https://relay.a-dobe.club/api/v1'
+  const apiKey = process.env.ANTHROPIC_API_KEY
 
   if (!apiKey) {
-    throw new Error('CLAUDE_API_KEY is not configured')
+    throw new Error('ANTHROPIC_API_KEY is not configured')
   }
 
-  const client = new OpenAI({
-    apiKey: apiKey,
-    baseURL: baseUrl,
-  })
-
+  const client = new Anthropic({ apiKey })
   const model = 'claude-sonnet-4-5-20250929'
 
   // 格式化工作经历
@@ -171,19 +165,18 @@ export async function generateCoverLetter(
   console.log('📝 Generating cover letter...')
   console.log(`📊 Using model: ${model}`)
 
-  const response = await client.chat.completions.create({
+  const response = await client.messages.create({
     model,
+    max_tokens: 2000,
     messages: [
       {
         role: 'user',
         content: prompt,
       },
     ],
-    temperature: 0.7, // 稍高的温度以增加创意
-    max_tokens: 2000,
   })
 
-  const responseText = response.choices[0]?.message?.content || ''
+  const responseText = response.content[0]?.type === 'text' ? response.content[0].text : ''
   console.log(`📝 AI response length: ${responseText.length}`)
 
   // 解析JSON

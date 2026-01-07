@@ -11,9 +11,10 @@
         "clean": "rm -rf dist .turbo node_modules"
     },
     "dependencies": {
-        "@careermatch/shared": "workspace:*",
+        "@anthropic-ai/sdk": "^0.71.2",
         "@careermatch/job-scraper": "workspace:*",
         "@careermatch/resume-parser": "workspace:*",
+        "@careermatch/shared": "workspace:*",
         "@supabase/supabase-js": "^2.39.0",
         "openai": "^4.104.0"
     },

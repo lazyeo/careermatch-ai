@@ -4,7 +4,7 @@
  * 使用AI从PDF/Word/Text文件中主动挖掘所有有价值的信息
  */
 
-import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 import type { ParsedResumeData, SkillLevel } from '@careermatch/shared'
 
 // 改进的解析Prompt - 主动挖掘所有有价值信息
@@ -168,20 +168,16 @@ export async function parseResumeContent(
     model?: string
   }
 ): Promise<ParsedResumeData> {
-  // 使用 CLAUDE_API_KEY 与其他AI功能保持一致
-  const apiKey = process.env.CLAUDE_API_KEY
-  const baseUrl = process.env.CLAUDE_BASE_URL || 'https://relay.a-dobe.club/api/v1'
+  // 使用 ANTHROPIC_API_KEY 与其他AI功能保持一致
+  const apiKey = process.env.ANTHROPIC_API_KEY
 
   if (!apiKey) {
-    throw new Error('CLAUDE_API_KEY is not configured. Please add it to your environment variables.')
+    throw new Error('ANTHROPIC_API_KEY is not configured. Please add it to your environment variables.')
   }
 
-  console.log('✓ Using CLAUDE_API_KEY:', apiKey.substring(0, 10) + '...')
+  console.log('✓ Using ANTHROPIC_API_KEY:', apiKey.substring(0, 10) + '...')
 
-  const client = new OpenAI({
-    apiKey: apiKey,
-    baseURL: baseUrl,
-  })
+  const client = new Anthropic({ apiKey })
 
   // 默认使用Claude Sonnet
   const model = options?.model || 'claude-sonnet-4-5-20250929'
@@ -203,19 +199,18 @@ export async function parseResumeContent(
   console.log(`📊 Using model: ${model}`)
   console.log(`📏 Content length: ${processedContent.length} chars`)
 
-  const response = await client.chat.completions.create({
+  const response = await client.messages.create({
     model,
+    max_tokens: 8000,
     messages: [
       {
         role: 'user',
         content: prompt,
       },
     ],
-    temperature: 0.1, // 低温度确保稳定输出
-    max_tokens: 8000,
   })
 
-  const responseText = response.choices[0]?.message?.content || ''
+  const responseText = response.content[0]?.type === 'text' ? response.content[0].text : ''
   console.log(`📝 AI response length: ${responseText.length}`)
 
   // 尝试解析JSON

@@ -1,16 +1,15 @@
 /**
  * Multi-AI Provider Configuration
  *
- * Supports multiple AI providers through relay service:
+ * Supports multiple AI providers:
  * - OpenAI (native)
- * - OpenAI Codex (via relay)
- * - Claude (via relay)
+ * - Claude (via Anthropic SDK - official API)
  * - Gemini (via relay)
- *
- * Based on claude-relay-service: https://github.com/Wei-Shaw/claude-relay-service
+ * - Codex (via relay)
  */
 
 import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 
 /**
  * AI Provider Types
@@ -91,15 +90,15 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
     claude: {
       name: 'Claude',
       type: 'claude',
-      apiKey: process.env.CLAUDE_API_KEY,
-      baseURL: process.env.CLAUDE_BASE_URL,
+      apiKey: process.env.ANTHROPIC_API_KEY,
+      baseURL: undefined, // Official API doesn't need baseURL
       models: {
-        best: 'claude-sonnet-4-5-20250929',  // Claude Sonnet 4.5 - fixed model
+        best: 'claude-sonnet-4-5-20250929',  // Claude Sonnet 4.5
         balanced: 'claude-sonnet-4-5-20250929',
         fast: 'claude-sonnet-4-5-20250929',
       },
-      isConfigured: !!(process.env.CLAUDE_API_KEY && process.env.CLAUDE_BASE_URL),
-      displayName: 'Claude Sonnet 4.5 (Relay)',
+      isConfigured: !!process.env.ANTHROPIC_API_KEY,
+      displayName: 'Claude Sonnet 4.5',
       icon: '🧠',
     },
     gemini: {
@@ -162,13 +161,29 @@ export function getDefaultProvider(): AIProviderConfig | null {
 }
 
 /**
- * Create OpenAI-compatible client for a specific provider
+ * Create Anthropic client for Claude (official API)
+ */
+export function createAnthropicClient(): Anthropic {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY is not configured. Please add it to your environment variables.')
+  }
+  console.log('🧠 Using Claude via Anthropic SDK (official API)')
+  return new Anthropic({ apiKey })
+}
+
+/**
+ * Create OpenAI-compatible client for non-Claude providers
  */
 export function createAIClient(providerType?: AIProviderType): OpenAI {
   const providers = getAIProviders()
   let provider: AIProviderConfig
 
   if (providerType) {
+    // For Claude, throw an error directing to use createAnthropicClient
+    if (providerType === 'claude') {
+      throw new Error('For Claude, use createAnthropicClient() instead of createAIClient()')
+    }
     provider = providers[providerType]
     if (!provider.isConfigured) {
       throw new Error(`AI Provider "${providerType}" is not configured`)
@@ -177,6 +192,10 @@ export function createAIClient(providerType?: AIProviderType): OpenAI {
     const defaultProvider = getDefaultProvider()
     if (!defaultProvider) {
       throw new Error('No AI provider is configured. Please add API keys to .env.local')
+    }
+    // If default is Claude, throw error
+    if (defaultProvider.type === 'claude') {
+      throw new Error('Default provider is Claude. Use createAnthropicClient() instead.')
     }
     provider = defaultProvider
   }
@@ -264,3 +283,114 @@ export function handleAIError(error: unknown, providerType?: AIProviderType): ne
     error
   )
 }
+
+/**
+ * Unified message format for AI calls
+ */
+export interface AIMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
+/**
+ * Unified AI completion options
+ */
+export interface AICompletionOptions {
+  model?: string
+  messages: AIMessage[]
+  temperature?: number
+  maxTokens?: number
+}
+
+/**
+ * Unified AI completion response
+ */
+export interface AICompletionResponse {
+  content: string
+  model: string
+  provider: AIProviderType
+}
+
+/**
+ * Create a unified AI completion - automatically handles OpenAI vs Anthropic SDK
+ * This is the recommended way to call AI APIs regardless of provider
+ */
+export async function createAICompletion(
+  options: AICompletionOptions,
+  providerType?: AIProviderType
+): Promise<AICompletionResponse> {
+  const defaultProvider = getDefaultProvider()
+  const provider = providerType
+    ? getProviderConfig(providerType)
+    : defaultProvider
+
+  if (!provider || !provider.isConfigured) {
+    throw new AIProviderError(
+      'No AI provider is configured. Please add API keys to .env.local'
+    )
+  }
+
+  const model = options.model || provider.models.best
+  const temperature = options.temperature ?? TEMPERATURE_PRESETS.BALANCED
+  const maxTokens = options.maxTokens || 8192
+
+  // For Claude, use Anthropic SDK
+  if (provider.type === 'claude') {
+    const client = createAnthropicClient()
+
+    // Anthropic API has different message format:
+    // - system message is a separate parameter
+    // - only user/assistant roles in messages array
+    const systemMessage = options.messages.find((m) => m.role === 'system')
+    const nonSystemMessages = options.messages.filter((m) => m.role !== 'system')
+
+    console.log(`🧠 Calling Claude (${model}) via Anthropic SDK...`)
+
+    const response = await client.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system: systemMessage?.content,
+      messages: nonSystemMessages.map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+      })),
+    })
+
+    const content = response.content[0]?.type === 'text'
+      ? response.content[0].text
+      : ''
+
+    return {
+      content,
+      model,
+      provider: 'claude',
+    }
+  }
+
+  // For other providers, use OpenAI SDK
+  const client = new OpenAI({
+    apiKey: provider.apiKey || 'dummy-key',
+    baseURL: provider.baseURL,
+  })
+
+  console.log(`🤖 Calling ${provider.displayName} (${model}) via OpenAI SDK...`)
+
+  const completion = await client.chat.completions.create({
+    model,
+    messages: options.messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    })),
+    temperature,
+    max_tokens: maxTokens,
+  })
+
+  const content = completion.choices[0]?.message?.content || ''
+
+  return {
+    content,
+    model,
+    provider: provider.type,
+  }
+}
+

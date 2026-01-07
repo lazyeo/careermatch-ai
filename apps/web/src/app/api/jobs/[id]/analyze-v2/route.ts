@@ -17,7 +17,7 @@
 
 import { createClient } from '@/lib/supabase-server'
 import {
-  createAIClient,
+  createAICompletion,
   isAnyAIConfigured,
   getBestModel,
   getDefaultProvider,
@@ -378,14 +378,14 @@ function buildProfileFromResume(resume: Record<string, unknown>): {
     workExperience: ((content.workExperience as unknown[]) ||
       (content.work_experience as unknown[]) ||
       []) as Array<{
-      company: string
-      position: string
-      startDate: string
-      endDate?: string
-      isCurrent?: boolean
-      description?: string
-      achievements?: string[]
-    }>,
+        company: string
+        position: string
+        startDate: string
+        endDate?: string
+        isCurrent?: boolean
+        description?: string
+        achievements?: string[]
+      }>,
     education: ((content.education as unknown[]) || []) as Array<{
       institution: string
       degree: string
@@ -487,12 +487,8 @@ async function perform8DimensionAnalysis(
       profile: profileData,
     }, locale || 'zh')
 
-    // 调用AI
-    const aiClient = createAIClient(provider)
-    const model = getBestModel(provider)
-
-    const completion = await aiClient.chat.completions.create({
-      model,
+    // 调用AI使用统一接口
+    const response = await createAICompletion({
       messages: [
         {
           role: 'system',
@@ -504,10 +500,10 @@ async function perform8DimensionAnalysis(
         },
       ],
       temperature: TEMPERATURE_PRESETS.BALANCED,
-      max_tokens: 16384, // V2需要更多token
-    })
+      maxTokens: 16384, // V2需要更多token
+    }, provider)
 
-    const responseText = completion.choices[0].message.content
+    const responseText = response.content
     if (!responseText) {
       throw new Error('AI provider returned empty response')
     }

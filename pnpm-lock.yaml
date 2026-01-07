@@ -93,6 +93,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.71.2
+        version: 0.71.2(zod@3.25.76)
       '@careermatch/ai-agent':
         specifier: workspace:*
         version: link:../../packages/ai-agent
@@ -217,6 +220,9 @@ importers:
 
   packages/ai-agent:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.71.2
+        version: 0.71.2(zod@3.25.76)
       '@careermatch/job-scraper':
         specifier: workspace:*
         version: link:../job-scraper
@@ -248,6 +254,9 @@ importers:
 
   packages/job-scraper:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.71.2
+        version: 0.71.2(zod@3.25.76)
       '@careermatch/shared':
         specifier: workspace:*
         version: link:../shared
@@ -273,6 +282,9 @@ importers:
 
   packages/resume-parser:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.71.2
+        version: 0.71.2(zod@3.25.76)
       '@careermatch/shared':
         specifier: workspace:*
         version: link:../shared
@@ -383,6 +395,19 @@ packages:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
+    dev: false
+
+  /@anthropic-ai/sdk@0.71.2(zod@3.25.76):
+    resolution: {integrity: sha512-TGNDEUuEstk/DKu0/TflXAEt+p+p/WhTlFzEnoosvbaDU2LTjm42igSdlL0VijrKpWejtOKxX0b8A7uc+XiSAQ==}
+    hasBin: true
+    peerDependencies:
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+    dependencies:
+      json-schema-to-ts: 3.1.1
+      zod: 3.25.76
     dev: false
 
   /@babel/code-frame@7.27.1:

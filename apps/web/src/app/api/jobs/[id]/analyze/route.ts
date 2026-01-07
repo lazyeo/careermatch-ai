@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
 import {
-  createAIClient,
+  createAICompletion,
   isAnyAIConfigured,
   getBestModel,
   getDefaultProvider,
@@ -238,12 +238,8 @@ async function performFlexibleAnalysis(
   try {
     const prompt = buildFlexiblePrompt(job, resume)
 
-    // Create AI client
-    const aiClient = createAIClient(provider)
-    const model = getBestModel(provider)
-
-    const completion = await aiClient.chat.completions.create({
-      model,
+    // Call AI using unified interface
+    const response = await createAICompletion({
       messages: [
         {
           role: 'system',
@@ -267,11 +263,10 @@ async function performFlexibleAnalysis(
         },
       ],
       temperature: TEMPERATURE_PRESETS.BALANCED,
-      max_tokens: 8192, // Allow longer responses to prevent truncation
-      // Note: Not using response_format: json_object to allow delimiter format
-    })
+      maxTokens: 8192,
+    }, provider)
 
-    const responseText = completion.choices[0].message.content
+    const responseText = response.content
     if (!responseText) {
       throw new Error('AI provider returned empty response')
     }
@@ -640,8 +635,8 @@ function parseDelimiterFormat(responseText: string): AIAnalysisOutput | null {
   const recMatch = responseText.match(/---RECOMMENDATION---\s*(strong|moderate|weak|not_recommended)/i)
   const recommendation = (recMatch ? recMatch[1] :
     score >= 85 ? 'strong' :
-    score >= 65 ? 'moderate' :
-    score >= 40 ? 'weak' : 'not_recommended') as AnalysisRecommendation
+      score >= 65 ? 'moderate' :
+        score >= 40 ? 'weak' : 'not_recommended') as AnalysisRecommendation
 
   // Extract analysis - everything between ---ANALYSIS--- and ---END--- (or end of string)
   const analysisMatch = responseText.match(/---ANALYSIS---\s*([\s\S]*?)(?:---END---|$)/i)
