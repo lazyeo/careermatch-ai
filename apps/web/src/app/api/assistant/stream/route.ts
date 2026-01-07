@@ -9,10 +9,9 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import {
-  createAIClient,
+  createAnthropicClient,
   isAnyAIConfigured,
   getBestModel,
-  TEMPERATURE_PRESETS,
 } from '@/lib/ai-providers'
 import {
   ASSISTANT_CHAT_SYSTEM_PROMPT,
@@ -100,27 +99,22 @@ ${message}
 - 建议问题2
 ---END---`
 
-    // 创建AI客户端和流式请求
-    const aiClient = createAIClient()
-    const model = getBestModel()
+    // 创建 Anthropic 客户端和流式请求
+    const client = createAnthropicClient()
+    const model = getBestModel('claude')
 
     console.log(`📊 Using model: ${model}`)
 
-    const stream = await aiClient.chat.completions.create({
+    const stream = await client.messages.stream({
       model,
+      max_tokens: 2000,
+      system: ASSISTANT_CHAT_SYSTEM_PROMPT,
       messages: [
-        {
-          role: 'system',
-          content: ASSISTANT_CHAT_SYSTEM_PROMPT,
-        },
         {
           role: 'user',
           content: userPrompt,
         },
       ],
-      temperature: TEMPERATURE_PRESETS.CONVERSATIONAL,
-      max_tokens: 2000,
-      stream: true,
     })
 
     // 创建SSE响应
@@ -131,21 +125,23 @@ ${message}
         try {
           let fullContent = ''
 
-          for await (const chunk of stream) {
-            const delta = chunk.choices[0]?.delta?.content || ''
-            if (delta) {
-              fullContent += delta
+          for await (const event of stream) {
+            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+              const delta = event.delta.text
+              if (delta) {
+                fullContent += delta
 
-              // 发送SSE事件
-              const sseData = JSON.stringify({
-                type: 'content',
-                data: delta,
-              })
-              controller.enqueue(encoder.encode(`data: ${sseData}\n\n`))
+                // 发送SSE事件
+                const sseData = JSON.stringify({
+                  type: 'content',
+                  data: delta,
+                })
+                controller.enqueue(encoder.encode(`data: ${sseData}\n\n`))
+              }
             }
 
             // 检查是否结束
-            if (chunk.choices[0]?.finish_reason === 'stop') {
+            if (event.type === 'message_stop') {
               // 解析建议（如果有）
               const suggestions = extractSuggestions(fullContent)
               const cleanContent = removeSuggestionsSection(fullContent)
