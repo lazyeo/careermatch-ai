@@ -200,26 +200,37 @@ export async function POST(
     }, language)
 
     // 10. 创建AI流式请求
-    const aiClient = createAIClient(provider)
+    const aiProviderType = provider || getDefaultProvider()?.type || 'openai'
     const systemPrompt = getJobMatchingV2SystemPrompt(language)
     console.log(`🌐 Using language: ${language}`)
 
-    const stream = await aiClient.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
-      temperature: TEMPERATURE_PRESETS.BALANCED,
-      max_tokens: 16384,
-      stream: true,
-    })
+    let stream: any
+
+    if (aiProviderType === 'claude') {
+      const { createAnthropicClient } = await import('@/lib/ai-providers')
+      const client = createAnthropicClient()
+
+      stream = await client.messages.create({
+        model: model,
+        max_tokens: 4096, // Anthropic max tokens
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
+        stream: true,
+      })
+    } else {
+      const aiClient = createAIClient(provider)
+
+      stream = await aiClient.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: TEMPERATURE_PRESETS.BALANCED,
+        max_tokens: 16384,
+        stream: true,
+      })
+    }
 
     // 11. 创建流式响应
     const encoder = new TextEncoder()
@@ -229,7 +240,18 @@ export async function POST(
       async start(controller) {
         try {
           for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || ''
+            let content = ''
+
+            // Handle different stream formats
+            if (aiProviderType === 'claude') {
+              if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+                content = chunk.delta.text
+              }
+            } else {
+              // OpenAI format
+              content = chunk.choices?.[0]?.delta?.content || ''
+            }
+
             if (content) {
               fullResponse += content
 

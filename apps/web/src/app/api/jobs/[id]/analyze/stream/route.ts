@@ -19,9 +19,10 @@ import type { AnalysisRecommendation } from '@careermatch/shared'
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: jobId } = await params
     const supabase = await createClient()
 
     // Check authentication
@@ -67,7 +68,7 @@ export async function POST(
       supabase
         .from('jobs')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', jobId)
         .eq('user_id', user.id)
         .single(),
       isJobSummary
@@ -111,9 +112,6 @@ export async function POST(
     const prompt = isJobSummary
       ? buildJobSummaryPrompt(job, locale)
       : buildFlexiblePrompt(job, resume!, locale)
-
-    // Create AI client and stream
-    const aiClient = createAIClient(provider)
 
     let systemPrompt = ''
 
@@ -163,22 +161,33 @@ This format allows you to freely use any Markdown syntax, including quotes, code
       }
     }
 
-    const stream = await aiClient.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: TEMPERATURE_PRESETS.BALANCED,
-      max_tokens: 8192,
-      stream: true,
-    })
+    // Create AI client and stream
+    let stream: any
+
+    if (providerName === 'claude') {
+      const { createAnthropicClient } = await import('@/lib/ai-providers')
+      const client = createAnthropicClient()
+
+      stream = await client.messages.create({
+        model: model,
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: prompt }],
+        stream: true,
+      })
+    } else {
+      const aiClient = createAIClient(provider)
+      stream = await aiClient.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt },
+        ],
+        temperature: TEMPERATURE_PRESETS.BALANCED,
+        max_tokens: 8192,
+        stream: true,
+      })
+    }
 
     // Create a TransformStream to process the chunks
     const encoder = new TextEncoder()
@@ -190,7 +199,18 @@ This format allows you to freely use any Markdown syntax, including quotes, code
       async start(controller) {
         try {
           for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || ''
+            let content = ''
+
+            // Handle different stream formats
+            if (providerName === 'claude') {
+              if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+                content = chunk.delta.text
+              }
+            } else {
+              // OpenAI format
+              content = chunk.choices?.[0]?.delta?.content || ''
+            }
+
             if (content) {
               fullResponse += content
 
@@ -214,7 +234,7 @@ This format allows you to freely use any Markdown syntax, including quotes, code
             const { data: savedSession, error: saveError } = await supabase
               .from('analysis_sessions')
               .insert({
-                job_id: params.id,
+                job_id: jobId,
                 resume_id: resumeId!,
                 user_id: user.id,
                 status: 'active',
@@ -251,7 +271,7 @@ This format allows you to freely use any Markdown syntax, including quotes, code
             const { error: updateError } = await supabase
               .from('jobs')
               .update({ ai_analysis: fullResponse })
-              .eq('id', params.id)
+              .eq('id', jobId)
               .eq('user_id', user.id)
 
             if (updateError) {
