@@ -204,6 +204,7 @@ export async function POST(
     const systemPrompt = getJobMatchingV2SystemPrompt(language)
     console.log(`🌐 Using language: ${language}`)
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let stream: any
 
     if (aiProviderType === 'claude') {

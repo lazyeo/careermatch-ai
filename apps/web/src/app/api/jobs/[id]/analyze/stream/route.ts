@@ -162,6 +162,7 @@ This format allows you to freely use any Markdown syntax, including quotes, code
     }
 
     // Create AI client and stream
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let stream: any
 
     if (providerName === 'claude') {
