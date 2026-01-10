@@ -150,22 +150,27 @@ export async function POST(request: NextRequest) {
     }
 
     // 使用AI解析简历
+    let parsedData
+    let updatedRecord
     try {
-      const parsedData = await parseResumeContent(textContent)
+      parsedData = await parseResumeContent(textContent)
 
       // 更新记录为完成状态
-      const { data: updatedRecord, error: updateError } = await supabase
+      const result = await supabase
         .from('resume_uploads')
         .update({
           status: 'completed',
           parsed_data: parsedData,
           ai_provider: 'claude',
-          ai_model: 'claude-sonnet-4-5-20250929',
+          ai_model: 'claude-3-5-sonnet-20241022',
           processed_at: new Date().toISOString(),
         })
         .eq('id', uploadRecord.id)
         .select()
         .single()
+
+      updatedRecord = result.data
+      const updateError = result.error
 
       if (updateError) {
         console.error('Error updating upload record:', updateError)
@@ -178,13 +183,13 @@ export async function POST(request: NextRequest) {
       // 5. Sync to Profile & Agent Memory
       try {
         // Initialize services
-        // Note: We reuse the API keys from env
-        const apiKey = process.env.CLAUDE_API_KEY || process.env.OPENAI_API_KEY
-        const baseUrl = process.env.CLAUDE_BASE_URL || process.env.OPENAI_BASE_URL
+        // Note: Agent needs separate keys now
+        const anthropicApiKey = process.env.ANTHROPIC_API_KEY
+        const openaiApiKey = process.env.OPENAI_API_KEY
 
-        if (apiKey) {
+        if (anthropicApiKey && openaiApiKey) {
           const { MemoryManager, ResumeSyncService } = await import('@careermatch/ai-agent')
-          const memoryManager = new MemoryManager(supabase, apiKey, baseUrl)
+          const memoryManager = new MemoryManager(supabase, openaiApiKey)
           const syncService = new ResumeSyncService(supabase, memoryManager)
 
           await syncService.syncResumeToProfile(user.id, parsedData)
@@ -200,6 +205,7 @@ export async function POST(request: NextRequest) {
         parsed_data: parsedData,
         file_name: file.name,
       }, { status: 201 })
+
     } catch (parseError) {
       console.error('❌ Error parsing resume:', parseError)
       console.error('❌ Parse error stack:', (parseError as Error)?.stack)

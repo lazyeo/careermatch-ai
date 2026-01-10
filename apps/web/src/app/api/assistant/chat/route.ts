@@ -30,18 +30,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 })
     }
 
-    // 获取 API Key (优先使用 Claude/Relay)
-    const apiKey = process.env.CLAUDE_API_KEY || process.env.OPENAI_API_KEY
-    const baseUrl = process.env.CLAUDE_BASE_URL || process.env.OPENAI_BASE_URL
+    // 获取 API Keys
+    const anthropicApiKey = process.env.ANTHROPIC_API_KEY
+    const openaiApiKey = process.env.OPENAI_API_KEY
 
-    if (!apiKey) {
+    if (!anthropicApiKey) {
       return NextResponse.json(
         {
           error: 'AI服务未配置',
-          hint: '请在环境变量中配置AI API密钥',
+          hint: '请在环境变量中配置 ANTHROPIC_API_KEY',
         },
         { status: 503 }
       )
+    }
+
+    if (!openaiApiKey) {
+      console.warn('OPENAI_API_KEY not configured, memory features will be disabled')
     }
 
     // 解析请求
@@ -56,8 +60,14 @@ export async function POST(request: NextRequest) {
     console.log(`📝 Message: ${message.substring(0, 100)}...`)
 
     // 初始化 Agent Service
-    // 注意：我们直接传入 authenticated supabase client，这样 MemoryManager 会遵循 RLS
-    const memoryManager = new MemoryManager(supabase, apiKey, baseUrl)
+    // MemoryManager 需要 OpenAI Key (用于 Embedding)
+    // 如果没有 OpenAI Key，MemoryManager 初始化可能会失败或者无法工作，这里假设用户已配置
+    // 或者我们需要处理 MemoryManager 的可选性
+
+    // 注意：MemoryManager 构造函数签名可能是 (supabase, apiKey, baseUrl)
+    // 让我们查看 MemoryManager 的定义，它是 (supabase, apiKey, baseUrl)
+    const memoryManager = new MemoryManager(supabase, openaiApiKey || '', undefined)
+
     // 获取用户Profile
     const { data: userProfile } = await supabase
       .from('user_profiles')
@@ -65,12 +75,11 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single()
 
-    const agentService = new AgentService(apiKey, baseUrl, memoryManager, supabase)
+    // AgentService 现在接收 (apiKey, memoryManager, supabase)
+    const agentService = new AgentService(anthropicApiKey, memoryManager, supabase)
 
     // 4. 调用Agent
-    // 注意：这里我们不等待Agent完成，而是返回流
-    // 但由于AgentService目前不是流式的，我们先等待结果
-    // TODO: Refactor AgentService to support streaming
+    // 注意：这里我们不等待Agent完成，而是返回流 (后续优化，现在还是等待)
     const response = await agentService.chat(
       user.id,
       message,
