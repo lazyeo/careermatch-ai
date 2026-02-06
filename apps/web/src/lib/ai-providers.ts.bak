@@ -90,15 +90,15 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
     claude: {
       name: 'Claude',
       type: 'claude',
-      apiKey: process.env.AI_RELAY_API_KEY,
-      baseURL: process.env.AI_RELAY_BASE_URL || 'https://relay.a-dobe.club',
+      apiKey: process.env.ANTHROPIC_API_KEY,
+      baseURL: undefined, // Official API doesn't need baseURL
       models: {
-        best: 'claude-sonnet-4-5-thinking',
-        balanced: 'claude-sonnet-4-5-thinking',
-        fast: 'claude-sonnet-4-5-thinking',
+        best: 'claude-sonnet-4-5-20250929',  // Claude Sonnet 4.5
+        balanced: 'claude-sonnet-4-5-20250929',
+        fast: 'claude-sonnet-4-5-20250929',
       },
-      isConfigured: !!process.env.AI_RELAY_API_KEY,
-      displayName: 'Claude Sonnet 4.5 (Relay)',
+      isConfigured: !!process.env.ANTHROPIC_API_KEY,
+      displayName: 'Claude Sonnet 4.5',
       icon: '🧠',
     },
     gemini: {
@@ -161,21 +161,15 @@ export function getDefaultProvider(): AIProviderConfig | null {
 }
 
 /**
- * Create Anthropic client for Claude (via relay)
+ * Create Anthropic client for Claude (official API)
  */
 export function createAnthropicClient(): Anthropic {
-  const baseURL = process.env.AI_RELAY_BASE_URL || 'https://relay.a-dobe.club'
-  const apiKey = process.env.AI_RELAY_API_KEY || ''
-  
+  const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    throw new Error('AI_RELAY_API_KEY is not configured. Please add it to your environment variables.')
+    throw new Error('ANTHROPIC_API_KEY is not configured. Please add it to your environment variables.')
   }
-  
-  console.log(`🧠 Using Claude via relay (${baseURL})`)
-  return new Anthropic({ 
-    baseURL,
-    apiKey 
-  })
+  console.log('🧠 Using Claude via Anthropic SDK (official API)')
+  return new Anthropic({ apiKey })
 }
 
 /**
@@ -400,6 +394,3 @@ export async function createAICompletion(
   }
 }
 
-
-// Default model for AI completions
-export const DEFAULT_MODEL = 'claude-sonnet-4-5-thinking'
