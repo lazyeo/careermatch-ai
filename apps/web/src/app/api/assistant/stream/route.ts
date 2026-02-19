@@ -9,9 +9,10 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import {
-  createAnthropicClient,
+  createAIClient,
   isAnyAIConfigured,
   getBestModel,
+  getDefaultProvider
 } from '@/lib/ai-providers'
 import {
   ASSISTANT_CHAT_SYSTEM_PROMPT,
@@ -99,22 +100,21 @@ ${message}
 - 建议问题2
 ---END---`
 
-    // 创建 Anthropic 客户端和流式请求
-    const client = createAnthropicClient()
-    const model = getBestModel('claude')
+    // 创建 AI 客户端和流式请求
+    const provider = getDefaultProvider()?.type || 'gemini'
+    const aiClient = createAIClient(provider)
+    const model = getBestModel(provider)
 
     console.log(`📊 Using model: ${model}`)
 
-    const stream = await client.messages.stream({
+    const stream = await aiClient.chat.completions.create({
       model,
       max_tokens: 2000,
-      system: ASSISTANT_CHAT_SYSTEM_PROMPT,
       messages: [
-        {
-          role: 'user',
-          content: userPrompt,
-        },
+        { role: 'system', content: ASSISTANT_CHAT_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
       ],
+      stream: true,
     })
 
     // 创建SSE响应
@@ -126,42 +126,37 @@ ${message}
           let fullContent = ''
 
           for await (const event of stream) {
-            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-              const delta = event.delta.text
-              if (delta) {
-                fullContent += delta
+            const delta = event.choices?.[0]?.delta?.content || ''
+            if (delta) {
+              fullContent += delta
 
-                // 发送SSE事件
-                const sseData = JSON.stringify({
-                  type: 'content',
-                  data: delta,
-                })
-                controller.enqueue(encoder.encode(`data: ${sseData}\n\n`))
-              }
-            }
-
-            // 检查是否结束
-            if (event.type === 'message_stop') {
-              // 解析建议（如果有）
-              const suggestions = extractSuggestions(fullContent)
-              const cleanContent = removeSuggestionsSection(fullContent)
-
-              // 发送完成事件
-              const doneData = JSON.stringify({
-                type: 'done',
-                data: {
-                  content: cleanContent,
-                  suggestions,
-                  metadata: {
-                    model,
-                    totalLength: cleanContent.length,
-                  },
-                },
+              // 发送SSE事件
+              const sseData = JSON.stringify({
+                type: 'content',
+                data: delta,
               })
-              controller.enqueue(encoder.encode(`data: ${doneData}\n\n`))
+              controller.enqueue(encoder.encode(`data: ${sseData}\n\n`))
             }
           }
 
+          // 流式传输完成
+          // 解析建议（如果有）
+          const suggestions = extractSuggestions(fullContent)
+          const cleanContent = removeSuggestionsSection(fullContent)
+
+          // 发送完成事件
+          const doneData = JSON.stringify({
+            type: 'done',
+            data: {
+              content: cleanContent,
+              suggestions,
+              metadata: {
+                model,
+                totalLength: cleanContent.length,
+              },
+            },
+          })
+          controller.enqueue(encoder.encode(`data: ${doneData}\n\n`))
           controller.close()
         } catch (error) {
           console.error('Stream error:', error)

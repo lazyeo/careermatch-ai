@@ -105,15 +105,15 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
       name: 'Gemini',
       type: 'gemini',
       apiKey: process.env.GEMINI_API_KEY,
-      baseURL: process.env.GEMINI_BASE_URL,
+      baseURL: process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai/',
       models: {
-        best: 'gemini-2.0-flash-exp',
-        balanced: 'gemini-2.0-flash-exp',
-        fast: 'gemini-2.0-flash-exp',
+        best: 'gemini-3-flash-preview',
+        balanced: 'gemini-3-flash-preview',
+        fast: 'gemini-3-flash-preview',
       },
-      isConfigured: !!(process.env.GEMINI_API_KEY && process.env.GEMINI_BASE_URL),
-      displayName: 'Gemini 2.0 Flash (Relay)',
-      icon: '💎',
+      isConfigured: !!(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== ''),
+      displayName: 'Gemini Flash 3',
+      icon: '',
     },
   }
 }
@@ -128,32 +128,32 @@ export function getAvailableProviders(): AIProviderConfig[] {
 
 /**
  * Get the default provider to use
- * Priority: claude > openai > gemini > codex
+ * Priority: gemini > claude > openai > codex
  */
 export function getDefaultProvider(): AIProviderConfig | null {
-  // Prioritize Claude
+  // Prioritize Gemini
+  const geminiConfig = getProviderConfig('gemini')
+  if (geminiConfig.isConfigured) {
+    console.log('[AI] Using Gemini as default provider')
+    return geminiConfig
+  }
+
+  // Fallback order: Claude > OpenAI > Codex
   const claudeConfig = getProviderConfig('claude')
   if (claudeConfig.isConfigured) {
-    console.log('🧠 Using Claude as default provider')
+    console.log('[AI] Using Claude as fallback provider')
     return claudeConfig
   }
 
-  // Fallback order: OpenAI > Gemini > Codex
   const openaiConfig = getProviderConfig('openai')
   if (openaiConfig.isConfigured) {
-    console.log('🤖 Using OpenAI as fallback provider')
+    console.log('[AI] Using OpenAI as fallback provider')
     return openaiConfig
-  }
-
-  const geminiConfig = getProviderConfig('gemini')
-  if (geminiConfig.isConfigured) {
-    console.log('💎 Using Gemini as fallback provider')
-    return geminiConfig
   }
 
   const codexConfig = getProviderConfig('codex')
   if (codexConfig.isConfigured) {
-    console.log('🔧 Using Codex as fallback provider')
+    console.log('[AI] Using Codex as fallback provider')
     return codexConfig
   }
 
@@ -166,15 +166,15 @@ export function getDefaultProvider(): AIProviderConfig | null {
 export function createAnthropicClient(): Anthropic {
   const baseURL = process.env.AI_RELAY_BASE_URL || 'https://relay.a-dobe.club'
   const apiKey = process.env.AI_RELAY_API_KEY || ''
-  
+
   if (!apiKey) {
     throw new Error('AI_RELAY_API_KEY is not configured. Please add it to your environment variables.')
   }
-  
+
   console.log(`🧠 Using Claude via relay (${baseURL})`)
-  return new Anthropic({ 
+  return new Anthropic({
     baseURL,
-    apiKey 
+    apiKey
   })
 }
 
@@ -402,4 +402,4 @@ export async function createAICompletion(
 
 
 // Default model for AI completions
-export const DEFAULT_MODEL = 'claude-sonnet-4-5-thinking'
+export const DEFAULT_MODEL = 'gemini-3-flash-preview'
