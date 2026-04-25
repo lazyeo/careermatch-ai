@@ -2,7 +2,7 @@
 
 import { useState, useEffect, ReactNode } from 'react'
 import { Card, CardContent } from '@careermatch/ui'
-import { FileText, Sparkles } from 'lucide-react'
+import { FileText, PanelTop } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -24,13 +24,13 @@ export function JobDetailTabs({ original, aiInsights }: JobDetailTabsProps) {
     const tabs: { id: TabType; label: string; icon: ReactNode }[] = [
         {
             id: 'original',
-            label: '原始招聘文案',
+            label: '岗位原文',
             icon: mounted ? <FileText className="w-4 h-4" /> : <div className="w-4 h-4" />
         },
         {
             id: 'ai-insights',
-            label: 'AI 智能助手',
-            icon: mounted ? <Sparkles className="w-4 h-4" /> : <div className="w-4 h-4" />
+            label: '决策面板',
+            icon: mounted ? <PanelTop className="w-4 h-4" /> : <div className="w-4 h-4" />
         },
     ]
 

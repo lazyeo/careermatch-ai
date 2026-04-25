@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
-import { Sparkles, Loader2, User, FileText, Zap, RefreshCw, Palette } from 'lucide-react'
+import { Sparkles, Loader2, RefreshCw, Palette } from 'lucide-react'
 import { DimensionsDisplay } from './DimensionsDisplay'
 import { ScoreCard } from './ScoreCard'
 import { MarkdownAnalysis } from './MarkdownAnalysis'
@@ -261,63 +261,45 @@ export function AnalysisV2({
     }
   }
 
-  // 初始状态
   if (state === 'idle') {
     return (
       <div className="space-y-6">
-
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center mb-8">
-              <div className="relative w-16 h-16 mx-auto mb-4">
-                <User className="w-16 h-16 text-indigo-200" />
-                <Sparkles className="w-6 h-6 text-indigo-600 absolute -right-1 -bottom-1" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t('v2.title')}
-              </h3>
-              <p className="text-sm text-gray-600 max-w-md mx-auto">
-                {t('v2.description')}
+        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-gray-100 pb-5 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-sm font-medium text-gray-500">Analysis workspace</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-gray-950">
+                深度分析只回答一件事：这份岗位为什么值得继续投入
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                详情页里的岗位点评负责快速判断；这里负责完整证据链，包括匹配分、关键要求、风险、简历策略和面试准备。
               </p>
             </div>
+            <Button variant="primary" onClick={() => startAnalysis(false)} className="md:min-w-[160px] justify-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              {t('v2.startButton')}
+            </Button>
+          </div>
 
-            {/* 功能亮点 */}
-            <div className="grid md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-8">
-              <FeatureItem
-                icon={<Zap className="w-5 h-5" />}
-                title={t('v2.features.cvStrategy')}
-                desc={t('v2.features.cvStrategyDesc')}
-              />
-              <FeatureItem
-                icon={<FileText className="w-5 h-5" />}
-                title={t('v2.features.keywordMatch')}
-                desc={t('v2.features.keywordMatchDesc')}
-              />
-              <FeatureItem
-                icon={<User className="w-5 h-5" />}
-                title={t('v2.features.swotAnalysis')}
-                desc={t('v2.features.swotAnalysisDesc')}
-              />
-              <FeatureItem
-                icon={<Sparkles className="w-5 h-5" />}
-                title={t('v2.features.interviewPrep')}
-                desc={t('v2.features.interviewPrepDesc')}
-              />
-            </div>
-
-            {/* 开始按钮 */}
-            <div className="text-center">
-              <Button
-                variant="primary"
-                onClick={() => startAnalysis(false)}
-                className="gap-2"
-              >
-                <Sparkles className="w-4 h-4" />
-                {t('v2.startButton')}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="mt-5 grid gap-4 md:grid-cols-4">
+            <AnalysisScopeCard
+              title="快速判断"
+              desc="先给出匹配度和推荐等级，帮助你决定是否继续。"
+            />
+            <AnalysisScopeCard
+              title="证据拆解"
+              desc="把岗位要求、关键词和主要风险拆开，而不是只给一句总结。"
+            />
+            <AnalysisScopeCard
+              title="材料策略"
+              desc="给出简历改写重点和模板方向，减少后续反复试错。"
+            />
+            <AnalysisScopeCard
+              title="面试准备"
+              desc="把后续准备动作留在同一页，不再分散到多个工具面板。"
+            />
+          </div>
+        </section>
       </div>
     )
   }
@@ -417,72 +399,89 @@ export function AnalysisV2({
     )
   }
 
-  // 完成状态
   return (
     <div className="space-y-6">
-
-      {/* 分析类型标识 */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-medium">
-            <Zap className="w-3 h-3" />
-            {t('v2.badge')}
-          </span>
-          <span className="text-xs text-gray-500">
-            {t('v2.providedBy')} {result?.provider?.toUpperCase()} · {result?.model}
-          </span>
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-gray-100 pb-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500">Analysis result</p>
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-gray-950">
+              详细分析负责证据链，岗位点评只负责快速摘要
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-600">
+              如果你已经在详情页看过岗位点评，这里应该继续向下回答：分数从哪里来、主要短板是什么、简历和面试要怎么调整。
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+              <Sparkles className="h-3 w-3" />
+              {t('v2.badge')}
+            </span>
+            <span className="text-xs text-gray-500">
+              {t('v2.providedBy')} {result?.provider?.toUpperCase()} · {result?.model}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* 评分卡 */}
-      {result && (
-        <ScoreCard
-          score={result.score}
-          recommendation={result.recommendation}
-        />
-      )}
+        {result && (
+          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+            <div className="space-y-6">
+              <ScoreCard
+                score={result.score}
+                recommendation={result.recommendation}
+              />
 
-      {/* 8维度分析展示 */}
+              {result?.analysis && (
+                <Card className="border-gray-200 shadow-none">
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      结论与建议
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <MarkdownAnalysis content={result.analysis} />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <Card className="border-gray-200 shadow-none">
+                <CardContent className="space-y-4 p-5">
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-900">后续动作</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      当岗位值得继续时，再进入模板选择和简历生成，不让生成动作提前抢占判断过程。
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => startAnalysis(true)}
+                    className="w-full justify-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    {t('v2.reAnalyze')}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={openTemplateSelector}
+                    className="w-full justify-center gap-2"
+                    disabled={!result?.sessionId || !result?.dimensions}
+                  >
+                    <Palette className="w-4 h-4" />
+                    {t('v2.selectTemplateAndGenerate')}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+      </section>
+
       {result?.dimensions && (
         <DimensionsDisplay dimensions={result.dimensions} />
       )}
 
-      {/* 原始分析文本（折叠） */}
-      {result?.analysis && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              {t('v2.detailedReport')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MarkdownAnalysis content={result.analysis} />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 操作按钮 */}
-      <div className="flex gap-3 justify-end">
-        <Button
-          variant="outline"
-          onClick={() => startAnalysis(true)}
-          className="gap-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          {t('v2.reAnalyze')}
-        </Button>
-        <Button
-          variant="primary"
-          onClick={openTemplateSelector}
-          className="gap-2"
-          disabled={!result?.sessionId || !result?.dimensions}
-        >
-          <Palette className="w-4 h-4" />
-          {t('v2.selectTemplateAndGenerate')}
-        </Button>
-      </div>
-
-      {/* 模板选择器 */}
       <TemplateSelector
         isOpen={showTemplateSelector}
         onClose={() => setShowTemplateSelector(false)}
@@ -494,23 +493,11 @@ export function AnalysisV2({
   )
 }
 
-// 功能亮点项
-function FeatureItem({
-  icon,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode
-  title: string
-  desc: string
-}) {
+function AnalysisScopeCard({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="text-center p-3">
-      <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-2">
-        {icon}
-      </div>
-      <h4 className="text-sm font-medium text-gray-900">{title}</h4>
-      <p className="text-xs text-gray-500 mt-1">{desc}</p>
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+      <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-gray-600">{desc}</p>
     </div>
   )
 }

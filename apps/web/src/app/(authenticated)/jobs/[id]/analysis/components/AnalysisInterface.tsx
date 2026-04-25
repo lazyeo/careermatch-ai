@@ -71,9 +71,20 @@ export function AnalysisInterface({ jobId, resumeId }: AnalysisInterfaceProps) {
     )
   }
 
-  // Selection mode - let user choose analysis mode
+  // Selection mode - keep legacy path available but clearly secondary
   return (
     <div className="space-y-6">
+      <Card className="border-amber-200 bg-amber-50 shadow-none">
+        <CardContent className="py-4">
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-amber-800">旧版分析入口</h3>
+            <p className="text-sm leading-6 text-amber-700">
+              当前主流程已经切到 V2 分析工作区。这里保留旧入口仅用于兼容或人工比对，不再作为默认分析路径。
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       <AIProviderSelector selectedProvider={selectedProvider} onSelect={setSelectedProvider} />
 
       <Card>

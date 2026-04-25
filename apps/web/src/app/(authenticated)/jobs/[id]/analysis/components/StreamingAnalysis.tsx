@@ -206,14 +206,14 @@ export function StreamingAnalysis({
           <div className="text-center">
             <Sparkles className="w-12 h-12 text-primary-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              AI智能分析
+              旧版流式分析
             </h3>
             <p className="text-sm text-gray-600 mb-6">
-              点击开始，AI将实时生成深度匹配分析报告
+              这是一条保留的旧分析路径，用于兼容历史 resume-based 流程，不是当前推荐的主入口。
             </p>
             <Button variant="primary" onClick={startStreaming} className="gap-2">
               <Sparkles className="w-4 h-4" />
-              开始流式分析
+              开始旧版流式分析
             </Button>
           </div>
         </CardContent>

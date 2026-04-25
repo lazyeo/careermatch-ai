@@ -97,46 +97,20 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
   return (
     <>
       {/* Trigger Card */}
-      <Card className="bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
-        <CardContent className="py-12">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
-              <svg
-                className="w-6 h-6 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+      <Card className="border-gray-200 shadow-none">
+        <CardContent className="py-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="max-w-2xl">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('title')}</h3>
+              <p className="text-sm leading-6 text-gray-600">
+                {t('description')}
+              </p>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('title')}</h3>
-            <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-              {t('description')}
-            </p>
             <Button
               variant="primary"
               onClick={() => setShowModal(true)}
-              className="gap-2 bg-green-600 hover:bg-green-700"
+              className="md:min-w-[180px] justify-center bg-green-600 hover:bg-green-700"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
               {t('createApplication')}
             </Button>
           </div>

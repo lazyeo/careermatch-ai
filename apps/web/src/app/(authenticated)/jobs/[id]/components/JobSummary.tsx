@@ -101,19 +101,22 @@ export function JobSummary({ jobId, initialContent = '' }: JobSummaryProps) {
 
     if (!content && !isStreaming && !error) {
         return (
-            <Card className="bg-gradient-to-br from-primary-50 to-white border-primary-100">
-                <CardContent className="py-8 text-center">
-                    <Sparkles className="w-12 h-12 text-primary-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        AI 职位深度点评
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
-                        让 AI 为您分析该职位的亮点、潜在风险以及核心竞争力要求，助您做出更明智的决策。
-                    </p>
-                    <Button onClick={startStreaming} className="gap-2">
-                        <Sparkles className="w-4 h-4" />
-                        生成职位点评
-                    </Button>
+            <Card className="border-gray-200 shadow-none">
+                <CardContent className="py-6">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div className="max-w-2xl">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                岗位点评
+                            </h3>
+                            <p className="text-sm leading-6 text-gray-600">
+                                用一段简洁点评提炼岗位亮点、风险和判断重点，帮助你先做是否继续投入的决定。
+                            </p>
+                        </div>
+                        <Button onClick={startStreaming} className="md:min-w-[140px] justify-center gap-2">
+                            <Sparkles className="w-4 h-4" />
+                            生成点评
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
         )
@@ -124,7 +127,7 @@ export function JobSummary({ jobId, initialContent = '' }: JobSummaryProps) {
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-primary-500" />
-                    AI 职位点评
+                    岗位点评
                 </h3>
                 {isStreaming && (
                     <span className="text-xs text-primary-600 flex items-center gap-1">

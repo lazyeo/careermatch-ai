@@ -37,8 +37,8 @@ export default async function JobDetailPage({
     notFound()
   }
 
-  // Fetch related analysis sessions, resumes, and cover letters
-  const [analysisResult, resumesResult, coverLettersResult] = await Promise.all([
+  // Fetch related analysis sessions, resumes, cover letters, and latest processing task
+  const [analysisResult, resumesResult, coverLettersResult, processingTaskResult] = await Promise.all([
     supabase
       .from('analysis_sessions')
       .select('id, score, recommendation, created_at')
@@ -58,9 +58,18 @@ export default async function JobDetailPage({
       .eq('job_id', params.id)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('processing_tasks')
+      .select('id, status, current_step, error, created_at, completed_at')
+      .eq('job_id', params.id)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ])
 
   const latestAnalysis = analysisResult.data?.[0]
+  const latestProcessingTask = processingTaskResult.data
   const resumes = resumesResult.data || []
   const coverLetters = coverLettersResult.data || []
 
@@ -103,6 +112,40 @@ export default async function JobDetailPage({
     return colors[status] || 'bg-neutral-100 text-neutral-800'
   }
 
+  const getAnalysisTaskBadge = () => {
+    if (!latestProcessingTask) return null
+
+    if (latestProcessingTask.status === 'pending') {
+      return {
+        label: '自动分析已排队',
+        className: 'bg-blue-50 text-blue-700 border-blue-200',
+        description: '岗位已保存，后台任务正在等待执行。',
+      }
+    }
+
+    if (latestProcessingTask.status === 'processing') {
+      return {
+        label: '自动分析进行中',
+        className: 'bg-amber-50 text-amber-700 border-amber-200',
+        description: '后台正在分析匹配度，你可以离开此页面稍后再看。',
+      }
+    }
+
+    if (latestProcessingTask.status === 'completed') {
+      return {
+        label: '自动分析完成',
+        className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        description: '最新匹配度分析已经完成。',
+      }
+    }
+
+    return {
+      label: '自动分析失败',
+      className: 'bg-red-50 text-red-700 border-red-200',
+      description: latestProcessingTask.error || '后台分析未成功完成。',
+    }
+  }
+
   // Clean source URL
   const sourceUrl = job.source_url?.split(/[\n,]/)[0]?.trim() || job.source_url
 
@@ -112,6 +155,8 @@ export default async function JobDetailPage({
     job.requirements,
     job.benefits
   ].filter(Boolean).join('\n\n---\n\n') || t('noContent')
+
+  const analysisTaskBadge = getAnalysisTaskBadge()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -193,167 +238,168 @@ export default async function JobDetailPage({
               {/* Job Summary / Critique */}
               <JobSummary jobId={params.id} initialContent={job.ai_analysis} />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Apply for Job */}
-                <div className="md:col-span-2">
-                  <ApplyJobButton jobId={params.id} />
-                </div>
-
-                {/* AI Match Analysis */}
-                <Card className="bg-gradient-to-br from-primary-50 to-accent-50 border-primary-200">
-                  <CardContent className="py-12">
-                    <div className="text-center">
-                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 mb-4">
-                        <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {t('aiMatchAnalysis')}
-                      </h3>
-                      {latestAnalysis ? (
-                        <>
-                          <div className="mb-4">
-                            <div className="text-3xl font-bold text-primary-600 mb-1">
-                              {latestAnalysis.score}/100
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(latestAnalysis.created_at).toLocaleDateString(locale)}
-                            </div>
-                          </div>
-                          <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-                            已分析完成，查看详细报告
-                          </p>
-                          <Link href={`/jobs/${params.id}/analysis?mode=profile`}>
-                            <Button variant="primary" className="gap-2">
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                              查看分析
-                            </Button>
-                          </Link>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-                            {t('aiMatchAnalysisDesc')}
-                          </p>
-                          <Link href={`/jobs/${params.id}/analysis`}>
-                            <Button variant="primary" className="gap-2">
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                              </svg>
-                              {t('startAnalysis')}
-                            </Button>
-                          </Link>
-                        </>
+              <div className="space-y-6">
+                <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <div className="flex flex-col gap-3 border-b border-gray-100 pb-4 md:flex-row md:items-end md:justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Decision summary</p>
+                      <h2 className="mt-1 text-xl font-semibold text-gray-950">先判断这份岗位值不值得继续投入</h2>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+                        先看自动匹配结果和岗位点评，再决定是否进入申请、材料生成和后续推进。低价值动作放后面，不与主判断抢位置。
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {analysisTaskBadge && (
+                        <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${analysisTaskBadge.className}`}>
+                          {analysisTaskBadge.label}
+                        </span>
+                      )}
+                      {latestAnalysis && (
+                        <span className="inline-flex items-center rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700">
+                          匹配度 {latestAnalysis.score}/100
+                        </span>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
 
-                {/* AI Cover Letter */}
-                <Card className="bg-gradient-to-br from-accent-50 to-success-50 border-accent-200">
-                  <CardContent className="py-12">
-                    <div className="text-center">
-                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent-100 mb-4">
-                        <svg className="w-6 h-6 text-accent-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {t('aiCoverLetter')}
-                      </h3>
-                      <p className="text-sm text-gray-600 max-w-md mx-auto mb-6">
-                        {t('aiCoverLetterDesc')}
-                      </p>
-                      <Link href={`/jobs/${params.id}/cover-letter`}>
-                        <Button variant="primary" className="gap-2">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          {t('generateCoverLetter')}
-                        </Button>
-                      </Link>
+                  <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
+                    <div className="space-y-4">
+                      <JobSummary jobId={params.id} initialContent={job.ai_analysis} />
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
 
-              {/* Generated Documents Section */}
-              {(resumes.length > 0 || coverLetters.length > 0) && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>已生成的求职材料</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Resumes */}
-                    {resumes.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          简历 ({resumes.length})
-                        </h4>
-                        <div className="space-y-2">
-                          {resumes.map((resume) => (
-                            <Link
-                              key={resume.id}
-                              href={`/resumes/preview/${resume.id}`}
-                              className="block p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 transition-colors"
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="font-medium text-gray-900">{resume.title}</div>
-                                  <div className="text-sm text-gray-500 mt-1">
-                                    {new Date(resume.created_at).toLocaleDateString(locale)} · {' '}
-                                    {resume.source === 'ai_generated' ? 'AI生成' : '手动创建'}
-                                  </div>
-                                </div>
-                                <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className="space-y-4">
+                      <Card className="border-gray-200 shadow-none">
+                        <CardContent className="space-y-4 p-5">
+                          <div>
+                            <h3 className="text-base font-semibold text-gray-900">匹配分析</h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                              后台分析完成后，这里会成为进入详细报告的主入口。
+                            </p>
+                          </div>
 
-                    {/* Cover Letters */}
-                    {coverLetters.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                          求职信 ({coverLetters.length})
-                        </h4>
-                        <div className="space-y-2">
-                          {coverLetters.map((letter) => (
-                            <div
-                              key={letter.id}
-                              className="block p-3 border border-gray-200 rounded-lg"
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="font-medium text-gray-900">{letter.title}</div>
-                                  <div className="text-sm text-gray-500 mt-1">
-                                    {new Date(letter.created_at).toLocaleDateString(locale)} · {' '}
-                                    {letter.source === 'ai_generated' ? 'AI生成' : '手动创建'}
-                                  </div>
-                                </div>
+                          {latestAnalysis ? (
+                            <div className="rounded-xl border border-primary-200 bg-primary-50 p-4">
+                              <div className="text-sm text-primary-700">最新结果</div>
+                              <div className="mt-2 text-3xl font-semibold text-primary-700">
+                                {latestAnalysis.score}/100
                               </div>
+                              <div className="mt-1 text-xs text-primary-600">
+                                {new Date(latestAnalysis.created_at).toLocaleDateString(locale)}
+                              </div>
+                              <Link href={`/jobs/${params.id}/analysis?mode=profile`} className="mt-4 inline-flex">
+                                <Button variant="primary">查看详细分析</Button>
+                              </Link>
                             </div>
-                          ))}
-                        </div>
+                          ) : latestProcessingTask?.status === 'pending' || latestProcessingTask?.status === 'processing' ? (
+                            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
+                              后台正在生成匹配分析。你可以先离开此页面，稍后回来查看结果。
+                            </div>
+                          ) : (
+                            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                              还没有可用的匹配分析结果。准备好后再手动启动分析。
+                            </div>
+                          )}
+
+                          {latestProcessingTask?.status === 'failed' && (
+                            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                              {latestProcessingTask.error || '自动分析未成功完成。'}
+                            </div>
+                          )}
+
+                          {latestProcessingTask?.status === 'pending' || latestProcessingTask?.status === 'processing' ? (
+                            <Button variant="primary" className="w-full" disabled>
+                              后台分析中
+                            </Button>
+                          ) : (
+                            <Link href={`/jobs/${params.id}/analysis`} className="block">
+                              <Button variant="primary" className="w-full">
+                                {latestProcessingTask?.status === 'failed' ? '重新开始分析' : t('startAnalysis')}
+                              </Button>
+                            </Link>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-gray-200 shadow-none">
+                        <CardContent className="space-y-4 p-5">
+                          <div>
+                            <h3 className="text-base font-semibold text-gray-900">下一步动作</h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                              只保留真正影响推进效率的动作，材料生成和申请入口不再与所有面板并列竞争。
+                            </p>
+                          </div>
+                          <div className="space-y-3">
+                            <Link href={`/jobs/${params.id}/cover-letter`} className="block">
+                              <Button variant="outline" className="w-full justify-between">
+                                <span>{t('generateCoverLetter')}</span>
+                                <span className="text-xs text-gray-500">可选</span>
+                              </Button>
+                            </Link>
+                            <ApplyJobButton jobId={params.id} />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </section>
+
+                {(resumes.length > 0 || coverLetters.length > 0) && (
+                  <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                      <div>
+                        <h3 className="text-base font-semibold text-gray-900">已生成材料</h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                          只在已有产出时展示，避免空面板长期占据主视线。
+                        </p>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                    </div>
+                    <div className="mt-4 grid gap-6 lg:grid-cols-2">
+                      {resumes.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-700">简历</h4>
+                          <div className="mt-3 space-y-2">
+                            {resumes.map((resume) => (
+                              <Link
+                                key={resume.id}
+                                href={`/resumes/preview/${resume.id}`}
+                                className="block rounded-xl border border-gray-200 p-3 transition-colors hover:border-primary-300 hover:bg-primary-50/40"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <div className="font-medium text-gray-900">{resume.title}</div>
+                                    <div className="mt-1 text-sm text-gray-500">
+                                      {new Date(resume.created_at).toLocaleDateString(locale)} · {resume.source === 'ai_generated' ? '系统生成' : '手动创建'}
+                                    </div>
+                                  </div>
+                                  <svg className="mt-0.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {coverLetters.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-700">求职信</h4>
+                          <div className="mt-3 space-y-2">
+                            {coverLetters.map((letter) => (
+                              <div key={letter.id} className="rounded-xl border border-gray-200 p-3">
+                                <div className="font-medium text-gray-900">{letter.title}</div>
+                                <div className="mt-1 text-sm text-gray-500">
+                                  {new Date(letter.created_at).toLocaleDateString(locale)} · {letter.source === 'ai_generated' ? '系统生成' : '手动创建'}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
+              </div>
             </div>
           }
         />

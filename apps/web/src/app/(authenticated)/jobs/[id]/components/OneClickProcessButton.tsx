@@ -67,7 +67,7 @@ export function OneClickProcessButton({ jobId, resumeId }: OneClickProcessButton
       className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
     >
       <Rocket className="w-5 h-5" />
-      🚀 一键处理
+      一键处理
       {!resumeId && <span className="text-xs">(需要简历)</span>}
     </Button>
   )

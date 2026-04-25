@@ -152,37 +152,32 @@ export function JobImportForm() {
     <div className="space-y-6">
       {/* 导入方式选择 */}
       {parsedResults.length === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>选择导入方式</CardTitle>
+        <Card className="border-gray-200 shadow-sm">
+          <CardHeader className="border-b border-gray-100 pb-4">
+            <CardTitle className="text-xl font-semibold text-gray-900">导入岗位</CardTitle>
+            <p className="text-sm text-gray-500">
+              先抓取岗位原文，再决定是否保存。把输入方式保持在一个入口里，减少重复操作。
+            </p>
           </CardHeader>
-          <CardContent>
-            <div className="flex gap-4 mb-6">
+          <CardContent className="space-y-6 pt-6">
+            <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
               <button
                 onClick={() => setMode('url')}
-                className={`flex-1 p-4 rounded-lg border-2 transition-all ${mode === 'url'
-                  ? 'border-primary-500 bg-primary-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                className={`rounded-md px-4 py-2 text-sm font-medium transition ${mode === 'url'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
-                <div className="text-2xl mb-2">🔗</div>
-                <div className="font-medium">批量URL导入</div>
-                <div className="text-sm text-gray-500">
-                  粘贴多个招聘页面链接，每行一个
-                </div>
+                链接导入
               </button>
               <button
                 onClick={() => setMode('text')}
-                className={`flex-1 p-4 rounded-lg border-2 transition-all ${mode === 'text'
-                  ? 'border-primary-500 bg-primary-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                className={`rounded-md px-4 py-2 text-sm font-medium transition ${mode === 'text'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
-                <div className="text-2xl mb-2">📝</div>
-                <div className="font-medium">文本导入</div>
-                <div className="text-sm text-gray-500">
-                  直接粘贴招聘信息
-                </div>
+                文本导入
               </button>
             </div>
 
@@ -232,14 +227,7 @@ export function JobImportForm() {
                 variant="primary"
                 disabled={isLoading || (mode === 'url' ? !urls.trim() : !content.trim())}
               >
-                {isLoading ? (
-                  <>
-                    <span className="animate-spin mr-2">⏳</span>
-                    AI智能解析中...
-                  </>
-                ) : (
-                  '智能解析'
-                )}
+                {isLoading ? '解析中...' : '开始解析'}
               </Button>
             </div>
           </CardContent>
@@ -248,11 +236,16 @@ export function JobImportForm() {
 
       {/* 解析结果预览 */}
       {parsedResults.length > 0 && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-900">
-              解析结果 ({parsedResults.filter(r => r.success).length}/{parsedResults.length})
-            </h2>
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                解析结果 ({parsedResults.filter(r => r.success).length}/{parsedResults.length})
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                先确认岗位质量，再统一保存。低质量或重复内容可以在这里直接放弃。
+              </p>
+            </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={handleReset}>
                 重新导入
@@ -268,17 +261,15 @@ export function JobImportForm() {
           </div>
 
           {parsedResults.map((result, index) => (
-            <Card key={index} className={result.success ? 'border-l-4 border-l-success-500' : 'border-l-4 border-l-error-500'}>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {result.success ? (
-                      <span className="text-success-600">✓ 解析成功</span>
-                    ) : (
-                      <span className="text-error-600">✕ 解析失败</span>
-                    )}
+            <Card key={index} className={result.success ? 'border-gray-200 shadow-sm' : 'border-red-200 shadow-sm'}>
+              <CardHeader className="border-b border-gray-100 pb-4">
+                <CardTitle className="flex items-center justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${result.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                      {result.success ? '解析成功' : '解析失败'}
+                    </span>
                     {result.input && (
-                      <span className="text-sm font-normal text-gray-500 truncate max-w-md ml-2">
+                      <span className="truncate text-sm font-normal text-gray-500">
                         {result.input}
                       </span>
                     )}

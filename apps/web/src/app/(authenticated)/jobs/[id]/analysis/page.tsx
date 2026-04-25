@@ -2,7 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { Button } from '@careermatch/ui'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { AnalysisV2 } from './components/AnalysisV2'
 import { getTranslations } from 'next-intl/server'
 import type { AnalysisDimensions } from '@careermatch/shared'
@@ -61,22 +61,23 @@ export default async function JobAnalysisPage({
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <Link href={`/jobs/${params.id}`}>
-              <Button variant="ghost" className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                {t('backToJob')}
-              </Button>
-            </Link>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary-600" />
-                <h1 className="text-xl font-bold text-gray-900">{t('title')}</h1>
-              </div>
-              <p className="text-sm text-gray-600 mt-1">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="min-w-0">
+              <Link href={`/jobs/${params.id}`}>
+                <Button variant="ghost" className="mb-3 gap-2 px-0 text-gray-500 hover:text-gray-900">
+                  <ArrowLeft className="w-4 h-4" />
+                  {t('backToJob')}
+                </Button>
+              </Link>
+              <p className="text-sm font-medium text-gray-500">Analysis workspace</p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-gray-950">{t('title')}</h1>
+              <p className="mt-2 text-sm text-gray-600">
                 {t('jobAt', { title: job.title, company: job.company })}
               </p>
+            </div>
+            <div className="max-w-sm text-sm leading-6 text-gray-500">
+              这里负责完整分析；详情页里的岗位点评只保留快速摘要，避免两块内容重复承担同样角色。
             </div>
           </div>
         </div>
