@@ -1,5 +1,7 @@
 import { Tool } from '../core/Tool'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { tasks } from '@trigger.dev/sdk/v3'
+import { enqueueAutomaticJobAnalysis } from '@careermatch/shared'
 
 export class SaveJobTool implements Tool {
     name = 'save_job'
@@ -47,9 +49,29 @@ export class SaveJobTool implements Tool {
 
             if (error) throw error
 
+            let analysisTask: { taskId: string; status: 'pending' } | null = null
+            let analysisTaskError: string | null = null
+
+            try {
+                analysisTask = await enqueueAutomaticJobAnalysis({
+                    supabase: context.supabase as any,
+                    userId: context.userId,
+                    jobId: data.id,
+                    source: 'agent_save_job',
+                    triggerAnalysisTask: async (payload) => {
+                        await tasks.trigger('automatic-job-analysis', payload)
+                    }
+                })
+            } catch (enqueueError) {
+                analysisTaskError = enqueueError instanceof Error ? enqueueError.message : 'Failed to queue automatic job analysis'
+                console.error('Failed to queue automatic job analysis from SaveJobTool:', enqueueError)
+            }
+
             return {
                 success: true,
                 jobId: data.id,
+                analysisTask,
+                analysisTaskError,
                 message: 'Job saved successfully'
             }
         } catch (error) {

@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
+import { enqueueAutomaticJobAnalysis } from '@/lib/jobs/enqueue-job-analysis'
+import { tasks } from '@trigger.dev/sdk/v3'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   parseJobContent,
@@ -121,11 +123,34 @@ export async function POST(request: NextRequest) {
 
             console.log(`✅ [${index}] Job saved with ID: ${job.id}`)
 
+            let analysisTask: { taskId: string; status: 'pending' } | null = null
+            let analysisTaskError: string | null = null
+
+            try {
+              analysisTask = await enqueueAutomaticJobAnalysis({
+                supabase,
+                userId: user.id,
+                jobId: job.id,
+                source: 'job_import',
+                triggerAnalysisTask: async (payload) => {
+                  await tasks.trigger('automatic-job-analysis', payload)
+                },
+              })
+            } catch (enqueueError) {
+              analysisTaskError =
+                enqueueError instanceof Error
+                  ? enqueueError.message
+                  : 'Failed to queue automatic job analysis'
+              console.error(`❌ [${index}] Failed to queue automatic job analysis:`, enqueueError)
+            }
+
             return {
               success: true,
               job_id: job.id,
               parsed_data: parsedData,
-              message: 'Job imported and saved successfully'
+              analysis_task: analysisTask,
+              analysis_task_error: analysisTaskError,
+              message: 'Job imported, saved, and queued for automatic analysis'
             }
           }
 

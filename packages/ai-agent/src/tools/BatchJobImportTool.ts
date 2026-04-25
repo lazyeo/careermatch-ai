@@ -1,6 +1,8 @@
 import { Tool } from '../core/Tool'
 import { parseJobFromUrl } from '@careermatch/job-scraper'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { tasks } from '@trigger.dev/sdk/v3'
+import { enqueueAutomaticJobAnalysis } from '@careermatch/shared'
 
 export class BatchJobImportTool implements Tool {
     name = 'batch_import_jobs'
@@ -63,12 +65,32 @@ export class BatchJobImportTool implements Tool {
 
                     if (error) throw error
 
+                    let analysisTask: { taskId: string; status: 'pending' } | null = null
+                    let analysisTaskError: string | null = null
+
+                    try {
+                        analysisTask = await enqueueAutomaticJobAnalysis({
+                            supabase: supabase as any,
+                            userId,
+                            jobId: job.id,
+                            source: 'agent_batch_import',
+                            triggerAnalysisTask: async (payload) => {
+                                await tasks.trigger('automatic-job-analysis', payload)
+                            }
+                        })
+                    } catch (enqueueError) {
+                        analysisTaskError = enqueueError instanceof Error ? enqueueError.message : 'Failed to queue automatic job analysis'
+                        console.error(`❌ Failed to queue automatic job analysis for ${url}:`, enqueueError)
+                    }
+
                     results.push({
                         url,
                         success: true,
                         title: parsedData.title,
                         company: parsedData.company,
-                        jobId: job.id
+                        jobId: job.id,
+                        analysisTask,
+                        analysisTaskError
                     })
                 } else {
                     results.push({

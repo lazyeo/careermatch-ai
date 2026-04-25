@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
+import { enqueueAutomaticJobAnalysis } from '@/lib/jobs/enqueue-job-analysis'
+import { tasks } from '@trigger.dev/sdk/v3'
 import { NextRequest, NextResponse } from 'next/server'
 import { parseJobFromUrl } from '@careermatch/job-scraper'
 
@@ -79,7 +81,32 @@ export async function POST(
             throw updateError
         }
 
-        return NextResponse.json(updatedJob)
+        let analysisTask: { taskId: string; status: 'pending' } | null = null
+        let analysisTaskError: string | null = null
+
+        try {
+            analysisTask = await enqueueAutomaticJobAnalysis({
+                supabase,
+                userId: user.id,
+                jobId: id,
+                source: 'job_rescrape',
+                triggerAnalysisTask: async (payload) => {
+                    await tasks.trigger('automatic-job-analysis', payload)
+                },
+            })
+        } catch (enqueueError) {
+            analysisTaskError =
+                enqueueError instanceof Error
+                    ? enqueueError.message
+                    : 'Failed to queue automatic job analysis'
+            console.error('Failed to queue automatic analysis after rescrape:', enqueueError)
+        }
+
+        return NextResponse.json({
+            ...updatedJob,
+            analysis_task: analysisTask,
+            analysis_task_error: analysisTaskError,
+        })
     } catch (error) {
         console.error('Error in POST /api/jobs/[id]/rescrape:', error)
         return NextResponse.json(

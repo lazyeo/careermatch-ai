@@ -69,3 +69,5 @@ workspace/paraflow/product-index.json
 # Agent configuration files (local only, not committed)
 CLAUDE.md
 AGENTS.md
+
+.trigger

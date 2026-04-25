@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
+import { enqueueAutomaticJobAnalysis } from '@/lib/jobs/enqueue-job-analysis'
+import { tasks } from '@trigger.dev/sdk/v3'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -71,7 +73,35 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json(job, { status: 201 })
+    let analysisTask: { taskId: string; status: 'pending' } | null = null
+    let analysisTaskError: string | null = null
+
+    try {
+      analysisTask = await enqueueAutomaticJobAnalysis({
+        supabase,
+        userId: user.id,
+        jobId: job.id,
+        source: 'job_create',
+        triggerAnalysisTask: async (payload) => {
+          await tasks.trigger('automatic-job-analysis', payload)
+        },
+      })
+    } catch (enqueueError) {
+      analysisTaskError =
+        enqueueError instanceof Error
+          ? enqueueError.message
+          : 'Failed to queue automatic job analysis'
+      console.error('Failed to queue automatic job analysis:', enqueueError)
+    }
+
+    return NextResponse.json(
+      {
+        ...job,
+        analysis_task: analysisTask,
+        analysis_task_error: analysisTaskError,
+      },
+      { status: 201 }
+    )
   } catch (error) {
     console.error('Error in POST /api/jobs:', error)
     return NextResponse.json(

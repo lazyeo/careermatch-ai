@@ -11,6 +11,7 @@
   },
   "scripts": {
     "dev": "turbo run dev",
+    "trigger:dev": "npx trigger.dev@latest dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
@@ -24,6 +25,8 @@
     "db:reset": "supabase db reset"
   },
   "devDependencies": {
+    "@trigger.dev/build": "4.4.4",
+    "@trigger.dev/sdk": "4.4.4",
     "@types/node": "^20.10.0",
     "dotenv": "^17.2.3",
     "prettier": "^3.1.0",

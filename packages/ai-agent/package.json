@@ -16,6 +16,7 @@
         "@careermatch/resume-parser": "workspace:*",
         "@careermatch/shared": "workspace:*",
         "@supabase/supabase-js": "^2.39.0",
+        "@trigger.dev/sdk": "4.4.4",
         "openai": "^4.104.0"
     },
     "devDependencies": {
