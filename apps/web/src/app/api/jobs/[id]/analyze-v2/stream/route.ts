@@ -10,11 +10,12 @@
 
 import { createClient } from '@/lib/supabase-server'
 import {
+  createAnthropicClient,
   createAIClient,
+  getProviderFallbackCandidates,
   isAnyAIConfigured,
-  getBestModel,
-  getDefaultProvider,
   TEMPERATURE_PRESETS,
+  type AIProviderConfig,
   type AIProviderType,
 } from '@/lib/ai-providers'
 import { NextRequest } from 'next/server'
@@ -26,6 +27,19 @@ import {
   generateDefaultCVStrategy,
   type JobMatchingV2Output,
 } from '@/lib/ai/prompts/features/job-matching-v2'
+
+type AIStreamChunk = {
+  type?: string
+  delta?: {
+    type?: string
+    text?: string
+  }
+  choices?: Array<{
+    delta?: {
+      content?: string | null
+    }
+  }>
+}
 
 export async function POST(
   request: NextRequest,
@@ -135,14 +149,25 @@ export async function POST(
       )
     }
 
-    // 7. 构建分析参数
-    const providerName = provider || getDefaultProvider()?.type || 'openai'
-    const model = getBestModel(provider)
+    const providerCandidates = getProviderFallbackCandidates(provider)
+    if (providerCandidates.length === 0) {
+      return new Response(
+        JSON.stringify({
+          error: provider
+            ? `AI provider "${provider}" is not configured`
+            : 'No AI provider is configured',
+        }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
 
-    console.log(`🤖 [V2 Stream] Starting 8-dimension analysis with ${providerName.toUpperCase()}`)
-    console.log(`📊 Using model: ${model}`)
+    console.log(
+      `🤖 [V2 Stream] AI provider candidates: ${providerCandidates
+        .map((candidate) => candidate.type)
+        .join(' -> ')}`
+    )
 
-    // 8. 构建profile数据
+    // 7. 构建profile数据
     const profileData = {
       fullName: fullProfile.profile.full_name,
       location: fullProfile.profile.location,
@@ -182,7 +207,7 @@ export async function POST(
       })),
     }
 
-    // 9. 构建Prompt (传递语言参数)
+    // 8. 构建Prompt (传递语言参数)
     const userPrompt = buildJobMatchingV2Prompt({
       job: {
         title: job.title as string,
@@ -199,41 +224,22 @@ export async function POST(
       profile: profileData,
     }, language)
 
-    // 10. 创建AI流式请求
-    const aiProviderType = provider || getDefaultProvider()?.type || 'openai'
+    // 9. 创建AI流式请求。请求发出前可以安全 fallback 到下一个 provider。
     const systemPrompt = getJobMatchingV2SystemPrompt(language)
     console.log(`🌐 Using language: ${language}`)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let stream: any
-
-    if (aiProviderType === 'claude') {
-      const { createAnthropicClient } = await import('@/lib/ai-providers')
-      const client = createAnthropicClient()
-
-      stream = await client.messages.create({
-        model: model,
-        max_tokens: 4096, // Anthropic max tokens
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
-        stream: true,
+    const { stream, providerType: aiProviderType, model } =
+      await createAnalysisStreamWithFallback({
+        providers: providerCandidates,
+        systemPrompt,
+        userPrompt,
       })
-    } else {
-      const aiClient = createAIClient(provider)
+    const providerName = aiProviderType
 
-      stream = await aiClient.chat.completions.create({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: TEMPERATURE_PRESETS.BALANCED,
-        max_tokens: 16384,
-        stream: true,
-      })
-    }
+    console.log(`🤖 [V2 Stream] Starting 8-dimension analysis with ${providerName.toUpperCase()}`)
+    console.log(`📊 Using model: ${model}`)
 
-    // 11. 创建流式响应
+    // 10. 创建流式响应
     const encoder = new TextEncoder()
     let fullResponse = ''
 
@@ -245,8 +251,8 @@ export async function POST(
 
             // Handle different stream formats
             if (aiProviderType === 'claude') {
-              if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-                content = chunk.delta.text
+              if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
+                content = chunk.delta.text || ''
               }
             } else {
               // OpenAI format
@@ -452,6 +458,73 @@ async function fetchFullProfile(
     projects: projectsResult.data,
     certifications: certsResult.data,
   }
+}
+
+async function createAnalysisStreamWithFallback({
+  providers,
+  systemPrompt,
+  userPrompt,
+}: {
+  providers: AIProviderConfig[]
+  systemPrompt: string
+  userPrompt: string
+}): Promise<{
+  stream: AsyncIterable<AIStreamChunk>
+  providerType: AIProviderType
+  model: string
+}> {
+  const failures: string[] = []
+
+  for (const provider of providers) {
+    const model = provider.models.best
+
+    try {
+      console.log(`[AI] Trying ${provider.type} (${model}) for V2 stream`)
+
+      if (provider.type === 'claude') {
+        const client = createAnthropicClient()
+        const stream = await client.messages.create({
+          model,
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }],
+          stream: true,
+        })
+
+        return {
+          stream: stream as AsyncIterable<AIStreamChunk>,
+          providerType: provider.type,
+          model,
+        }
+      }
+
+      const aiClient = createAIClient(provider.type)
+      const stream = await aiClient.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: TEMPERATURE_PRESETS.BALANCED,
+        max_tokens: 16384,
+        stream: true,
+      })
+
+      return {
+        stream: stream as AsyncIterable<AIStreamChunk>,
+        providerType: provider.type,
+        model,
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      failures.push(`${provider.type}: ${message}`)
+      console.warn(`[AI] ${provider.type} failed before stream started:`, error)
+    }
+  }
+
+  throw new Error(
+    `All configured AI providers failed before streaming: ${failures.join('; ') || 'unknown error'}`
+  )
 }
 
 function createDefaultDimensions(

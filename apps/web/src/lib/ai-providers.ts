@@ -16,6 +16,13 @@ import Anthropic from '@anthropic-ai/sdk'
  */
 export type AIProviderType = 'openai' | 'codex' | 'claude' | 'gemini'
 
+export const AI_PROVIDER_FALLBACK_ORDER: AIProviderType[] = [
+  'openai',
+  'gemini',
+  'claude',
+  'codex',
+]
+
 /**
  * AI Provider Configuration
  */
@@ -65,9 +72,9 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
       apiKey: process.env.OPENAI_API_KEY,
       baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
       models: {
-        best: 'gpt-4-turbo-preview',
-        balanced: 'gpt-4',
-        fast: 'gpt-3.5-turbo',
+        best: process.env.OPENAI_MODEL_BEST || process.env.OPENAI_MODEL || 'gpt-4-turbo-preview',
+        balanced: process.env.OPENAI_MODEL_BALANCED || process.env.OPENAI_MODEL || 'gpt-4',
+        fast: process.env.OPENAI_MODEL_FAST || process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
       },
       isConfigured: !!(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== ''),
       displayName: 'OpenAI GPT-4',
@@ -79,9 +86,9 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
       apiKey: process.env.CODEX_API_KEY,
       baseURL: process.env.CODEX_BASE_URL,
       models: {
-        best: 'gpt-4-turbo-preview',
-        balanced: 'gpt-4',
-        fast: 'gpt-3.5-turbo',
+        best: process.env.CODEX_MODEL_BEST || process.env.CODEX_MODEL || 'gpt-4-turbo-preview',
+        balanced: process.env.CODEX_MODEL_BALANCED || process.env.CODEX_MODEL || 'gpt-4',
+        fast: process.env.CODEX_MODEL_FAST || process.env.CODEX_MODEL || 'gpt-3.5-turbo',
       },
       isConfigured: !!(process.env.CODEX_API_KEY && process.env.CODEX_BASE_URL),
       displayName: 'OpenAI Codex (Relay)',
@@ -93,9 +100,9 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
       apiKey: process.env.AI_RELAY_API_KEY,
       baseURL: process.env.AI_RELAY_BASE_URL || 'https://relay.a-dobe.club',
       models: {
-        best: 'claude-sonnet-4-5-thinking',
-        balanced: 'claude-sonnet-4-5-thinking',
-        fast: 'claude-sonnet-4-5-thinking',
+        best: process.env.CLAUDE_MODEL_BEST || process.env.CLAUDE_MODEL || 'claude-sonnet-4-5-thinking',
+        balanced: process.env.CLAUDE_MODEL_BALANCED || process.env.CLAUDE_MODEL || 'claude-sonnet-4-5-thinking',
+        fast: process.env.CLAUDE_MODEL_FAST || process.env.CLAUDE_MODEL || 'claude-sonnet-4-5-thinking',
       },
       isConfigured: !!process.env.AI_RELAY_API_KEY,
       displayName: 'Claude Sonnet 4.5 (Relay)',
@@ -107,9 +114,9 @@ export function getAIProviders(): Record<AIProviderType, AIProviderConfig> {
       apiKey: process.env.GEMINI_API_KEY,
       baseURL: process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai/',
       models: {
-        best: 'gemini-3-flash-preview',
-        balanced: 'gemini-3-flash-preview',
-        fast: 'gemini-3-flash-preview',
+        best: process.env.GEMINI_MODEL_BEST || process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
+        balanced: process.env.GEMINI_MODEL_BALANCED || process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
+        fast: process.env.GEMINI_MODEL_FAST || process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
       },
       isConfigured: !!(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== ''),
       displayName: 'Gemini Flash 3',
@@ -126,38 +133,29 @@ export function getAvailableProviders(): AIProviderConfig[] {
   return Object.values(providers).filter((p) => p.isConfigured)
 }
 
+export function getProviderFallbackCandidates(providerType?: AIProviderType): AIProviderConfig[] {
+  const providers = getAIProviders()
+
+  if (providerType) {
+    const provider = providers[providerType]
+    return provider?.isConfigured ? [provider] : []
+  }
+
+  return AI_PROVIDER_FALLBACK_ORDER
+    .map((type) => providers[type])
+    .filter((provider) => provider.isConfigured)
+}
+
 /**
  * Get the default provider to use
  * Priority: gemini > claude > openai > codex
  */
 export function getDefaultProvider(): AIProviderConfig | null {
-  // Prioritize Gemini
-  const geminiConfig = getProviderConfig('gemini')
-  if (geminiConfig.isConfigured) {
-    console.log('[AI] Using Gemini as default provider')
-    return geminiConfig
+  const provider = getProviderFallbackCandidates()[0]
+  if (provider) {
+    console.log(`[AI] Using ${provider.displayName} as default provider`)
   }
-
-  // Fallback order: Claude > OpenAI > Codex
-  const claudeConfig = getProviderConfig('claude')
-  if (claudeConfig.isConfigured) {
-    console.log('[AI] Using Claude as fallback provider')
-    return claudeConfig
-  }
-
-  const openaiConfig = getProviderConfig('openai')
-  if (openaiConfig.isConfigured) {
-    console.log('[AI] Using OpenAI as fallback provider')
-    return openaiConfig
-  }
-
-  const codexConfig = getProviderConfig('codex')
-  if (codexConfig.isConfigured) {
-    console.log('[AI] Using Codex as fallback provider')
-    return codexConfig
-  }
-
-  return null
+  return provider || null
 }
 
 /**
@@ -325,79 +323,95 @@ export async function createAICompletion(
   options: AICompletionOptions,
   providerType?: AIProviderType
 ): Promise<AICompletionResponse> {
-  const defaultProvider = getDefaultProvider()
-  const provider = providerType
-    ? getProviderConfig(providerType)
-    : defaultProvider
+  const providers = getProviderFallbackCandidates(providerType)
 
-  if (!provider || !provider.isConfigured) {
+  if (providers.length === 0) {
     throw new AIProviderError(
       'No AI provider is configured. Please add API keys to .env.local'
     )
   }
 
-  const model = options.model || provider.models.best
   const temperature = options.temperature ?? TEMPERATURE_PRESETS.BALANCED
   const maxTokens = options.maxTokens || 8192
+  const failures: string[] = []
 
-  // For Claude, use Anthropic SDK
-  if (provider.type === 'claude') {
-    const client = createAnthropicClient()
+  for (const provider of providers) {
+    const model = options.model || provider.models.best
 
-    // Anthropic API has different message format:
-    // - system message is a separate parameter
-    // - only user/assistant roles in messages array
-    const systemMessage = options.messages.find((m) => m.role === 'system')
-    const nonSystemMessages = options.messages.filter((m) => m.role !== 'system')
+    try {
+      // For Claude, use Anthropic SDK
+      if (provider.type === 'claude') {
+        const client = createAnthropicClient()
 
-    console.log(`🧠 Calling Claude (${model}) via Anthropic SDK...`)
+        // Anthropic API has different message format:
+        // - system message is a separate parameter
+        // - only user/assistant roles in messages array
+        const systemMessage = options.messages.find((m) => m.role === 'system')
+        const nonSystemMessages = options.messages.filter((m) => m.role !== 'system')
 
-    const response = await client.messages.create({
-      model,
-      max_tokens: maxTokens,
-      system: systemMessage?.content,
-      messages: nonSystemMessages.map((m) => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content,
-      })),
-    })
+        console.log(`🧠 Calling Claude (${model}) via Anthropic SDK...`)
 
-    const content = response.content[0]?.type === 'text'
-      ? response.content[0].text
-      : ''
+        const response = await client.messages.create({
+          model,
+          max_tokens: maxTokens,
+          system: systemMessage?.content,
+          messages: nonSystemMessages.map((m) => ({
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+          })),
+        })
 
-    return {
-      content,
-      model,
-      provider: 'claude',
+        const content = response.content[0]?.type === 'text'
+          ? response.content[0].text
+          : ''
+
+        return {
+          content,
+          model,
+          provider: 'claude',
+        }
+      }
+
+      // For other providers, use OpenAI SDK
+      const client = new OpenAI({
+        apiKey: provider.apiKey || 'dummy-key',
+        baseURL: provider.baseURL,
+      })
+
+      console.log(`🤖 Calling ${provider.displayName} (${model}) via OpenAI SDK...`)
+
+      const completion = await client.chat.completions.create({
+        model,
+        messages: options.messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        temperature,
+        max_tokens: maxTokens,
+      })
+
+      const content = completion.choices[0]?.message?.content || ''
+
+      return {
+        content,
+        model,
+        provider: provider.type,
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      failures.push(`${provider.type}: ${message}`)
+      console.warn(`[AI] Provider ${provider.type} failed:`, error)
+
+      if (providerType) {
+        break
+      }
     }
   }
 
-  // For other providers, use OpenAI SDK
-  const client = new OpenAI({
-    apiKey: provider.apiKey || 'dummy-key',
-    baseURL: provider.baseURL,
-  })
-
-  console.log(`🤖 Calling ${provider.displayName} (${model}) via OpenAI SDK...`)
-
-  const completion = await client.chat.completions.create({
-    model,
-    messages: options.messages.map((m) => ({
-      role: m.role,
-      content: m.content,
-    })),
-    temperature,
-    max_tokens: maxTokens,
-  })
-
-  const content = completion.choices[0]?.message?.content || ''
-
-  return {
-    content,
-    model,
-    provider: provider.type,
-  }
+  throw new AIProviderError(
+    `All configured AI providers failed: ${failures.join('; ') || 'unknown error'}`,
+    providerType,
+  )
 }
 
 

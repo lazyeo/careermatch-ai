@@ -108,7 +108,7 @@ export function AnalysisV2({
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to start analysis')
+        throw new Error(data.details || data.error || 'Failed to start analysis')
       }
 
       const reader = response.body?.getReader()
