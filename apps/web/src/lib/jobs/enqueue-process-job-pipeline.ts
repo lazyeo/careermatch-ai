@@ -26,64 +26,48 @@ type SupabaseLike = {
   }
 }
 
-export type AutomaticJobAnalysisSource =
-  | 'job_create'
-  | 'job_import'
-  | 'job_rescrape'
-  | 'manual_retry'
-  | 'agent_save_job'
-  | 'agent_batch_import'
+export type ProcessJobPipelineMode = 'analysis_only' | 'full_artifacts'
 
-export type EnqueueAutomaticJobAnalysisParams = {
+export type ProcessJobPipelinePayload = {
+  taskId: string
+  userId: string
+  jobId: string
+  resumeId: string | null
+  mode: ProcessJobPipelineMode
+}
+
+export type EnqueueProcessJobPipelineParams = {
   supabase: SupabaseLike
   userId: string
   jobId: string
   resumeId?: string | null
-  source: AutomaticJobAnalysisSource
-  triggerAnalysisTask: (payload: {
-    taskId: string
-    userId: string
-    jobId: string
-    resumeId: string | null
-    source: AutomaticJobAnalysisSource
-  }) => Promise<void>
+  mode: ProcessJobPipelineMode
+  triggerPipelineTask: (payload: ProcessJobPipelinePayload) => Promise<void>
 }
 
-export type EnqueueAutomaticJobAnalysisResult = {
+export type EnqueueProcessJobPipelineResult = {
   taskId: string
   status: 'pending'
 }
 
-export function buildAutomaticAnalysisTaskPayload(
-  params: Pick<EnqueueAutomaticJobAnalysisParams, 'userId' | 'jobId' | 'resumeId'>
-): ProcessingTaskInsertRecord {
-  return {
-    user_id: params.userId,
-    job_id: params.jobId,
-    resume_id: params.resumeId ?? null,
-    status: 'pending',
-    current_step: 'queued',
-    steps_completed: [],
-  }
-}
-
-export async function enqueueAutomaticJobAnalysis({
+export async function enqueueProcessJobPipeline({
   supabase,
   userId,
   jobId,
   resumeId,
-  source,
-  triggerAnalysisTask,
-}: EnqueueAutomaticJobAnalysisParams): Promise<EnqueueAutomaticJobAnalysisResult> {
-  const insertPayload = buildAutomaticAnalysisTaskPayload({
-    userId,
-    jobId,
-    resumeId,
-  })
-
+  mode,
+  triggerPipelineTask,
+}: EnqueueProcessJobPipelineParams): Promise<EnqueueProcessJobPipelineResult> {
   const { data: task, error } = await supabase
     .from('processing_tasks')
-    .insert(insertPayload)
+    .insert({
+      user_id: userId,
+      job_id: jobId,
+      resume_id: resumeId ?? null,
+      status: 'pending',
+      current_step: 'queued',
+      steps_completed: [],
+    })
     .select()
     .single()
 
@@ -92,12 +76,12 @@ export async function enqueueAutomaticJobAnalysis({
   }
 
   try {
-    await triggerAnalysisTask({
+    await triggerPipelineTask({
       taskId: task.id,
       userId,
       jobId,
       resumeId: resumeId ?? null,
-      source,
+      mode,
     })
   } catch (triggerError) {
     await supabase
@@ -108,7 +92,7 @@ export async function enqueueAutomaticJobAnalysis({
         error:
           triggerError instanceof Error
             ? triggerError.message
-            : 'Failed to dispatch automatic job analysis',
+            : 'Failed to dispatch process job pipeline',
         completed_at: new Date().toISOString(),
       })
       .eq('id', task.id)

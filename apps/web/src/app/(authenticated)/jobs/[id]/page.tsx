@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
+import { Button, Card, CardContent } from '@careermatch/ui'
 import { ApplyJobButton } from './components/ApplyJobButton'
 import { RefreshJobButton } from './components/RefreshJobButton'
 import { JobDetailTabs } from './components/JobDetailTabs'

@@ -91,7 +91,7 @@ export async function POST(
                 jobId: id,
                 source: 'job_rescrape',
                 triggerAnalysisTask: async (payload) => {
-                    await tasks.trigger('automatic-job-analysis', payload)
+                    await tasks.trigger('analyze-saved-job', payload)
                 },
             })
         } catch (enqueueError) {

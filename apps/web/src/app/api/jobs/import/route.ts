@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
                 jobId: job.id,
                 source: 'job_import',
                 triggerAnalysisTask: async (payload) => {
-                  await tasks.trigger('automatic-job-analysis', payload)
+                  await tasks.trigger('analyze-saved-job', payload)
                 },
               })
             } catch (enqueueError) {

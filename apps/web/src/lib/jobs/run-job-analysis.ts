@@ -13,6 +13,7 @@ import {
   type JobMatchingV2Output,
 } from '../ai/prompts/features/job-matching-v2'
 import type { AutomaticJobAnalysisSource, FullProfile } from '@careermatch/shared'
+import { buildJobAnalysisSummaryUpdate } from '../../server/job-processing/decide-next-action'
 
 export type AutomaticJobAnalysisPayload = {
   taskId: string
@@ -28,7 +29,7 @@ export type AutomaticJobAnalysisResult = {
   recommendation: string
 }
 
-type DbClient = SupabaseClient<any>
+type DbClient = SupabaseClient
 
 export async function processAutomaticJobAnalysisTask(
   supabase: DbClient,
@@ -123,6 +124,22 @@ export async function runAutomaticJobAnalysis(
 
   if (saveError || !savedSession) {
     throw new Error(saveError?.message || 'Failed to save analysis session')
+  }
+
+  const { error: jobUpdateError } = await supabase
+    .from('jobs')
+    .update(
+      buildJobAnalysisSummaryUpdate({
+        analysisSessionId: savedSession.id,
+        score: savedSession.score,
+        recommendation: savedSession.recommendation,
+      })
+    )
+    .eq('id', payload.jobId)
+    .eq('user_id', payload.userId)
+
+  if (jobUpdateError) {
+    throw new Error(jobUpdateError.message || 'Failed to update job analysis summary')
   }
 
   return {

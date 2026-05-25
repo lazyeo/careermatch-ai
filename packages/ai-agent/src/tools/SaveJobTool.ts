@@ -59,7 +59,7 @@ export class SaveJobTool implements Tool {
                     jobId: data.id,
                     source: 'agent_save_job',
                     triggerAnalysisTask: async (payload) => {
-                        await tasks.trigger('automatic-job-analysis', payload)
+                        await tasks.trigger('analyze-saved-job', payload)
                     }
                 })
             } catch (enqueueError) {

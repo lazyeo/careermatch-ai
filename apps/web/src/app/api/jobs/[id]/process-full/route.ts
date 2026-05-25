@@ -5,8 +5,11 @@
  * 创建任务记录并触发后台处理，立即返回任务ID
  */
 
-import { createClient } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
+import { tasks } from '@trigger.dev/sdk/v3'
+
+import { createClient } from '@/lib/supabase-server'
+import { enqueueProcessJobPipeline } from '@/lib/jobs/enqueue-process-job-pipeline'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -42,44 +45,21 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 })
     }
 
-    // 创建处理任务记录
-    const { data: task, error: taskError } = await supabase
-      .from('processing_tasks')
-      .insert({
-        user_id: user.id,
-        job_id: jobId,
-        resume_id: resumeId || null,
-        status: 'pending',
-        current_step: 'queued',
-        steps_completed: [],
-      })
-      .select()
-      .single()
-
-    if (taskError) {
-      console.error('Failed to create task:', taskError)
-      return NextResponse.json(
-        { error: 'Failed to create task' },
-        { status: 500 }
-      )
-    }
-
-    console.log(`✅ Task created: ${task.id}`)
-
-    // 触发后台处理 (fire and forget)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    fetch(`${baseUrl}/api/internal/process-job`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ taskId: task.id }),
-    }).catch((error) => {
-      console.error('Failed to trigger background processing:', error)
+    const task = await enqueueProcessJobPipeline({
+      supabase,
+      userId: user.id,
+      jobId,
+      resumeId: resumeId || null,
+      mode: 'full_artifacts',
+      triggerPipelineTask: async (payload) => {
+        await tasks.trigger('process-job-pipeline', payload)
+      },
     })
 
     // 立即返回任务信息
     return NextResponse.json({
-      taskId: task.id,
-      status: 'pending',
+      taskId: task.taskId,
+      status: task.status,
       message: '处理已开始，您可以离开页面',
     })
   } catch (error) {

@@ -75,7 +75,7 @@ export class BatchJobImportTool implements Tool {
                             jobId: job.id,
                             source: 'agent_batch_import',
                             triggerAnalysisTask: async (payload) => {
-                                await tasks.trigger('automatic-job-analysis', payload)
+                                await tasks.trigger('analyze-saved-job', payload)
                             }
                         })
                     } catch (enqueueError) {
