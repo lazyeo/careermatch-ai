@@ -39,6 +39,7 @@ import {
   recommendTemplate,
   type TemplateRecommendation,
 } from '@/lib/ai/template-recommender'
+import { fitResumeContentToOnePageBudget } from '@/lib/resume-content-budget'
 import { NextRequest, NextResponse } from 'next/server'
 import type {
   CVStrategy,
@@ -171,13 +172,13 @@ export async function POST(request: NextRequest) {
     console.log(`🤖 Enhancing content with ${providerName.toUpperCase()}...`)
     console.log(`📊 Using model: ${model}`)
 
-    const enhancedContent = await enhanceWithAI(
+    const enhancedContent = fitResumeContentToOnePageBudget(await enhanceWithAI(
       optimizedContent,
       job,
       session.analysis as string,
       cvStrategy,
       provider
-    )
+    ))
 
     // 10. 质量验证
     console.log('🔍 Running quality validation...')
@@ -452,14 +453,14 @@ async function enhanceWithAI(
         role: 'system',
         content: `You are an elite resume strategist who has helped thousands land jobs at Google, Meta, Amazon, and Fortune 500 companies.
 
-**CORE MISSION**: Create a HIGHLY TARGETED resume that speaks directly to the specific job posting. This is NOT about listing everything - it's about strategic positioning.
+**CORE MISSION**: Create a HIGHLY TARGETED one-page resume that speaks directly to the specific job posting. This is NOT about listing everything - it's about strategic positioning.
 
 **THE GOLDEN RULE**: Every single line must answer: "Why should THIS company hire THIS person for THIS specific role?"
 
 ## CRITICAL CUSTOMIZATION REQUIREMENTS:
 
 ### 1. Professional Summary (MOST IMPORTANT)
-Write a compelling 3-4 sentence summary that:
+Write a compelling 2-sentence summary that:
 - Opens with exact years of experience in the SPECIFIC field the job requires
 - Names 2-3 skills that DIRECTLY match the job requirements
 - Mentions a quantified achievement relevant to the target role
@@ -469,7 +470,7 @@ Write a compelling 3-4 sentence summary that:
 ### 2. Work Experience Transformation
 For EACH position, you MUST:
 - Reframe achievements to highlight skills the TARGET JOB requires
-- Add 4-5 bullet points (expand original content with specifics)
+- Add 2-3 high-impact bullet points
 - Start EVERY bullet with a STRONG action verb
 - Include AT LEAST one metric/number per bullet (estimate reasonably if needed)
 - Connect each achievement to a requirement in the job posting
@@ -483,7 +484,7 @@ For EACH position, you MUST:
 ### 4. Projects Selection
 - Highlight projects using technologies mentioned in the job
 - Reframe project outcomes to match job requirements
-- Add technical depth for technical roles, business impact for business roles
+- Keep only 1-2 most relevant projects, with concise technical depth or business impact
 
 ## ACCURACY CONSTRAINTS:
 - DO NOT invent facts, but DO expand and add context
@@ -589,19 +590,19 @@ ${JSON.stringify(content, null, 2)}
 # YOUR TRANSFORMATION TASK
 
 ## 1. Professional Summary (careerObjective)
-WRITE a powerful 3-4 sentence summary that:
+WRITE a powerful 2-sentence summary that:
 - States exact years of relevant experience (calculate from work history)
 - Names ${cvStrategy.skillsHighlight.slice(0, 3).join(', ')} as core competencies
-- Includes ONE impressive metric from work history
+- Includes ONE impressive metric from work history if available
 - Connects directly to "${job.title}" at "${job.company}"
 - Uses ${cvStrategy.tone} tone throughout
 
-Example format: "[X] years of experience in [field] with expertise in [skill1, skill2, skill3]. Proven track record of [quantified achievement]. Seeking to leverage [key strength] to drive [value proposition] at [Company]."
+Keep it under 55 words.
 
 ## 2. Work Experience (CRITICAL - Most important section)
 For EACH position:
 - REWRITE description to highlight ${cvStrategy.skillsHighlight.slice(0, 5).join(', ')}
-- EXPAND to exactly 4-5 achievement bullets
+- KEEP only the 2-3 strongest achievement bullets
 - Each bullet format: "[Action Verb] + [What you did] + [Quantified result] + [Business impact]"
 - USE terminology from the job description
 - EVERY bullet must start with: ${cvStrategy.actionVerbs.slice(0, 5).join(' / ')}
@@ -612,8 +613,8 @@ Then add other relevant skills from original content
 
 ## 4. Projects (Align with job requirements)
 - Emphasize technologies matching: ${cvStrategy.projectFocus?.join(', ') || 'job requirements'}
-- Add specific outcomes and metrics
-- Technical depth for technical roles
+- Keep at most 2 projects
+- Use 1 concise outcome/metric per project
 
 ## 5. Education & Certifications
 - Keep factual, add relevant coursework if applicable
@@ -625,7 +626,7 @@ Then add other relevant skills from original content
 Return ONLY a valid JSON object:
 {
   "personalInfo": { fullName, email, phone, location, linkedIn, github, website },
-  "careerObjective": "Your enhanced 3-4 sentence summary...",
+  "careerObjective": "Your enhanced 2-sentence summary...",
   "skills": [{ "name": "skill", "category": "category" }, ...],
   "workExperience": [{ company, position, startDate, endDate, isCurrent, description, achievements: ["bullet1", "bullet2", ...] }, ...],
   "projects": [{ name, description, technologies: [], highlights: [] }, ...],
@@ -638,7 +639,7 @@ CRITICAL RULES:
 - Keep original field names (camelCase)
 - Keep IDs if present
 - Do NOT invent new facts, only enhance/expand existing ones
-- Each work experience MUST have 4-5 achievement bullets
+- One-page budget: max 18 skills, max 3 work experiences, max 2-3 bullets per role, max 2 projects, max 3 certifications
 `
 }
 

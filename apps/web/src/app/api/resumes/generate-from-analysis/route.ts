@@ -8,6 +8,7 @@ import {
   type AIProviderType,
 } from '@/lib/ai-providers'
 import { validateResumeContent, type FlattenedProfile } from '@/lib/ai/resume-quality-validator'
+import { fitResumeContentToOnePageBudget } from '@/lib/resume-content-budget'
 import { NextRequest, NextResponse } from 'next/server'
 import type { ResumeContent } from '@careermatch/shared'
 
@@ -158,10 +159,11 @@ export async function POST(request: NextRequest) {
         {
           role: 'system',
           content: `You are a professional resume writer specializing in creating targeted resumes based on AI analysis.
-You will create a complete, job-specific resume based on the user's profile and AI analysis suggestions.
+You will create a concise, job-specific resume based on the user's profile and AI analysis suggestions.
 
 **CRITICAL REQUIREMENT**:
 All content in the generated resume MUST be in **ENGLISH**. Even if the input profile or job description is in another language, you must translate and adapt it to professional English.
+Default to a one-page A4 resume. Select the strongest evidence; do not include everything.
 
 **Important**:
 1. Resume content must be based on the user's real experience and skills.
@@ -181,7 +183,7 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
     "github": "GitHub链接（可选）",
     "website": "个人网站（可选）"
   },
-  "professional_summary": "2-3句话的专业简介，针对该岗位",
+  "professional_summary": "2-sentence targeted professional summary",
   "work_experience": [
     {
       "company": "公司名称",
@@ -190,8 +192,8 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
       "start_date": "YYYY-MM",
       "end_date": "YYYY-MM 或 至今",
       "achievements": [
-        "量化的成就1（包含数字和影响）",
-        "量化的成就2"
+        "Quantified achievement with impact",
+        "Second concise achievement"
       ]
     }
   ],
@@ -208,10 +210,10 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
     }
   ],
   "skills": {
-    "technical": ["技能1", "技能2"],
-    "soft": ["软技能1", "软技能2"],
-    "languages": ["语言1", "语言2"],
-    "tools": ["工具1", "工具2"]
+    "technical": ["skill1", "skill2"],
+    "soft": ["skill1", "skill2"],
+    "languages": ["language1"],
+    "tools": ["tool1", "tool2"]
   },
   "projects": [
     {
@@ -264,7 +266,7 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
     }
 
     // Transform AI output to ResumeContent format for validation
-    const normalizedResumeContent = transformToResumeContent(resumeContent)
+    const normalizedResumeContent = fitResumeContentToOnePageBudget(transformToResumeContent(resumeContent))
 
     // Build FlattenedProfile for validation
     const fullProfile: FlattenedProfile = {
@@ -369,7 +371,7 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
         .from('resumes')
         .update({
           title: resumeTitle,
-          content: resumeContent,
+          content: normalizedResumeContent,
           analysis_session_id: session.id,
           source: 'ai_generated',
           version: (existingResume.version || 1) + 1,
@@ -396,7 +398,7 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
         .insert({
           user_id: user.id,
           title: resumeTitle,
-          content: resumeContent,
+          content: normalizedResumeContent,
           job_id: session.job_id,
           analysis_session_id: session.id,
           source: 'ai_generated',
@@ -469,7 +471,7 @@ All content in the generated resume MUST be in **ENGLISH**. Even if the input pr
 
     return NextResponse.json({
       resumeId: resume.id,
-      content: resumeContent,
+      content: normalizedResumeContent,
       title: resumeTitle,
       // Include quality report in response
       qualityReport: {
@@ -610,26 +612,27 @@ ${JSON.stringify(certificationsFormatted, null, 2)}
 
 ---
 
-## 简历生成要求
+## Resume Generation Requirements
 
-请基于以上的AI分析建议和用户真实信息，生成一份完整的、针对该岗位的简历：
+Generate a focused resume for this target job. The default goal is to fit on one A4 page.
 
 ### 1. 内容选择原则
-- 根据AI分析建议，选择最相关的经历和技能
-- 突出与岗位要求匹配的能力
-- 按重要性排序内容
+- Select only the most relevant experience and skills based on the analysis.
+- Prioritize evidence that directly matches the role requirements.
+- Omit lower-value details instead of making the resume long.
 
 ### 2. 措辞优化
-- 使用AI分析中建议的关键词
-- 量化成就（使用具体数字、百分比、规模）
-- 采用行动动词开头（领导、开发、优化、提升等）
-- 体现影响力和价值
+- Use keywords recommended by the analysis.
+- Quantify achievements with specific numbers, percentages, or scale where available.
+- Start bullets with strong English action verbs.
+- Show impact and value clearly.
 
 ### 3. 格式要求
-- 专业简介：2-3句话，针对该岗位定制
-- 工作经历：按时间倒序，每个职位3-5个量化成就
-- 技能分类：技术技能、软技能、语言、工具
-- 项目经验：选择最相关的2-3个项目
+- Professional summary: exactly 2 concise sentences, under 55 words total.
+- Work experience: reverse chronological order, max 3 roles, 2-3 quantified achievements per role.
+- Skills: max 18 total skills across all categories.
+- Projects: max 2 most relevant projects, each with a short description and at most 1-2 achievements.
+- Certifications: max 3 most relevant certifications.
 
 ### 4. Important Notes
 - All content must be based on real user information, do not fabricate.

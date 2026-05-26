@@ -20,6 +20,7 @@ import type {
 } from '@careermatch/shared'
 import type { ResumeContent } from '@careermatch/shared'
 import { BaseResumeRenderer } from './base-renderer'
+import { shouldUseTwoColumnResumeLayout } from '../resume-content-budget'
 
 /**
  * PDF渲染器
@@ -38,8 +39,7 @@ export class PDFRenderer extends BaseResumeRenderer<Buffer> {
    * 渲染简历为PDF Buffer
    */
   async render(content: ResumeContent): Promise<Buffer> {
-    // 根据布局类型选择渲染方法
-    if (this.config.layout === 'two-column') {
+    if (this.config.layout === 'two-column' && shouldUseTwoColumnResumeLayout(content)) {
       return this.renderTwoColumn(content)
     }
     return this.renderSingleColumn(content)
