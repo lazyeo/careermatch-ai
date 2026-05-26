@@ -270,17 +270,17 @@ export function ProfileStreamingAnalysis({
               <Sparkles className="w-6 h-6 text-primary-600 absolute -right-1 -bottom-1" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              基于个人档案的智能分析
+              Profile-Based Analysis
             </h3>
             <p className="text-sm text-gray-600 mb-2">
-              AI将基于您的个人档案信息分析与该岗位的匹配度
+              AI will compare your profile with this role and estimate fit.
             </p>
             <p className="text-xs text-gray-500 mb-6">
-              分析完成后，您将获得针对性的简历撰写建议
+              After analysis, you will get targeted resume writing guidance.
             </p>
             <Button variant="primary" onClick={startStreaming} className="gap-2">
               <Sparkles className="w-4 h-4" />
-              开始档案分析
+              Start Profile Analysis
             </Button>
           </div>
         </CardContent>
@@ -296,10 +296,10 @@ export function ProfileStreamingAnalysis({
             <div className="w-12 h-12 rounded-full bg-error-100 text-error-600 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">!</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">分析失败</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Analysis Failed</h3>
             <p className="text-sm text-gray-600 mb-4">{error}</p>
             <Button variant="primary" onClick={startStreaming}>
-              重试
+              Retry
             </Button>
           </div>
         </CardContent>
@@ -318,10 +318,10 @@ export function ProfileStreamingAnalysis({
       <div className="flex items-center gap-2 px-1">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
           <User className="w-3 h-3" />
-          基于个人档案分析
+          Profile-based analysis
         </span>
         <span className="text-xs text-gray-500">
-          分析结果包含简历撰写建议
+          Includes resume writing guidance
         </span>
       </div>
 
@@ -333,19 +333,19 @@ export function ProfileStreamingAnalysis({
               {state === 'streaming' ? (
                 <>
                   <Loader2 className="w-5 h-5 text-primary-600 animate-spin" />
-                  AI正在分析...
+                  AI is analyzing...
                 </>
               ) : (
                 <>
                   <CheckCircle className="w-5 h-5 text-success-600" />
-                  分析完成
+                  Analysis Complete
                 </>
               )}
             </CardTitle>
             {state === 'streaming' && (
               <div className="flex items-center gap-3">
                 <span className="text-xs text-gray-500 animate-pulse">
-                  实时生成中
+                  Streaming live
                 </span>
                 <span className="text-xs font-mono text-primary-600 bg-primary-50 px-2 py-1 rounded">
                   ~{tokenCount} tokens
@@ -364,7 +364,7 @@ export function ProfileStreamingAnalysis({
             ) : state === 'streaming' ? (
               <div className="flex items-center gap-2 text-gray-500">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>正在准备分析内容...</span>
+                <span>Preparing analysis content...</span>
               </div>
             ) : null}
           </div>
@@ -375,13 +375,13 @@ export function ProfileStreamingAnalysis({
       {state === 'completed' && (
         <div className="flex gap-3 justify-end">
           <Button variant="outline" onClick={startStreaming}>
-            重新分析
+            Run Again
           </Button>
           <Button
             variant="primary"
             onClick={async () => {
               if (!sessionId) {
-                alert('会话ID不存在，无法生成简历')
+                alert('Session ID is missing, so a resume cannot be generated.')
                 return
               }
 
@@ -400,7 +400,7 @@ export function ProfileStreamingAnalysis({
 
                 if (!response.ok) {
                   const data = await response.json()
-                  throw new Error(data.error || '生成简历失败')
+                  throw new Error(data.error || 'Failed to generate resume')
                 }
 
                 const result = await response.json()
@@ -409,7 +409,7 @@ export function ProfileStreamingAnalysis({
                 window.location.href = `/resumes/preview/${result.resumeId}`
               } catch (err) {
                 console.error('Error generating resume:', err)
-                alert(err instanceof Error ? err.message : '生成简历失败，请重试')
+                alert(err instanceof Error ? err.message : 'Failed to generate resume. Please try again.')
               } finally {
                 setIsGeneratingResume(false)
               }
@@ -419,10 +419,10 @@ export function ProfileStreamingAnalysis({
             {isGeneratingResume ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                AI正在生成简历...
+                AI is generating the resume...
               </>
             ) : (
-              '根据建议创建简历'
+              'Create Resume from Recommendations'
             )}
           </Button>
         </div>

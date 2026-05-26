@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from '@careermatch/ui'
 import type { ParsedJobData } from '@careermatch/job-scraper'
+import { useTranslations } from 'next-intl'
 
 type ImportMode = 'url' | 'text'
 
@@ -30,6 +31,7 @@ interface BatchImportResponse {
 
 export function JobImportForm() {
   const router = useRouter()
+  const t = useTranslations('jobs.import')
   const [mode, setMode] = useState<ImportMode>('url')
   const [urls, setUrls] = useState('')
   const [content, setContent] = useState('')
@@ -49,7 +51,7 @@ export function JobImportForm() {
       const uniqueUrls = Array.from(new Set(extractedUrls))
 
       if (uniqueUrls.length === 0) {
-        throw new Error('未找到有效的URL链接')
+        throw new Error(t('errors.noUrl'))
       }
 
       const payload = mode === 'url'
@@ -65,14 +67,14 @@ export function JobImportForm() {
       const result: BatchImportResponse = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || '解析失败')
+        throw new Error(result.error || t('errors.parseFailed'))
       }
 
       if (result.results) {
         setParsedResults(result.results)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '解析失败')
+      setError(err instanceof Error ? err.message : t('errors.parseFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -106,7 +108,7 @@ export function JobImportForm() {
       })
 
       if (!response.ok) {
-        throw new Error('保存失败')
+        throw new Error(t('errors.saveFailed'))
       }
 
       // Remove saved item from list or mark as saved
@@ -154,9 +156,9 @@ export function JobImportForm() {
       {parsedResults.length === 0 && (
         <Card className="border-gray-200 shadow-sm">
           <CardHeader className="border-b border-gray-100 pb-4">
-            <CardTitle className="text-xl font-semibold text-gray-900">导入岗位</CardTitle>
+            <CardTitle className="text-xl font-semibold text-gray-900">{t('title')}</CardTitle>
             <p className="text-sm text-gray-500">
-              先抓取岗位原文，再决定是否保存。把输入方式保持在一个入口里，减少重复操作。
+              {t('description')}
             </p>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
@@ -168,7 +170,7 @@ export function JobImportForm() {
                   : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
-                链接导入
+                {t('urlMode')}
               </button>
               <button
                 onClick={() => setMode('text')}
@@ -177,40 +179,40 @@ export function JobImportForm() {
                   : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
-                文本导入
+                {t('textMode')}
               </button>
             </div>
 
             {mode === 'url' ? (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  招聘页面URL (每行一个)
+                  {t('urlLabel')}
                 </label>
                 <textarea
                   value={urls}
                   onChange={(e) => setUrls(e.target.value)}
                   rows={5}
-                  placeholder="粘贴包含链接的文本，例如：&#10;https://seek.co.nz/job/123, https://linkedin.com/jobs/..."
+                  placeholder={t('urlPlaceholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
                 />
                 <p className="mt-2 text-sm text-gray-500">
-                  支持自动从文本中提取多个链接（支持换行、逗号分隔或混合文本）
+                  {t('urlHelp')}
                 </p>
               </div>
             ) : (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  招聘信息内容
+                  {t('contentLabel')}
                 </label>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={10}
-                  placeholder="粘贴完整的招聘信息..."
+                  placeholder={t('contentPlaceholder')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <p className="mt-2 text-sm text-gray-500">
-                  从招聘页面复制完整的岗位描述
+                  {t('contentHelp')}
                 </p>
               </div>
             )}
@@ -227,7 +229,7 @@ export function JobImportForm() {
                 variant="primary"
                 disabled={isLoading || (mode === 'url' ? !urls.trim() : !content.trim())}
               >
-                {isLoading ? '解析中...' : '开始解析'}
+                {isLoading ? t('parsingButton') : t('parseButton')}
               </Button>
             </div>
           </CardContent>
@@ -240,22 +242,25 @@ export function JobImportForm() {
           <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
-                解析结果 ({parsedResults.filter(r => r.success).length}/{parsedResults.length})
+                {t('resultsTitle', {
+                  success: parsedResults.filter(r => r.success).length,
+                  total: parsedResults.length,
+                })}
               </h2>
               <p className="mt-1 text-sm text-gray-500">
-                先确认岗位质量，再统一保存。低质量或重复内容可以在这里直接放弃。
+                {t('resultsDescription')}
               </p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={handleReset}>
-                重新导入
+                {t('restart')}
               </Button>
               <Button
                 variant="primary"
                 onClick={handleSaveAll}
                 disabled={isSaving || parsedResults.filter(r => r.success).length === 0}
               >
-                {isSaving ? '保存中...' : '全部保存'}
+                {isSaving ? t('saving') : t('saveAll')}
               </Button>
             </div>
           </div>
@@ -266,7 +271,7 @@ export function JobImportForm() {
                 <CardTitle className="flex items-center justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${result.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                      {result.success ? '解析成功' : '解析失败'}
+                      {result.success ? t('success') : t('failed')}
                     </span>
                     {result.input && (
                       <span className="truncate text-sm font-normal text-gray-500">
@@ -281,19 +286,19 @@ export function JobImportForm() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs text-gray-500">岗位标题</label>
+                        <label className="text-xs text-gray-500">{t('jobTitle')}</label>
                         <div className="font-medium">{result.parsed_data.title}</div>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">公司名称</label>
+                        <label className="text-xs text-gray-500">{t('company')}</label>
                         <div className="font-medium">{result.parsed_data.company}</div>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">地点</label>
+                        <label className="text-xs text-gray-500">{t('location')}</label>
                         <div>{result.parsed_data.location || '-'}</div>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">薪资</label>
+                        <label className="text-xs text-gray-500">{t('salary')}</label>
                         <div className="text-success-600">
                           {result.parsed_data.salary_min
                             ? `${result.parsed_data.salary_currency} ${result.parsed_data.salary_min.toLocaleString()}`
@@ -303,7 +308,7 @@ export function JobImportForm() {
                     </div>
                     {/* 简略描述 */}
                     <div>
-                      <label className="text-xs text-gray-500">描述预览</label>
+                      <label className="text-xs text-gray-500">{t('descriptionPreview')}</label>
                       <div className="text-sm text-gray-600 line-clamp-2">
                         {result.parsed_data.description}
                       </div>
@@ -311,7 +316,7 @@ export function JobImportForm() {
                   </div>
                 ) : (
                   <div className="text-error-600 text-sm">
-                    {result.error || '未知错误'}
+                    {result.error || t('unknownError')}
                   </div>
                 )}
               </CardContent>

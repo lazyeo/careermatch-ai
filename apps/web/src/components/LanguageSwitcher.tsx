@@ -37,7 +37,7 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
           disabled={isPending}
         >
           <Globe className="w-4 h-4" />
-          <span className="text-xs">{locale === 'zh-CN' ? '中文' : 'EN'}</span>
+          <span className="text-xs">{locale === 'zh-CN' ? 'ZH' : 'EN'}</span>
           <ChevronDown className="w-3 h-3" />
         </Button>
 

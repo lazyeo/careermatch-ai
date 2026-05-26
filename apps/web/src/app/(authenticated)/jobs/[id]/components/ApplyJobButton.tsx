@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button, Card, CardContent } from '@careermatch/ui'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 interface Resume {
   id: string
@@ -20,6 +20,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
   const t = useTranslations('forms.applyJob')
   const tApp = useTranslations('applications')
   const tCommon = useTranslations('common')
+  const locale = useLocale()
   const [showModal, setShowModal] = useState(false)
   const [resumes, setResumes] = useState<Resume[]>([])
   const [selectedResumeId, setSelectedResumeId] = useState<string>('')
@@ -216,7 +217,7 @@ export function ApplyJobButton({ jobId }: ApplyJobButtonProps) {
                           </div>
                           <div className="text-sm text-gray-500 mt-1">
                             {t('updatedAt')}{' '}
-                            {new Date(resume.updated_at).toLocaleDateString('zh-CN')}
+                            {new Date(resume.updated_at).toLocaleDateString(locale)}
                           </div>
                         </div>
                       </label>

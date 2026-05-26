@@ -94,11 +94,10 @@ export default async function JobsPage() {
         <section className="mb-8 rounded-2xl border border-gray-200 bg-white px-6 py-6 shadow-sm">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl space-y-2">
-              <p className="text-sm font-medium text-gray-500">Job workspace</p>
+              <p className="text-sm font-medium text-gray-500">{t('workspaceKicker')}</p>
               <h1 className="text-3xl font-semibold tracking-tight text-gray-950">{t('myJobs')}</h1>
               <p className="text-sm leading-6 text-gray-600">
-                Keep the queue focused on high-value decisions: capture the role, let background analysis run,
-                then review only the jobs worth moving forward.
+                {t('workspaceDescription')}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -116,7 +115,7 @@ export default async function JobsPage() {
             <SummaryChip label={t('saved')} value={savedCount} tone="neutral" />
             <SummaryChip label={t('applied')} value={appliedCount} tone="primary" />
             <SummaryChip label={t('interviewing')} value={interviewCount} tone="warning" />
-            <SummaryChip label="分析进行中" value={activeAnalysisCount} tone="info" />
+            <SummaryChip label={t('activeAnalysis')} value={activeAnalysisCount} tone="info" />
           </div>
         </section>
 
@@ -157,21 +156,21 @@ export default async function JobsPage() {
           <div className="space-y-8">
             <JobSection
               title={t('board.saved')}
-              description="Newly captured roles waiting for a decision. Background analysis status stays visible here so you can avoid opening every job."
+              description={t('sectionDescriptions.saved')}
               count={savedJobs.length}
               jobs={savedJobs}
               t={t}
             />
             <JobSection
               title={t('board.applied')}
-              description="Roles already in motion. Keep this section compact and outcome-focused."
+              description={t('sectionDescriptions.applied')}
               count={appliedJobs.length}
               jobs={appliedJobs}
               t={t}
             />
             <JobSection
               title={t('board.interview')}
-              description="Active opportunities that justify deeper preparation and document work."
+              description={t('sectionDescriptions.interview')}
               count={interviewJobs.length}
               jobs={interviewJobs}
               t={t}
@@ -183,7 +182,7 @@ export default async function JobsPage() {
                   <div>
                     <h2 className="text-base font-semibold text-gray-900">{t('board.archived')}</h2>
                     <p className="mt-1 text-sm text-gray-500">
-                      Lower-value historical items stay available, but no longer compete with active decision work.
+                      {t('sectionDescriptions.archived')}
                     </p>
                   </div>
                   <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
@@ -286,7 +285,7 @@ function JobSection({
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {jobs.length > 0 ? jobs.map((job) => <JobCard key={job.id} job={job} t={t} />) : (
           <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-sm text-gray-500">
-            No jobs in this section.
+            {t('sectionEmpty')}
           </div>
         )}
       </div>
@@ -299,27 +298,27 @@ function getAnalysisTaskBadge(task?: Job['latest_processing_task']) {
 
   if (task.status === 'pending') {
     return {
-      label: '等待分析',
+      labelKey: 'analysisStatus.pending',
       className: 'bg-blue-50 text-blue-700 border-blue-200',
     }
   }
 
   if (task.status === 'processing') {
     return {
-      label: '分析中',
+      labelKey: 'analysisStatus.processing',
       className: 'bg-amber-50 text-amber-700 border-amber-200',
     }
   }
 
   if (task.status === 'completed') {
     return {
-      label: '已分析',
+      labelKey: 'analysisStatus.completed',
       className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     }
   }
 
   return {
-    label: '分析失败',
+    labelKey: 'analysisStatus.failed',
     className: 'bg-red-50 text-red-700 border-red-200',
   }
 }
@@ -361,7 +360,7 @@ function JobCard({ job, t, compact = false }: JobCardProps) {
         {analysisTaskBadge && (
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${analysisTaskBadge.className}`}>
-              {analysisTaskBadge.label}
+              {t(analysisTaskBadge.labelKey)}
             </span>
             {job.latest_processing_task?.status === 'failed' && job.latest_processing_task.error && (
               <span className="text-xs text-red-600 line-clamp-1" title={job.latest_processing_task.error}>

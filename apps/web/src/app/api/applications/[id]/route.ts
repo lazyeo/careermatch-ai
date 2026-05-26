@@ -116,23 +116,12 @@ export async function PATCH(
 
     // If status changed, add timeline event
     if (status && status !== currentApp?.status) {
-      const statusLabels: Record<string, string> = {
-        draft: '草稿',
-        submitted: '已提交',
-        under_review: '审核中',
-        interview_scheduled: '面试安排',
-        offer_received: '录取',
-        rejected: '拒绝',
-        withdrawn: '已撤回',
-        accepted: '已接受',
-      }
-
       updatedTimeline = [
         ...updatedTimeline,
         {
           type: 'status_change',
           date: new Date().toISOString(),
-          description: `状态更新为: ${statusLabels[status] || status}`,
+          description: `Status updated to: ${status}`,
           oldStatus: currentApp?.status,
           newStatus: status,
         },

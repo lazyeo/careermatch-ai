@@ -206,14 +206,14 @@ export function StreamingAnalysis({
           <div className="text-center">
             <Sparkles className="w-12 h-12 text-primary-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              旧版流式分析
+              Legacy Streaming Analysis
             </h3>
             <p className="text-sm text-gray-600 mb-6">
-              这是一条保留的旧分析路径，用于兼容历史 resume-based 流程，不是当前推荐的主入口。
+              This legacy path is kept for historical resume-based workflows. The V2 workspace is the recommended entry point.
             </p>
             <Button variant="primary" onClick={startStreaming} className="gap-2">
               <Sparkles className="w-4 h-4" />
-              开始旧版流式分析
+              Start Legacy Streaming Analysis
             </Button>
           </div>
         </CardContent>
@@ -229,10 +229,10 @@ export function StreamingAnalysis({
             <div className="w-12 h-12 rounded-full bg-error-100 text-error-600 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">!</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">分析失败</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Analysis Failed</h3>
             <p className="text-sm text-gray-600 mb-4">{error}</p>
             <Button variant="primary" onClick={startStreaming}>
-              重试
+              Retry
             </Button>
           </div>
         </CardContent>
@@ -255,18 +255,18 @@ export function StreamingAnalysis({
               {state === 'streaming' ? (
                 <>
                   <Loader2 className="w-5 h-5 text-primary-600 animate-spin" />
-                  AI正在分析...
+                  AI is analyzing...
                 </>
               ) : (
                 <>
                   <CheckCircle className="w-5 h-5 text-success-600" />
-                  分析完成
+                  Analysis Complete
                 </>
               )}
             </CardTitle>
             {state === 'streaming' && (
               <span className="text-xs text-gray-500 animate-pulse">
-                实时生成中
+                Streaming live
               </span>
             )}
           </div>
@@ -281,7 +281,7 @@ export function StreamingAnalysis({
             ) : state === 'streaming' ? (
               <div className="flex items-center gap-2 text-gray-500">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>正在准备分析内容...</span>
+                <span>Preparing analysis content...</span>
               </div>
             ) : null}
           </div>
@@ -292,7 +292,7 @@ export function StreamingAnalysis({
       {state === 'completed' && (
         <div className="flex gap-3 justify-end">
           <Button variant="outline" onClick={startStreaming}>
-            重新分析
+            Run Again
           </Button>
           {sessionId && (
             <Button
@@ -301,7 +301,7 @@ export function StreamingAnalysis({
                 window.location.href = `/jobs/${jobId}/analysis/optimize?resumeId=${resumeId}&sessionId=${sessionId}`
               }}
             >
-              AI优化简历
+              Optimize Resume with AI
             </Button>
           )}
         </div>

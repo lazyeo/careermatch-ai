@@ -97,7 +97,7 @@ function LoginPageContent() {
         router.refresh()
       }
     } catch (error) {
-      console.error('登录失败:', error)
+      console.error('Login failed:', error)
       setErrorMessage(t('loginError'))
     } finally {
       setIsLoading(false)
@@ -125,7 +125,7 @@ function LoginPageContent() {
       }
       // OAuth会自动重定向，无需手动跳转
     } catch (error) {
-      console.error('Google登录失败:', error)
+      console.error('Google login failed:', error)
       setErrorMessage(t('loginError'))
       setIsLoading(false)
     }

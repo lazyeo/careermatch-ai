@@ -31,7 +31,7 @@ export function RadarChartComponent({ dimensions }: RadarChartComponentProps) {
           tickCount={6}
         />
         <Radar
-          name="匹配度"
+          name="Match Score"
           dataKey="score"
           stroke="#8B5CF6"
           fill="#8B5CF6"

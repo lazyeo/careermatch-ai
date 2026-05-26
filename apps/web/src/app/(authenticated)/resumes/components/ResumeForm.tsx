@@ -8,13 +8,14 @@ import type { ResumeContent } from '@careermatch/shared'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 // Zod schema for resume validation
 const resumeSchema = z.object({
-  title: z.string().min(1, '请输入简历标题'),
+  title: z.string().min(1, 'Please enter a resume title'),
   personalInfo: z.object({
-    fullName: z.string().min(1, '请输入姓名'),
-    email: z.string().email('请输入有效的邮箱'),
+    fullName: z.string().min(1, 'Please enter your name'),
+    email: z.string().email('Please enter a valid email'),
     phone: z.string().optional(),
     location: z.string().optional(),
     linkedIn: z.string().optional(),
@@ -23,17 +24,17 @@ const resumeSchema = z.object({
   }),
   careerObjective: z.string().optional(),
   skills: z.array(z.object({
-    name: z.string().min(1, '请输入技能名称'),
+    name: z.string().min(1, 'Please enter a skill name'),
     level: z.enum(['beginner', 'intermediate', 'expert']).optional(),
     years: z.number().optional(),
     category: z.string().optional(),
   })).default([]),
   workExperience: z.array(z.object({
     id: z.string(),
-    company: z.string().min(1, '请输入公司名称'),
-    position: z.string().min(1, '请输入职位'),
+    company: z.string().min(1, 'Please enter a company name'),
+    position: z.string().min(1, 'Please enter a position'),
     location: z.string().optional(),
-    startDate: z.string().min(1, '请输入开始日期'),
+    startDate: z.string().min(1, 'Please enter a start date'),
     endDate: z.string().optional(),
     isCurrent: z.boolean(),
     description: z.string(),
@@ -42,7 +43,7 @@ const resumeSchema = z.object({
   })).default([]),
   projects: z.array(z.object({
     id: z.string(),
-    name: z.string().min(1, '请输入项目名称'),
+    name: z.string().min(1, 'Please enter a project name'),
     description: z.string(),
     role: z.string().optional(),
     startDate: z.string().optional(),
@@ -53,20 +54,20 @@ const resumeSchema = z.object({
   })).default([]),
   education: z.array(z.object({
     id: z.string(),
-    institution: z.string().min(1, '请输入学校名称'),
-    degree: z.string().min(1, '请输入学位'),
-    major: z.string().min(1, '请输入专业'),
+    institution: z.string().min(1, 'Please enter an institution'),
+    degree: z.string().min(1, 'Please enter a degree'),
+    major: z.string().min(1, 'Please enter a major'),
     location: z.string().optional(),
-    startDate: z.string().min(1, '请输入开始日期'),
+    startDate: z.string().min(1, 'Please enter a start date'),
     endDate: z.string().optional(),
     gpa: z.number().optional(),
     achievements: z.array(z.string()).default([]),
   })).default([]),
   certifications: z.array(z.object({
     id: z.string(),
-    name: z.string().min(1, '请输入证书名称'),
-    issuer: z.string().min(1, '请输入颁发机构'),
-    issueDate: z.string().min(1, '请输入颁发日期'),
+    name: z.string().min(1, 'Please enter a certification name'),
+    issuer: z.string().min(1, 'Please enter an issuer'),
+    issueDate: z.string().min(1, 'Please enter an issue date'),
     expiryDate: z.string().optional(),
     credentialId: z.string().optional(),
     url: z.string().optional(),
@@ -87,6 +88,8 @@ interface ResumeFormProps {
 
 export function ResumeForm({ initialData, mode }: ResumeFormProps) {
   const router = useRouter()
+  const t = useTranslations('resumes')
+  const formT = useTranslations('resumes.form')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -104,7 +107,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
         ...initialData.content,
       }
       : {
-        title: '我的简历',
+        title: formT('defaultTitle'),
         personalInfo: {
           fullName: '',
           email: '',
@@ -183,12 +186,12 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
       }
 
       await response.json()
-      toast.success(mode === 'create' ? '简历创建成功' : '简历保存成功')
+      toast.success(mode === 'create' ? formT('created') : formT('saved'))
       router.push(`/resumes`)
       router.refresh()
     } catch (err) {
       console.error('Error saving resume:', err)
-      const errorMessage = '保存失败，请重试'
+      const errorMessage = formT('saveFailed')
       setError(errorMessage)
       toast.error(errorMessage)
     } finally {
@@ -201,14 +204,14 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
       {/* Resume Title */}
       <Card>
         <CardHeader>
-          <CardTitle>简历标题</CardTitle>
+          <CardTitle>{t('resumeTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <input
             type="text"
             {...register('title')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="例如：软件工程师简历"
+            placeholder={formT('titlePlaceholder')}
           />
           {errors.title && (
             <p className="text-error-600 text-sm mt-1">{errors.title.message}</p>
@@ -219,13 +222,13 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
       {/* Personal Info */}
       <Card>
         <CardHeader>
-          <CardTitle>个人信息</CardTitle>
+          <CardTitle>{t('personalInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                姓名 <span className="text-error-600">*</span>
+                {t('fullName')} <span className="text-error-600">*</span>
               </label>
               <input
                 type="text"
@@ -241,7 +244,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                邮箱 <span className="text-error-600">*</span>
+                {t('email')} <span className="text-error-600">*</span>
               </label>
               <input
                 type="email"
@@ -256,7 +259,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">电话</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('phone')}</label>
               <input
                 type="tel"
                 {...register('personalInfo.phone')}
@@ -265,12 +268,12 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">地点</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('location')}</label>
               <input
                 type="text"
                 {...register('personalInfo.location')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="例如：Auckland, New Zealand"
+                placeholder={formT('locationPlaceholder')}
               />
             </div>
 
@@ -300,14 +303,14 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
       {/* Career Objective */}
       <Card>
         <CardHeader>
-          <CardTitle>职业目标</CardTitle>
+          <CardTitle>{t('careerObjective')}</CardTitle>
         </CardHeader>
         <CardContent>
           <textarea
             {...register('careerObjective')}
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            placeholder="简要描述您的职业目标和期望..."
+            placeholder={formT('objectivePlaceholder')}
           />
         </CardContent>
       </Card>
@@ -316,7 +319,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>技能</CardTitle>
+            <CardTitle>{t('skills')}</CardTitle>
             <Button
               type="button"
               variant="outline"
@@ -329,13 +332,13 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                 })
               }
             >
-              + 添加技能
+              + {t('addSkill')}
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {skillFields.length === 0 && (
-            <p className="text-gray-500 text-center py-4">暂无技能，点击上方按钮添加</p>
+            <p className="text-gray-500 text-center py-4">{formT('emptySkills')}</p>
           )}
           {skillFields.map((field, index) => (
             <div key={field.id} className="flex gap-4 items-start p-4 border rounded-md">
@@ -343,21 +346,21 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                 <input
                   type="text"
                   {...register(`skills.${index}.name`)}
-                  placeholder="技能名称 *"
+                  placeholder={formT('skillNamePlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <select
                   {...register(`skills.${index}.level`)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  <option value="beginner">初级</option>
-                  <option value="intermediate">中级</option>
-                  <option value="expert">精通</option>
+                  <option value="beginner">{t('skillLevels.beginner')}</option>
+                  <option value="intermediate">{t('skillLevels.intermediate')}</option>
+                  <option value="expert">{t('skillLevels.expert')}</option>
                 </select>
                 <input
                   type="text"
                   {...register(`skills.${index}.category`)}
-                  placeholder="分类（如：编程语言）"
+                  placeholder={formT('skillCategoryPlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
@@ -368,7 +371,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                 onClick={() => removeSkill(index)}
                 className="text-error-600"
               >
-                删除
+                {formT('delete')}
               </Button>
             </div>
           ))}
@@ -379,7 +382,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>工作经历</CardTitle>
+            <CardTitle>{t('workExperience')}</CardTitle>
             <Button
               type="button"
               variant="outline"
@@ -399,20 +402,20 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                 })
               }
             >
-              + 添加工作经历
+              + {t('addExperience')}
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {workFields.length === 0 && (
             <p className="text-gray-500 text-center py-4">
-              暂无工作经历，点击上方按钮添加
+              {formT('emptyWork')}
             </p>
           )}
           {workFields.map((field, index) => (
             <div key={field.id} className="p-4 border rounded-md space-y-4">
               <div className="flex justify-between items-start">
-                <h4 className="font-medium">工作经历 {index + 1}</h4>
+                <h4 className="font-medium">{formT('workItem', { index: index + 1 })}</h4>
                 <Button
                   type="button"
                   variant="outline"
@@ -420,7 +423,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                   onClick={() => removeWork(index)}
                   className="text-error-600"
                 >
-                  删除
+                  {formT('delete')}
                 </Button>
               </div>
 
@@ -428,31 +431,31 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                 <input
                   type="text"
                   {...register(`workExperience.${index}.company`)}
-                  placeholder="公司名称 *"
+                  placeholder={formT('companyPlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="text"
                   {...register(`workExperience.${index}.position`)}
-                  placeholder="职位 *"
+                  placeholder={formT('positionPlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="text"
                   {...register(`workExperience.${index}.location`)}
-                  placeholder="地点"
+                  placeholder={formT('locationPlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="month"
                   {...register(`workExperience.${index}.startDate`)}
-                  placeholder="开始日期 *"
+                  placeholder={formT('startDatePlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="month"
                   {...register(`workExperience.${index}.endDate`)}
-                  placeholder="结束日期"
+                  placeholder={formT('endDatePlaceholder')}
                   disabled={watch(`workExperience.${index}.isCurrent`)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-100"
                 />
@@ -462,14 +465,14 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                     {...register(`workExperience.${index}.isCurrent`)}
                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="text-sm">目前在职</span>
+                  <span className="text-sm">{formT('currentRole')}</span>
                 </label>
               </div>
 
               <textarea
                 {...register(`workExperience.${index}.description`)}
                 rows={3}
-                placeholder="工作描述"
+                placeholder={formT('workDescriptionPlaceholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
@@ -481,7 +484,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>教育背景</CardTitle>
+            <CardTitle>{t('education')}</CardTitle>
             <Button
               type="button"
               variant="outline"
@@ -499,20 +502,20 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                 })
               }
             >
-              + 添加教育经历
+              + {t('addEducation')}
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {eduFields.length === 0 && (
             <p className="text-gray-500 text-center py-4">
-              暂无教育背景，点击上方按钮添加
+              {formT('emptyEducation')}
             </p>
           )}
           {eduFields.map((field, index) => (
             <div key={field.id} className="p-4 border rounded-md space-y-4">
               <div className="flex justify-between items-start">
-                <h4 className="font-medium">教育经历 {index + 1}</h4>
+                <h4 className="font-medium">{formT('educationItem', { index: index + 1 })}</h4>
                 <Button
                   type="button"
                   variant="outline"
@@ -520,7 +523,7 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                   onClick={() => removeEdu(index)}
                   className="text-error-600"
                 >
-                  删除
+                  {formT('delete')}
                 </Button>
               </div>
 
@@ -528,37 +531,37 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
                 <input
                   type="text"
                   {...register(`education.${index}.institution`)}
-                  placeholder="学校名称 *"
+                  placeholder={formT('institutionPlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="text"
                   {...register(`education.${index}.degree`)}
-                  placeholder="学位 *"
+                  placeholder={formT('degreePlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="text"
                   {...register(`education.${index}.major`)}
-                  placeholder="专业 *"
+                  placeholder={formT('majorPlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="text"
                   {...register(`education.${index}.location`)}
-                  placeholder="地点"
+                  placeholder={formT('locationPlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="month"
                   {...register(`education.${index}.startDate`)}
-                  placeholder="开始日期 *"
+                  placeholder={formT('startDatePlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <input
                   type="month"
                   {...register(`education.${index}.endDate`)}
-                  placeholder="结束日期"
+                  placeholder={formT('endDatePlaceholder')}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
@@ -582,10 +585,10 @@ export function ResumeForm({ initialData, mode }: ResumeFormProps) {
           onClick={() => router.back()}
           disabled={isSubmitting}
         >
-          取消
+          {formT('cancel')}
         </Button>
         <Button type="submit" variant="primary" disabled={isSubmitting}>
-          {isSubmitting ? '保存中...' : mode === 'create' ? '创建简历' : '保存修改'}
+          {isSubmitting ? formT('saving') : mode === 'create' ? formT('create') : formT('save')}
         </Button>
       </div>
     </form>

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Button, Card, CardContent } from '@careermatch/ui'
 import { Sparkles, Loader2, AlertCircle } from 'lucide-react'
 import { MarkdownAnalysis } from '../analysis/components/MarkdownAnalysis'
@@ -15,6 +15,7 @@ interface JobSummaryProps {
 export function JobSummary({ jobId, initialContent = '' }: JobSummaryProps) {
     const router = useRouter()
     const locale = useLocale()
+    const t = useTranslations('jobs.detail')
     const [content, setContent] = useState(initialContent)
     const [isStreaming, setIsStreaming] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -106,15 +107,15 @@ export function JobSummary({ jobId, initialContent = '' }: JobSummaryProps) {
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                         <div className="max-w-2xl">
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                岗位点评
+                                {t('summaryTitle')}
                             </h3>
                             <p className="text-sm leading-6 text-gray-600">
-                                用一段简洁点评提炼岗位亮点、风险和判断重点，帮助你先做是否继续投入的决定。
+                                {t('summaryDescription')}
                             </p>
                         </div>
                         <Button onClick={startStreaming} className="md:min-w-[140px] justify-center gap-2">
                             <Sparkles className="w-4 h-4" />
-                            生成点评
+                            {t('summaryGenerate')}
                         </Button>
                     </div>
                 </CardContent>
@@ -127,17 +128,17 @@ export function JobSummary({ jobId, initialContent = '' }: JobSummaryProps) {
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-primary-500" />
-                    岗位点评
+                    {t('summaryTitle')}
                 </h3>
                 {isStreaming && (
                     <span className="text-xs text-primary-600 flex items-center gap-1">
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        正在分析...
+                        {t('summaryAnalyzing')}
                     </span>
                 )}
                 {!isStreaming && content && (
                     <Button variant="outline" size="sm" onClick={startStreaming}>
-                        重新生成
+                        {t('summaryRegenerate')}
                     </Button>
                 )}
             </div>

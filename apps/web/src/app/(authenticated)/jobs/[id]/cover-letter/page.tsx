@@ -196,7 +196,7 @@ export default function CoverLetterPage({
             <CardContent className="py-12">
               <div className="text-center">
                 <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary-600 mb-4" />
-                <p className="text-gray-600">加载中...</p>
+                <p className="text-gray-600">{t('loading')}</p>
               </div>
             </CardContent>
           </Card>
@@ -303,12 +303,12 @@ export default function CoverLetterPage({
                 <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm text-blue-900">
-                    <span className="font-medium">已保存的求职信</span>
+                    <span className="font-medium">{t('savedNotice')}</span>
                     {' - '}
-                    生成于 {new Date(existingCoverLetter.created_at).toLocaleString()}
+                    {t('generatedAt', { date: new Date(existingCoverLetter.created_at).toLocaleString() })}
                   </p>
                   <p className="text-xs text-blue-700 mt-1">
-                    点击&quot;重新生成&quot;可以创建新的版本
+                    {t('regenerateHint')}
                   </p>
                 </div>
               </div>

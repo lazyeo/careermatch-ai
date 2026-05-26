@@ -14,7 +14,7 @@ export function StrengthsGapsSection({ strengths, gaps }: StrengthsGapsSectionPr
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-success-700">
             <CheckCircle2 className="w-5 h-5" />
-            主要优势
+            Key Strengths
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -34,7 +34,7 @@ export function StrengthsGapsSection({ strengths, gaps }: StrengthsGapsSectionPr
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-warning-700">
             <AlertCircle className="w-5 h-5" />
-            需要改进
+            Areas to Improve
           </CardTitle>
         </CardHeader>
         <CardContent>

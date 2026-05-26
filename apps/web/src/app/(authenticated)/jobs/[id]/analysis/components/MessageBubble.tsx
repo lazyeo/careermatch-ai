@@ -78,23 +78,23 @@ function formatTime(date: Date): string {
 
   // Less than 1 minute
   if (diff < 60000) {
-    return '刚刚'
+    return 'Just now'
   }
 
   // Less than 1 hour
   if (diff < 3600000) {
     const minutes = Math.floor(diff / 60000)
-    return `${minutes}分钟前`
+    return `${minutes}m ago`
   }
 
   // Less than 24 hours
   if (diff < 86400000) {
     const hours = Math.floor(diff / 3600000)
-    return `${hours}小时前`
+    return `${hours}h ago`
   }
 
   // More than 24 hours - show date
-  return date.toLocaleDateString('zh-CN', {
+  return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',

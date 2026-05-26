@@ -9,40 +9,40 @@ interface SWOTMatrixProps {
 export function SWOTMatrix({ swot }: SWOTMatrixProps) {
   const sections = [
     {
-      title: 'Strengths 优势',
+      title: 'Strengths',
       icon: TrendingUp,
       items: swot.strengths,
       bgColor: 'bg-success-50',
       borderColor: 'border-success-200',
       iconColor: 'text-success-600',
-      description: '内部积极因素',
+      description: 'Internal advantages',
     },
     {
-      title: 'Weaknesses 劣势',
+      title: 'Weaknesses',
       icon: TrendingDown,
       items: swot.weaknesses,
       bgColor: 'bg-error-50',
       borderColor: 'border-error-200',
       iconColor: 'text-error-600',
-      description: '内部限制因素',
+      description: 'Internal limitations',
     },
     {
-      title: 'Opportunities 机会',
+      title: 'Opportunities',
       icon: Target,
       items: swot.opportunities,
       bgColor: 'bg-primary-50',
       borderColor: 'border-primary-200',
       iconColor: 'text-primary-600',
-      description: '外部有利因素',
+      description: 'External advantages',
     },
     {
-      title: 'Threats 威胁',
+      title: 'Threats',
       icon: Shield,
       items: swot.threats,
       bgColor: 'bg-warning-50',
       borderColor: 'border-warning-200',
       iconColor: 'text-warning-600',
-      description: '外部挑战因素',
+      description: 'External risks',
     },
   ]
 

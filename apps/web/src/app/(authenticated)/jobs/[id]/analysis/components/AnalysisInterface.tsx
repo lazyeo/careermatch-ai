@@ -77,9 +77,9 @@ export function AnalysisInterface({ jobId, resumeId }: AnalysisInterfaceProps) {
       <Card className="border-amber-200 bg-amber-50 shadow-none">
         <CardContent className="py-4">
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-amber-800">旧版分析入口</h3>
+            <h3 className="text-sm font-semibold text-amber-800">Legacy Analysis Entry</h3>
             <p className="text-sm leading-6 text-amber-700">
-              当前主流程已经切到 V2 分析工作区。这里保留旧入口仅用于兼容或人工比对，不再作为默认分析路径。
+              The main workflow now uses the V2 analysis workspace. This entry remains available for compatibility and manual comparison.
             </p>
           </div>
         </CardContent>
@@ -140,7 +140,7 @@ export function AnalysisInterface({ jobId, resumeId }: AnalysisInterfaceProps) {
               </p>
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 <Clock className="w-3 h-3" />
-                <span>{t('estimatedTime', { time: '60-90秒' })}</span>
+                <span>{t('estimatedTime', { time: '60-90 seconds' })}</span>
               </div>
             </button>
           </div>

@@ -139,7 +139,7 @@ export default function RegisterPage() {
         }
       }
     } catch (error) {
-      console.error('注册失败:', error)
+      console.error('Registration failed:', error)
       setErrorMessage(t('registerError'))
     } finally {
       setIsLoading(false)
@@ -167,7 +167,7 @@ export default function RegisterPage() {
       }
       // OAuth会自动重定向，无需手动跳转
     } catch (error) {
-      console.error('Google注册失败:', error)
+      console.error('Google registration failed:', error)
       setErrorMessage(t('registerError'))
       setIsLoading(false)
     }

@@ -5,6 +5,7 @@ import { Card, CardContent } from '@careermatch/ui'
 import { FileText, PanelTop } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { useTranslations } from 'next-intl'
 
 interface JobDetailTabsProps {
     original: ReactNode
@@ -14,6 +15,7 @@ interface JobDetailTabsProps {
 type TabType = 'original' | 'ai-insights'
 
 export function JobDetailTabs({ original, aiInsights }: JobDetailTabsProps) {
+    const t = useTranslations('jobs.detail')
     const [activeTab, setActiveTab] = useState<TabType>('original')
     const [mounted, setMounted] = useState(false)
 
@@ -24,12 +26,12 @@ export function JobDetailTabs({ original, aiInsights }: JobDetailTabsProps) {
     const tabs: { id: TabType; label: string; icon: ReactNode }[] = [
         {
             id: 'original',
-            label: '岗位原文',
+            label: t('tabsOriginal'),
             icon: mounted ? <FileText className="w-4 h-4" /> : <div className="w-4 h-4" />
         },
         {
             id: 'ai-insights',
-            label: '决策面板',
+            label: t('tabsInsights'),
             icon: mounted ? <PanelTop className="w-4 h-4" /> : <div className="w-4 h-4" />
         },
     ]

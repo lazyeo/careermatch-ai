@@ -1,7 +1,8 @@
 'use client'
 
 import { format } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS, zhCN } from 'date-fns/locale'
+import { useLocale, useTranslations } from 'next-intl'
 
 interface TimelineEvent {
   type: string
@@ -40,10 +41,14 @@ const EVENT_COLORS: Record<string, string> = {
 }
 
 export function Timeline({ events }: TimelineProps) {
+  const t = useTranslations('applications')
+  const locale = useLocale()
+  const dateLocale = locale === 'zh-CN' ? zhCN : enUS
+
   if (!events || events.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        <p>暂无时间线事件</p>
+        <p>{t('noTimelineEvents')}</p>
       </div>
     )
   }
@@ -59,6 +64,10 @@ export function Timeline({ events }: TimelineProps) {
         {sortedEvents.map((event, eventIdx) => {
           const icon = EVENT_ICONS[event.type] || EVENT_ICONS.default
           const colorClass = EVENT_COLORS[event.type] || EVENT_COLORS.default
+          const newStatus = event.newStatus
+            ? getApplicationStatusLabel(event.newStatus, t)
+            : ''
+          const description = getTimelineDescription(event, newStatus, t)
 
           return (
             <li key={eventIdx}>
@@ -80,17 +89,19 @@ export function Timeline({ events }: TimelineProps) {
                   <div className="min-w-0 flex-1">
                     <div>
                       <div className="text-sm">
-                        <span className="font-medium text-gray-900">{event.description}</span>
+                        <span className="font-medium text-gray-900">{description}</span>
                       </div>
                       <p className="mt-0.5 text-xs text-gray-500">
-                        {format(new Date(event.date), 'PPP HH:mm', { locale: zhCN })}
+                        {format(new Date(event.date), 'PPP HH:mm', { locale: dateLocale })}
                       </p>
                     </div>
                     {event.oldStatus && event.newStatus && (
                       <div className="mt-2 text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded">
-                        <span className="line-through text-gray-400">{event.oldStatus}</span>
+                        <span className="line-through text-gray-400">
+                          {getApplicationStatusLabel(event.oldStatus, t)}
+                        </span>
                         {' → '}
-                        <span className="font-medium text-gray-700">{event.newStatus}</span>
+                        <span className="font-medium text-gray-700">{newStatus}</span>
                       </div>
                     )}
                   </div>
@@ -102,4 +113,44 @@ export function Timeline({ events }: TimelineProps) {
       </ul>
     </div>
   )
+}
+
+function getApplicationStatusLabel(
+  status: string,
+  t: ReturnType<typeof useTranslations<'applications'>>
+) {
+  const statusKeyMap: Record<string, string> = {
+    draft: 'draft',
+    submitted: 'submitted',
+    under_review: 'underReview',
+    interview_scheduled: 'interviewScheduled',
+    offer_received: 'offerReceived',
+    rejected: 'rejected',
+    withdrawn: 'withdrawn',
+    accepted: 'accepted',
+  }
+
+  const key = statusKeyMap[status]
+  return key ? t(key) : status
+}
+
+function getTimelineDescription(
+  event: TimelineEvent,
+  status: string,
+  t: ReturnType<typeof useTranslations<'applications'>>
+) {
+  const eventTypeMap: Record<string, string> = {
+    created: 'timelineDescriptions.created',
+    submitted: 'timelineDescriptions.submitted',
+    status_change: 'timelineDescriptions.status_change',
+    status_changed: 'timelineDescriptions.status_changed',
+    interview: 'timelineDescriptions.interview',
+    offer: 'timelineDescriptions.offer',
+    rejected: 'timelineDescriptions.rejected',
+    withdrawn: 'timelineDescriptions.withdrawn',
+    note_added: 'timelineDescriptions.note_added',
+  }
+
+  const key = eventTypeMap[event.type]
+  return key ? t(key, { status }) : event.description
 }

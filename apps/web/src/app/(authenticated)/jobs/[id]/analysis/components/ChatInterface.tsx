@@ -34,9 +34,9 @@ export function ChatInterface({ sessionId, jobId, initialMessages = [] }: ChatIn
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([
-    '面试可能会问什么问题？',
-    '我的简历需要如何优化？',
-    '这个岗位的核心要求是什么？',
+    'What interview questions should I expect?',
+    'How should I improve my resume?',
+    'What are the core requirements for this role?',
   ])
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -95,7 +95,7 @@ export function ChatInterface({ sessionId, jobId, initialMessages = [] }: ChatIn
       const errorMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: '抱歉，发送消息时出现错误。请稍后重试。',
+        content: 'Sorry, something went wrong while sending your message. Please try again.',
         createdAt: new Date(),
       }
       setMessages((prev) => [...prev, errorMessage])
@@ -115,7 +115,7 @@ export function ChatInterface({ sessionId, jobId, initialMessages = [] }: ChatIn
       {/* Suggested Questions */}
       {messages.length === 0 && (
         <div className="mb-4">
-          <p className="text-sm text-gray-500 mb-2">快速提问:</p>
+          <p className="text-sm text-gray-500 mb-2">Quick questions:</p>
           <div className="flex flex-wrap gap-2">
             {suggestedQuestions.map((question, index) => (
               <button
@@ -140,7 +140,7 @@ export function ChatInterface({ sessionId, jobId, initialMessages = [] }: ChatIn
             {isLoading && (
               <div className="flex items-center gap-2 text-gray-500">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">AI正在思考...</span>
+                <span className="text-sm">AI is thinking...</span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -151,7 +151,7 @@ export function ChatInterface({ sessionId, jobId, initialMessages = [] }: ChatIn
       {/* Quick Suggestions after conversation started */}
       {messages.length > 0 && suggestedQuestions.length > 0 && !isLoading && (
         <div className="mb-3">
-          <p className="text-xs text-gray-400 mb-1.5">继续追问:</p>
+          <p className="text-xs text-gray-400 mb-1.5">Follow up:</p>
           <div className="flex flex-wrap gap-1.5">
             {suggestedQuestions.map((question, index) => (
               <button
@@ -173,7 +173,7 @@ export function ChatInterface({ sessionId, jobId, initialMessages = [] }: ChatIn
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="输入你的问题，例如：如何突出我的技术能力？"
+          placeholder="Ask a question, for example: How can I highlight my technical strengths?"
           className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           disabled={isLoading}
         />

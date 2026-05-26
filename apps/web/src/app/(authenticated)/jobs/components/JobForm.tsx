@@ -6,20 +6,21 @@ import { z } from 'zod'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 // Zod schema for job validation
 const jobSchema = z.object({
-  title: z.string().min(1, '请输入岗位标题'),
-  company: z.string().min(1, '请输入公司名称'),
+  title: z.string().min(1, 'Please enter a job title'),
+  company: z.string().min(1, 'Please enter a company name'),
   location: z.string().optional(),
   job_type: z.enum(['full-time', 'part-time', 'contract', 'internship', 'casual']).optional(),
-  salary_min: z.number().min(0, '薪资不能为负数').optional().nullable(),
-  salary_max: z.number().min(0, '薪资不能为负数').optional().nullable(),
+  salary_min: z.number().min(0, 'Salary cannot be negative').optional().nullable(),
+  salary_max: z.number().min(0, 'Salary cannot be negative').optional().nullable(),
   salary_currency: z.string().default('NZD'),
   description: z.string().optional(),
   requirements: z.string().optional(),
   benefits: z.string().optional(),
-  source_url: z.string().url('请输入有效的URL').optional().or(z.literal('')),
+  source_url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   posted_date: z.string().optional(),
   deadline: z.string().optional(),
   status: z.enum(['saved', 'applied', 'interview', 'rejected', 'offer', 'withdrawn']).default('saved'),
@@ -50,6 +51,8 @@ interface JobFormProps {
 
 export function JobForm({ initialData, mode }: JobFormProps) {
   const router = useRouter()
+  const t = useTranslations('jobs')
+  const formT = useTranslations('jobs.form')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -107,7 +110,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
         })
 
         if (!response.ok) {
-          throw new Error('创建失败')
+          throw new Error(formT('createFailed'))
         }
 
         await response.json()
@@ -121,7 +124,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
         })
 
         if (!response.ok) {
-          throw new Error('更新失败')
+          throw new Error(formT('updateFailed'))
         }
 
         router.push('/jobs')
@@ -129,7 +132,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
       }
     } catch (err) {
       console.error('Error submitting job:', err)
-      setError(err instanceof Error ? err.message : '操作失败，请重试')
+      setError(err instanceof Error ? err.message : formT('submitFailed'))
       setIsSubmitting(false)
     }
   }
@@ -145,18 +148,18 @@ export function JobForm({ initialData, mode }: JobFormProps) {
       {/* Basic Information */}
       <Card>
         <CardHeader>
-          <CardTitle>基本信息</CardTitle>
+          <CardTitle>{formT('basicInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              岗位标题 *
+              {formT('jobTitleRequired')}
             </label>
             <input
               {...register('title')}
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="例如：Senior Full Stack Developer"
+              placeholder={formT('jobTitlePlaceholder')}
             />
             {errors.title && (
               <p className="text-error-600 text-sm mt-1">{errors.title.message}</p>
@@ -165,13 +168,13 @@ export function JobForm({ initialData, mode }: JobFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              公司名称 *
+              {formT('companyRequired')}
             </label>
             <input
               {...register('company')}
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="例如：Xero"
+              placeholder={formT('companyPlaceholder')}
             />
             {errors.company && (
               <p className="text-error-600 text-sm mt-1">{errors.company.message}</p>
@@ -180,48 +183,48 @@ export function JobForm({ initialData, mode }: JobFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              工作地点
+              {t('location')}
             </label>
             <input
               {...register('location')}
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="例如：Auckland, New Zealand"
+              placeholder={formT('locationPlaceholder')}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                岗位类型
+                {t('jobType')}
               </label>
               <select
                 {...register('job_type')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
-                <option value="">请选择</option>
-                <option value="full-time">全职</option>
-                <option value="part-time">兼职</option>
-                <option value="contract">合同</option>
-                <option value="internship">实习</option>
-                <option value="casual">临时</option>
+                <option value="">{formT('selectPlaceholder')}</option>
+                <option value="full-time">{t('fullTime')}</option>
+                <option value="part-time">{t('partTime')}</option>
+                <option value="contract">{t('contract')}</option>
+                <option value="internship">{t('internship')}</option>
+                <option value="casual">{t('casual')}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                状态
+                {t('status')}
               </label>
               <select
                 {...register('status')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
-                <option value="saved">已保存</option>
-                <option value="applied">已申请</option>
-                <option value="interview">面试中</option>
-                <option value="rejected">已拒绝</option>
-                <option value="offer">已录用</option>
-                <option value="withdrawn">已撤回</option>
+                <option value="saved">{t('statusLabels.saved')}</option>
+                <option value="applied">{t('statusLabels.applied')}</option>
+                <option value="interview">{t('statusLabels.interview')}</option>
+                <option value="rejected">{t('statusLabels.rejected')}</option>
+                <option value="offer">{t('statusLabels.offer')}</option>
+                <option value="withdrawn">{t('statusLabels.withdrawn')}</option>
               </select>
             </div>
           </div>
@@ -231,13 +234,13 @@ export function JobForm({ initialData, mode }: JobFormProps) {
       {/* Salary Information */}
       <Card>
         <CardHeader>
-          <CardTitle>薪资信息</CardTitle>
+          <CardTitle>{formT('salaryInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                最低薪资
+                {formT('minSalary')}
               </label>
               <input
                 {...register('salary_min', { valueAsNumber: true })}
@@ -249,7 +252,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                最高薪资
+                {formT('maxSalary')}
               </label>
               <input
                 {...register('salary_max', { valueAsNumber: true })}
@@ -261,7 +264,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                货币
+                {formT('currency')}
               </label>
               <select
                 {...register('salary_currency')}
@@ -280,42 +283,42 @@ export function JobForm({ initialData, mode }: JobFormProps) {
       {/* Job Details */}
       <Card>
         <CardHeader>
-          <CardTitle>岗位详情</CardTitle>
+          <CardTitle>{formT('jobDetails')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              岗位描述
+              {t('description')}
             </label>
             <textarea
               {...register('description')}
               rows={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="输入岗位的主要职责和工作内容..."
+              placeholder={formT('descriptionPlaceholder')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              岗位要求
+              {t('requirements')}
             </label>
             <textarea
               {...register('requirements')}
               rows={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="输入技能要求、工作经验、教育背景等..."
+              placeholder={formT('requirementsPlaceholder')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              福利待遇
+              {t('benefits')}
             </label>
             <textarea
               {...register('benefits')}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="输入公司提供的福利待遇..."
+              placeholder={formT('benefitsPlaceholder')}
             />
           </div>
         </CardContent>
@@ -324,12 +327,12 @@ export function JobForm({ initialData, mode }: JobFormProps) {
       {/* Additional Information */}
       <Card>
         <CardHeader>
-          <CardTitle>其他信息</CardTitle>
+          <CardTitle>{formT('otherInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              来源链接
+              {formT('sourceUrl')}
             </label>
             <input
               {...register('source_url')}
@@ -345,7 +348,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                发布日期
+                {formT('postedDate')}
               </label>
               <input
                 {...register('posted_date')}
@@ -356,7 +359,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                申请截止日期
+                {formT('deadline')}
               </label>
               <input
                 {...register('deadline')}
@@ -376,14 +379,14 @@ export function JobForm({ initialData, mode }: JobFormProps) {
           onClick={() => router.back()}
           disabled={isSubmitting}
         >
-          取消
+          {formT('cancel')}
         </Button>
         <Button
           type="submit"
           variant="primary"
           disabled={isSubmitting}
         >
-          {isSubmitting ? '保存中...' : mode === 'create' ? '创建岗位' : '保存修改'}
+          {isSubmitting ? formT('saving') : mode === 'create' ? formT('createJob') : formT('saveChanges')}
         </Button>
       </div>
     </form>

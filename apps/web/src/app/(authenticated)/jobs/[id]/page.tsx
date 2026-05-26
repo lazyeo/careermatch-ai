@@ -117,32 +117,32 @@ export default async function JobDetailPage({
 
     if (latestProcessingTask.status === 'pending') {
       return {
-        label: '自动分析已排队',
+        label: t('detail.analysisQueued'),
         className: 'bg-blue-50 text-blue-700 border-blue-200',
-        description: '岗位已保存，后台任务正在等待执行。',
+        description: t('detail.analysisQueuedDesc'),
       }
     }
 
     if (latestProcessingTask.status === 'processing') {
       return {
-        label: '自动分析进行中',
+        label: t('detail.analysisRunning'),
         className: 'bg-amber-50 text-amber-700 border-amber-200',
-        description: '后台正在分析匹配度，你可以离开此页面稍后再看。',
+        description: t('detail.analysisRunningDesc'),
       }
     }
 
     if (latestProcessingTask.status === 'completed') {
       return {
-        label: '自动分析完成',
+        label: t('detail.analysisCompleted'),
         className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        description: '最新匹配度分析已经完成。',
+        description: t('detail.analysisCompletedDesc'),
       }
     }
 
     return {
-      label: '自动分析失败',
+      label: t('detail.analysisFailed'),
       className: 'bg-red-50 text-red-700 border-red-200',
-      description: latestProcessingTask.error || '后台分析未成功完成。',
+      description: latestProcessingTask.error || t('detail.analysisFailedDesc'),
     }
   }
 
@@ -242,10 +242,10 @@ export default async function JobDetailPage({
                 <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                   <div className="flex flex-col gap-3 border-b border-gray-100 pb-4 md:flex-row md:items-end md:justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Decision summary</p>
-                      <h2 className="mt-1 text-xl font-semibold text-gray-950">先判断这份岗位值不值得继续投入</h2>
+                      <p className="text-sm font-medium text-gray-500">{t('detail.decisionKicker')}</p>
+                      <h2 className="mt-1 text-xl font-semibold text-gray-950">{t('detail.decisionTitle')}</h2>
                       <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-                        先看自动匹配结果和岗位点评，再决定是否进入申请、材料生成和后续推进。低价值动作放后面，不与主判断抢位置。
+                        {t('detail.decisionDesc')}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -256,7 +256,7 @@ export default async function JobDetailPage({
                       )}
                       {latestAnalysis && (
                         <span className="inline-flex items-center rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700">
-                          匹配度 {latestAnalysis.score}/100
+                          {t('detail.matchScore', { score: latestAnalysis.score })}
                         </span>
                       )}
                     </div>
@@ -271,15 +271,15 @@ export default async function JobDetailPage({
                       <Card className="border-gray-200 shadow-none">
                         <CardContent className="space-y-4 p-5">
                           <div>
-                            <h3 className="text-base font-semibold text-gray-900">匹配分析</h3>
+                            <h3 className="text-base font-semibold text-gray-900">{t('detail.matchAnalysis')}</h3>
                             <p className="mt-1 text-sm text-gray-500">
-                              后台分析完成后，这里会成为进入详细报告的主入口。
+                              {t('detail.matchAnalysisDesc')}
                             </p>
                           </div>
 
                           {latestAnalysis ? (
                             <div className="rounded-xl border border-primary-200 bg-primary-50 p-4">
-                              <div className="text-sm text-primary-700">最新结果</div>
+                              <div className="text-sm text-primary-700">{t('detail.latestResult')}</div>
                               <div className="mt-2 text-3xl font-semibold text-primary-700">
                                 {latestAnalysis.score}/100
                               </div>
@@ -287,33 +287,33 @@ export default async function JobDetailPage({
                                 {new Date(latestAnalysis.created_at).toLocaleDateString(locale)}
                               </div>
                               <Link href={`/jobs/${params.id}/analysis?mode=profile`} className="mt-4 inline-flex">
-                                <Button variant="primary">查看详细分析</Button>
+                                <Button variant="primary">{t('detail.viewDetailedAnalysis')}</Button>
                               </Link>
                             </div>
                           ) : latestProcessingTask?.status === 'pending' || latestProcessingTask?.status === 'processing' ? (
                             <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
-                              后台正在生成匹配分析。你可以先离开此页面，稍后回来查看结果。
+                              {t('detail.analysisGenerating')}
                             </div>
                           ) : (
                             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-                              还没有可用的匹配分析结果。准备好后再手动启动分析。
+                              {t('detail.analysisEmpty')}
                             </div>
                           )}
 
                           {latestProcessingTask?.status === 'failed' && (
                             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                              {latestProcessingTask.error || '自动分析未成功完成。'}
+                              {latestProcessingTask.error || t('detail.analysisFailedDesc')}
                             </div>
                           )}
 
                           {latestProcessingTask?.status === 'pending' || latestProcessingTask?.status === 'processing' ? (
                             <Button variant="primary" className="w-full" disabled>
-                              后台分析中
+                              {t('detail.analysisInProgress')}
                             </Button>
                           ) : (
                             <Link href={`/jobs/${params.id}/analysis`} className="block">
                               <Button variant="primary" className="w-full">
-                                {latestProcessingTask?.status === 'failed' ? '重新开始分析' : t('startAnalysis')}
+                                {latestProcessingTask?.status === 'failed' ? t('detail.restartAnalysis') : t('startAnalysis')}
                               </Button>
                             </Link>
                           )}
@@ -323,16 +323,16 @@ export default async function JobDetailPage({
                       <Card className="border-gray-200 shadow-none">
                         <CardContent className="space-y-4 p-5">
                           <div>
-                            <h3 className="text-base font-semibold text-gray-900">下一步动作</h3>
+                            <h3 className="text-base font-semibold text-gray-900">{t('detail.nextActions')}</h3>
                             <p className="mt-1 text-sm text-gray-500">
-                              只保留真正影响推进效率的动作，材料生成和申请入口不再与所有面板并列竞争。
+                              {t('detail.nextActionsDesc')}
                             </p>
                           </div>
                           <div className="space-y-3">
                             <Link href={`/jobs/${params.id}/cover-letter`} className="block">
                               <Button variant="outline" className="w-full justify-between">
                                 <span>{t('generateCoverLetter')}</span>
-                                <span className="text-xs text-gray-500">可选</span>
+                                <span className="text-xs text-gray-500">{t('detail.optional')}</span>
                               </Button>
                             </Link>
                             <ApplyJobButton jobId={params.id} />
@@ -347,16 +347,16 @@ export default async function JobDetailPage({
                   <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-4">
                       <div>
-                        <h3 className="text-base font-semibold text-gray-900">已生成材料</h3>
+                        <h3 className="text-base font-semibold text-gray-900">{t('detail.generatedMaterials')}</h3>
                         <p className="mt-1 text-sm text-gray-500">
-                          只在已有产出时展示，避免空面板长期占据主视线。
+                          {t('detail.generatedMaterialsDesc')}
                         </p>
                       </div>
                     </div>
                     <div className="mt-4 grid gap-6 lg:grid-cols-2">
                       {resumes.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-semibold text-gray-700">简历</h4>
+                          <h4 className="text-sm font-semibold text-gray-700">{t('detail.resumes')}</h4>
                           <div className="mt-3 space-y-2">
                             {resumes.map((resume) => (
                               <Link
@@ -368,7 +368,7 @@ export default async function JobDetailPage({
                                   <div>
                                     <div className="font-medium text-gray-900">{resume.title}</div>
                                     <div className="mt-1 text-sm text-gray-500">
-                                      {new Date(resume.created_at).toLocaleDateString(locale)} · {resume.source === 'ai_generated' ? '系统生成' : '手动创建'}
+                                      {new Date(resume.created_at).toLocaleDateString(locale)} · {resume.source === 'ai_generated' ? t('detail.sourceGenerated') : t('detail.sourceManual')}
                                     </div>
                                   </div>
                                   <svg className="mt-0.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -383,13 +383,13 @@ export default async function JobDetailPage({
 
                       {coverLetters.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-semibold text-gray-700">求职信</h4>
+                          <h4 className="text-sm font-semibold text-gray-700">{t('detail.coverLetters')}</h4>
                           <div className="mt-3 space-y-2">
                             {coverLetters.map((letter) => (
                               <div key={letter.id} className="rounded-xl border border-gray-200 p-3">
                                 <div className="font-medium text-gray-900">{letter.title}</div>
                                 <div className="mt-1 text-sm text-gray-500">
-                                  {new Date(letter.created_at).toLocaleDateString(locale)} · {letter.source === 'ai_generated' ? '系统生成' : '手动创建'}
+                                  {new Date(letter.created_at).toLocaleDateString(locale)} · {letter.source === 'ai_generated' ? t('detail.sourceGenerated') : t('detail.sourceManual')}
                                 </div>
                               </div>
                             ))}

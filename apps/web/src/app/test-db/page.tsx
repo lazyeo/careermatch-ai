@@ -21,16 +21,16 @@ async function runTests(): Promise<TestResult[]> {
 
   // 测试1: 检查环境变量
   results.push({
-    name: '环境变量配置',
+    name: 'Environment Variables',
     status: process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       ? 'success'
       : 'error',
     message: process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      ? '环境变量已正确配置'
-      : '环境变量缺失，请检查 .env.local 文件',
+      ? 'Environment variables are configured correctly'
+      : 'Environment variables are missing. Check the .env.local file',
     details: {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL ? '✓ 已配置' : '✗ 未配置',
-      key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✓ 已配置' : '✗ 未配置',
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Configured' : 'Missing',
+      key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Configured' : 'Missing',
     },
   })
 
@@ -44,12 +44,12 @@ async function runTests(): Promise<TestResult[]> {
       .limit(1)
 
     results.push({
-      name: 'Supabase连接',
+      name: 'Supabase Connection',
       status: connectionError ? 'error' : 'success',
       message: connectionError
-        ? `连接失败: ${connectionError.message}`
-        : 'Supabase连接成功',
-      details: connectionError ? connectionError.message : '数据库可访问',
+        ? `Connection failed: ${connectionError.message}`
+        : 'Supabase connection succeeded',
+      details: connectionError ? connectionError.message : 'Database is accessible',
     })
 
     // 测试3: 检查所有核心表是否存在
@@ -73,11 +73,11 @@ async function runTests(): Promise<TestResult[]> {
     }
 
     results.push({
-      name: '数据库表检查',
+      name: 'Database Tables',
       status: allTablesExist ? 'success' : 'error',
       message: allTablesExist
-        ? '所有核心表已创建'
-        : '部分表不存在，请运行数据库迁移脚本',
+        ? 'All core tables exist'
+        : 'Some tables are missing. Run the database migrations',
       details: tableResults,
     })
 
@@ -85,11 +85,11 @@ async function runTests(): Promise<TestResult[]> {
     const { data: authData, error: authError } = await supabase.auth.getSession()
 
     results.push({
-      name: '认证系统',
+      name: 'Authentication',
       status: 'success',
-      message: '认证系统正常运行',
+      message: 'Authentication is running',
       details: {
-        session: authData.session ? '已登录' : '未登录',
+        session: authData.session ? 'Signed in' : 'Signed out',
         error: authError ? authError.message : 'None',
       },
     })
@@ -103,17 +103,17 @@ async function runTests(): Promise<TestResult[]> {
     results.push({
       name: 'Row Level Security (RLS)',
       status: 'success',
-      message: 'RLS策略已启用（未登录状态下无法访问数据）',
+      message: 'RLS is enabled and private data is protected when signed out',
       details: {
-        accessible: rlsTest && rlsTest.length > 0 ? 'Yes' : 'No (正常)',
+        accessible: rlsTest && rlsTest.length > 0 ? 'Yes' : 'No (expected)',
         error: rlsError ? rlsError.message : 'None',
       },
     })
   } catch (error) {
     results.push({
-      name: '未知错误',
+      name: 'Unknown Error',
       status: 'error',
-      message: error instanceof Error ? error.message : '发生未知错误',
+      message: error instanceof Error ? error.message : 'An unknown error occurred',
       details: String(error),
     })
   }
@@ -131,10 +131,10 @@ export default async function TestDatabasePage() {
         {/* 标题 */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-neutral-900 mb-2">
-            数据库连接测试
+            Database Connection Test
           </h1>
           <p className="text-neutral-600">
-            验证Supabase配置和数据库连接状态
+            Verify Supabase configuration and database connectivity
           </p>
         </div>
 
@@ -145,12 +145,12 @@ export default async function TestDatabasePage() {
               {allPassed ? (
                 <>
                   <span className="text-4xl">✅</span>
-                  <span className="text-success-600">所有测试通过</span>
+                  <span className="text-success-600">All tests passed</span>
                 </>
               ) : (
                 <>
                   <span className="text-4xl">⚠️</span>
-                  <span className="text-warning-600">部分测试失败</span>
+                  <span className="text-warning-600">Some tests failed</span>
                 </>
               )}
             </CardTitle>
@@ -158,8 +158,8 @@ export default async function TestDatabasePage() {
           <CardContent>
             <p className="text-neutral-700">
               {allPassed
-                ? 'Supabase配置正确，数据库连接正常，可以开始开发认证功能。'
-                : '请根据下方的错误信息修复配置问题。'}
+                ? 'Supabase is configured correctly and the database connection is healthy.'
+                : 'Use the errors below to fix the configuration.'}
             </p>
           </CardContent>
         </Card>
@@ -197,7 +197,7 @@ export default async function TestDatabasePage() {
                 {result.details && (
                   <div className="mt-3 p-3 bg-neutral-100 rounded-lg">
                     <p className="text-xs font-semibold text-neutral-600 mb-2">
-                      详细信息:
+                      Details:
                     </p>
                     <pre className="text-xs text-neutral-700 overflow-x-auto">
                       {JSON.stringify(result.details, null, 2)}
@@ -213,15 +213,15 @@ export default async function TestDatabasePage() {
         {allPassed && (
           <Card className="mt-8 bg-primary-50 border-primary-300">
             <CardHeader>
-              <CardTitle className="text-primary-700">🎉 下一步</CardTitle>
+              <CardTitle className="text-primary-700">Next Steps</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-neutral-700">数据库配置完成！接下来可以：</p>
+              <p className="text-neutral-700">Database configuration is complete. You can now:</p>
               <ul className="list-disc list-inside space-y-1 text-neutral-600 ml-2">
-                <li>返回首页: <a href="/" className="text-primary-600 underline">http://localhost:3000</a></li>
-                <li>开始开发登录页面</li>
-                <li>开始开发注册页面</li>
-                <li>实现用户认证功能</li>
+                <li>Return home: <a href="/" className="text-primary-600 underline">http://localhost:3000</a></li>
+                <li>Continue building the login page</li>
+                <li>Continue building the registration page</li>
+                <li>Implement the authentication flow</li>
               </ul>
             </CardContent>
           </Card>
@@ -231,28 +231,28 @@ export default async function TestDatabasePage() {
         {!allPassed && (
           <Card className="mt-8 bg-warning-50 border-warning-300">
             <CardHeader>
-              <CardTitle className="text-warning-700">🔧 修复建议</CardTitle>
+              <CardTitle className="text-warning-700">Fix Suggestions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <ul className="list-disc list-inside space-y-2 text-neutral-700 ml-2">
                 <li>
-                  <strong>环境变量错误:</strong> 检查{' '}
+                  <strong>Environment variable error:</strong> Check that{' '}
                   <code className="bg-neutral-200 px-1 rounded">
                     apps/web/.env.local
                   </code>{' '}
-                  文件是否存在且配置正确
+                  exists and is configured correctly
                 </li>
                 <li>
-                  <strong>连接失败:</strong> 检查Supabase项目URL和API Key是否正确
+                  <strong>Connection failure:</strong> Check that the Supabase project URL and API key are correct
                 </li>
                 <li>
-                  <strong>表不存在:</strong> 在Supabase SQL Editor中运行{' '}
+                  <strong>Missing tables:</strong> Run this migration in the Supabase SQL Editor:{' '}
                   <code className="bg-neutral-200 px-1 rounded">
                     supabase/migrations/20250101000000_initial_schema.sql
                   </code>
                 </li>
                 <li>
-                  <strong>其他错误:</strong> 查看上方详细错误信息，或重启开发服务器{' '}
+                  <strong>Other errors:</strong> Review the details above or restart the development server with{' '}
                   <code className="bg-neutral-200 px-1 rounded">pnpm web:dev</code>
                 </li>
               </ul>

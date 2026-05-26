@@ -14,9 +14,9 @@ export function KeywordsTable({ keywords }: KeywordsTableProps) {
       low: 'bg-neutral-100 text-neutral-700',
     }
     const labels = {
-      high: '高',
-      medium: '中',
-      low: '低',
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low',
     }
     return (
       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${styles[importance]}`}>
@@ -40,9 +40,9 @@ export function KeywordsTable({ keywords }: KeywordsTableProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>关键词匹配分析</CardTitle>
+          <CardTitle>Keyword Match Analysis</CardTitle>
           <div className="text-sm">
-            <span className="text-gray-600">匹配率：</span>
+            <span className="text-gray-600">Match rate: </span>
             <span className="font-semibold text-primary-600">
               {matched}/{total} ({matchPercentage}%)
             </span>
@@ -54,10 +54,10 @@ export function KeywordsTable({ keywords }: KeywordsTableProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">关键词</th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">简历中</th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">重要性</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">建议</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Keyword</th>
+                <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">In Resume</th>
+                <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Importance</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Suggestion</th>
               </tr>
             </thead>
             <tbody>

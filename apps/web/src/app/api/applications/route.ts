@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       {
         type: 'created',
         date: new Date().toISOString(),
-        description: '创建申请记录',
+        description: 'Application created',
       },
     ]
 
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       initialTimeline.push({
         type: 'submitted',
         date: new Date().toISOString(),
-        description: '提交申请',
+        description: 'Application submitted',
       })
     }
 
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
       // Check for unique constraint violation
       if (error.code === '23505') {
         return NextResponse.json(
-          { error: '该岗位已经创建过申请记录' },
+          { error: 'An application already exists for this job' },
           { status: 409 }
         )
       }

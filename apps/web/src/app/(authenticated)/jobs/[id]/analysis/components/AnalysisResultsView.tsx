@@ -47,13 +47,13 @@ export function AnalysisResultsView({
       <div className="space-y-6">
         {/* Back button */}
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">重新分析</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Run Analysis Again</h2>
           <Button
             variant="ghost"
             onClick={() => setShowReanalysis(false)}
             className="text-sm"
           >
-            返回上次结果
+            Back to Previous Result
           </Button>
         </div>
 
@@ -78,10 +78,10 @@ export function AnalysisResultsView({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary-600" />
-              AI深度分析报告
+              AI Analysis Report
             </CardTitle>
             <span className="text-xs text-gray-500">
-              由 {session.provider?.toUpperCase()} 提供 · {session.model}
+              Powered by {session.provider?.toUpperCase()} · {session.model}
             </span>
           </div>
         </CardHeader>
@@ -95,12 +95,12 @@ export function AnalysisResultsView({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-primary-600" />
-            与AI顾问对话
+            Chat with the AI Advisor
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600 mb-4">
-            有任何问题都可以继续追问，AI顾问会为你提供更详细的分析和建议
+            Ask follow-up questions to explore the analysis and get more specific guidance.
           </p>
           <ChatInterface
             sessionId={session.id}
@@ -118,10 +118,10 @@ export function AnalysisResultsView({
           className="gap-2"
         >
           <RefreshCw className="w-4 h-4" />
-          重新分析
+          Run Again
         </Button>
         <Link href={`/jobs/${jobId}/analysis/optimize?resumeId=${resumeId}&sessionId=${session.id}`}>
-          <Button variant="primary">AI优化简历</Button>
+          <Button variant="primary">Optimize Resume with AI</Button>
         </Link>
       </div>
     </div>

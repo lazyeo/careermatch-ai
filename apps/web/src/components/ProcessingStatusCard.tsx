@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { CheckCircle, Circle, Loader2, XCircle, AlertCircle } from 'lucide-react'
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 
 interface ProcessingStatusCardProps {
   taskId: string
@@ -16,6 +17,7 @@ interface TaskStep {
 }
 
 export function ProcessingStatusCard({ taskId, onComplete }: ProcessingStatusCardProps) {
+  const t = useTranslations('processing')
   const { data: task, isLoading } = useQuery({
     queryKey: ['task', taskId],
     queryFn: async () => {
@@ -40,9 +42,9 @@ export function ProcessingStatusCard({ taskId, onComplete }: ProcessingStatusCar
   }, [task?.status, task?.result, onComplete])
 
   const steps: TaskStep[] = [
-    { id: 'analyze', label: '岗位分析', status: 'pending' },
-    { id: 'generate_resume', label: '生成简历', status: 'pending' },
-    { id: 'generate_cover_letter', label: '生成求职信', status: 'pending' },
+    { id: 'analyze', label: t('steps.analyze'), status: 'pending' },
+    { id: 'generate_resume', label: t('steps.generateResume'), status: 'pending' },
+    { id: 'generate_cover_letter', label: t('steps.generateCoverLetter'), status: 'pending' },
   ]
 
   // Update step statuses based on current task progress
@@ -83,7 +85,7 @@ export function ProcessingStatusCard({ taskId, onComplete }: ProcessingStatusCar
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <div className="flex items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-          <span className="ml-2 text-gray-600 dark:text-gray-300">加载中...</span>
+          <span className="ml-2 text-gray-600 dark:text-gray-300">{t('loading')}</span>
         </div>
       </div>
     )
@@ -94,7 +96,7 @@ export function ProcessingStatusCard({ taskId, onComplete }: ProcessingStatusCar
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <div className="flex items-center text-yellow-600">
           <AlertCircle className="w-5 h-5 mr-2" />
-          <span>任务不存在</span>
+          <span>{t('missing')}</span>
         </div>
       </div>
     )
@@ -105,18 +107,18 @@ export function ProcessingStatusCard({ taskId, onComplete }: ProcessingStatusCar
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          处理进度
+          {t('title')}
         </h3>
         {task.status === 'failed' && (
           <div className="flex items-center text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
             <XCircle className="w-5 h-5 mr-2" />
-            <span className="text-sm">{task.error || '处理失败，请重试'}</span>
+            <span className="text-sm">{task.error || t('failed')}</span>
           </div>
         )}
         {task.status === 'completed' && (
           <div className="flex items-center text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-md">
             <CheckCircle className="w-5 h-5 mr-2" />
-            <span className="text-sm">处理完成！</span>
+            <span className="text-sm">{t('completed')}</span>
           </div>
         )}
       </div>
@@ -142,7 +144,7 @@ export function ProcessingStatusCard({ taskId, onComplete }: ProcessingStatusCar
                   {step.label}
                 </span>
                 {step.status === 'running' && (
-                  <span className="text-xs text-blue-500">进行中...</span>
+                  <span className="text-xs text-blue-500">{t('running')}</span>
                 )}
               </div>
               {index < steps.length - 1 && (
@@ -160,7 +162,7 @@ export function ProcessingStatusCard({ taskId, onComplete }: ProcessingStatusCar
       {/* Progress Bar */}
       <div className="mt-6">
         <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-          <span>总体进度</span>
+          <span>{t('overall')}</span>
           <span>{Math.round((task.progress || 0) * 100)}%</span>
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">

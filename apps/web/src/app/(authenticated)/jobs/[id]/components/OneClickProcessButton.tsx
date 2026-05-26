@@ -5,6 +5,7 @@ import { Button } from '@careermatch/ui'
 import { ProcessingStatusCard } from '@/components/ProcessingStatusCard'
 import { useProcessJob } from '@/hooks/useProcessJob'
 import { Rocket, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface OneClickProcessButtonProps {
   jobId: string
@@ -12,13 +13,14 @@ interface OneClickProcessButtonProps {
 }
 
 export function OneClickProcessButton({ jobId, resumeId }: OneClickProcessButtonProps) {
+  const t = useTranslations('jobs.detail')
   const [showProcessing, setShowProcessing] = useState(false)
   const [taskId, setTaskId] = useState<string | null>(null)
   const processJob = useProcessJob()
 
   const handleStartProcessing = async () => {
     if (!resumeId) {
-      alert('请先选择或创建一个简历')
+      alert(t('selectResumeFirst'))
       return
     }
 
@@ -28,7 +30,7 @@ export function OneClickProcessButton({ jobId, resumeId }: OneClickProcessButton
       setShowProcessing(true)
     } catch (error) {
       console.error('Failed to start processing:', error)
-      alert(error instanceof Error ? error.message : '启动处理失败，请重试')
+      alert(error instanceof Error ? error.message : t('processFailed'))
     }
   }
 
@@ -45,7 +47,7 @@ export function OneClickProcessButton({ jobId, resumeId }: OneClickProcessButton
       <div className="relative">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            正在处理岗位申请
+            {t('oneClickTitle')}
           </h3>
           <button
             onClick={() => setShowProcessing(false)}
@@ -67,8 +69,8 @@ export function OneClickProcessButton({ jobId, resumeId }: OneClickProcessButton
       className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
     >
       <Rocket className="w-5 h-5" />
-      一键处理
-      {!resumeId && <span className="text-xs">(需要简历)</span>}
+      {t('oneClickButton')}
+      {!resumeId && <span className="text-xs">{t('needsResume')}</span>}
     </Button>
   )
 }
