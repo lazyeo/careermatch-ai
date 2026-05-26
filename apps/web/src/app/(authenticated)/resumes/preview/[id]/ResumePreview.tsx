@@ -817,6 +817,43 @@ export function ResumePreview({ resume, templateConfig, templateName }: ResumePr
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A4;
+            margin: 0;
+          }
+
+          html,
+          body {
+            background: #ffffff !important;
+          }
+
+          body * {
+            visibility: hidden;
+          }
+
+          #resume-print-area,
+          #resume-print-area * {
+            visibility: visible;
+          }
+
+          #resume-print-area {
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 210mm !important;
+            max-width: none !important;
+            overflow: visible !important;
+            box-shadow: none !important;
+          }
+
+          #resume-print-shell {
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: none !important;
+          }
+        }
+      `}</style>
       {/* Toolbar */}
       <div className="print:hidden bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -904,9 +941,10 @@ export function ResumePreview({ resume, templateConfig, templateName }: ResumePr
       </div>
 
       {/* A4 Paper Preview */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:p-0">
+      <div id="resume-print-shell" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:p-0">
         <div
-          className="bg-white shadow-lg print:shadow-none mx-auto overflow-hidden"
+          id="resume-print-area"
+          className="bg-white shadow-lg print:shadow-none mx-auto overflow-hidden print:overflow-visible"
           style={{ ...cssVariables, maxWidth: '210mm' }}
         >
           {isTwoColumn ? renderTwoColumn() : renderSingleColumn()}
