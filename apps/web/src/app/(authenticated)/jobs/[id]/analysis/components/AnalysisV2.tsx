@@ -210,9 +210,10 @@ export function AnalysisV2({
             conversational: 'modern-blue',
             formal: 'classic-serif',
           }
+          const toneLabel = t(`v2.tone.${tone}` as Parameters<typeof t>[0])
           setTemplateRecommendation({
             templateId: toneTemplateMap[tone] || 'modern-blue',
-            reason: `基于CV策略分析，推荐使用${tone === 'technical' ? '技术' : tone === 'executive' ? '高管' : tone === 'creative' ? '创意' : tone === 'conversational' ? '现代' : '经典'}风格模板`,
+            reason: t('v2.templateRecommendationReason', { tone: toneLabel }),
             confidence: 80,
             alternatives: [],
           } as TemplateRecommendation)
@@ -264,15 +265,18 @@ export function AnalysisV2({
   if (state === 'idle') {
     return (
       <div className="space-y-6">
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 border-b border-gray-100 pb-5 md:flex-row md:items-end md:justify-between">
             <div className="max-w-3xl">
-              <p className="text-sm font-medium text-gray-500">Analysis workspace</p>
+              <p className="text-sm font-medium text-gray-500">{t('v2.workspaceKicker')}</p>
               <h2 className="mt-1 text-2xl font-semibold tracking-tight text-gray-950">
-                深度分析只回答一件事：这份岗位为什么值得继续投入
+                {t('v2.workspaceTitle')}
               </h2>
               <p className="mt-2 text-sm leading-6 text-gray-600">
-                详情页里的岗位点评负责快速判断；这里负责完整证据链，包括匹配分、关键要求、风险、简历策略和面试准备。
+                {t('v2.workspaceDescription')}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-gray-500">
+                {t('v2.outputLanguageNote')}
               </p>
             </div>
             <Button variant="primary" onClick={() => startAnalysis(false)} className="md:min-w-[160px] justify-center gap-2">
@@ -283,20 +287,20 @@ export function AnalysisV2({
 
           <div className="mt-5 grid gap-4 md:grid-cols-4">
             <AnalysisScopeCard
-              title="快速判断"
-              desc="先给出匹配度和推荐等级，帮助你决定是否继续。"
+              title={t('v2.scope.decisionTitle')}
+              desc={t('v2.scope.decisionDesc')}
             />
             <AnalysisScopeCard
-              title="证据拆解"
-              desc="把岗位要求、关键词和主要风险拆开，而不是只给一句总结。"
+              title={t('v2.scope.evidenceTitle')}
+              desc={t('v2.scope.evidenceDesc')}
             />
             <AnalysisScopeCard
-              title="材料策略"
-              desc="给出简历改写重点和模板方向，减少后续反复试错。"
+              title={t('v2.scope.resumeTitle')}
+              desc={t('v2.scope.resumeDesc')}
             />
             <AnalysisScopeCard
-              title="面试准备"
-              desc="把后续准备动作留在同一页，不再分散到多个工具面板。"
+              title={t('v2.scope.interviewTitle')}
+              desc={t('v2.scope.interviewDesc')}
             />
           </div>
         </section>
@@ -310,8 +314,8 @@ export function AnalysisV2({
       <div className="space-y-6">
 
         {/* 进度状态卡片 */}
-        <Card>
-          <CardContent className="py-8">
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="py-2">
             <div className="flex items-center gap-4 mb-6">
               <Loader2 className="w-8 h-8 text-primary-600 animate-spin flex-shrink-0" />
               <div className="flex-1">
@@ -331,14 +335,14 @@ export function AnalysisV2({
             <div className="mb-6">
               <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
+                  className="bg-primary-600 h-2 rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${Math.max(2, streamProgress.progress)}%` }}
                 />
               </div>
             </div>
 
             {/* 分析阶段指示 */}
-            <div className="grid grid-cols-4 gap-2 text-xs">
+            <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
               <ProgressStep
                 label={t('v2.steps.rolePositioning')}
                 active={streamProgress.progress >= 0 && streamProgress.progress < 25}
@@ -360,8 +364,8 @@ export function AnalysisV2({
                 completed={streamProgress.progress >= 100}
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* 实时解析内容显示 */}
         {streamingContent && (
@@ -401,15 +405,15 @@ export function AnalysisV2({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 border-b border-gray-100 pb-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500">Analysis result</p>
+            <p className="text-sm font-medium text-gray-500">{t('v2.resultKicker')}</p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight text-gray-950">
-              详细分析负责证据链，岗位点评只负责快速摘要
+              {t('v2.resultTitle')}
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-600">
-              如果你已经在详情页看过岗位点评，这里应该继续向下回答：分数从哪里来、主要短板是什么、简历和面试要怎么调整。
+              {t('v2.resultDescription')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -435,7 +439,7 @@ export function AnalysisV2({
                 <Card className="border-gray-200 shadow-none">
                   <CardHeader>
                     <CardTitle className="text-base">
-                      结论与建议
+                      {t('v2.conclusionTitle')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -449,9 +453,9 @@ export function AnalysisV2({
               <Card className="border-gray-200 shadow-none">
                 <CardContent className="space-y-4 p-5">
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900">后续动作</h3>
+                    <h3 className="text-base font-semibold text-gray-900">{t('v2.nextActionsTitle')}</h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      当岗位值得继续时，再进入模板选择和简历生成，不让生成动作提前抢占判断过程。
+                      {t('v2.nextActionsDescription')}
                     </p>
                   </div>
                   <Button
@@ -495,7 +499,7 @@ export function AnalysisV2({
 
 function AnalysisScopeCard({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+    <div className="min-h-[132px] rounded-lg border border-gray-200 bg-gray-50 p-4">
       <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-gray-600">{desc}</p>
     </div>

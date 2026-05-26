@@ -9,6 +9,7 @@ import {
 } from '@/lib/ai-providers'
 import { NextRequest } from 'next/server'
 import type { AnalysisRecommendation } from '@careermatch/shared'
+import { getAnalysisOutputLocale } from '@/lib/ai/analysis-locale'
 
 /**
  * POST /api/jobs/[id]/analyze/stream
@@ -47,12 +48,13 @@ export async function POST(
 
     // Get request body
     const body = await request.json()
-    const { resumeId, provider, mode, locale = 'zh' } = body as {
+    const { resumeId, provider, mode } = body as {
       resumeId?: string
       provider?: AIProviderType
       mode?: 'resume_match' | 'job_summary'
       locale?: string
     }
+    const locale = getAnalysisOutputLocale()
 
     const isJobSummary = mode === 'job_summary'
 
@@ -326,7 +328,7 @@ This format allows you to freely use any Markdown syntax, including quotes, code
 /**
  * Build job summary prompt
  */
-function buildJobSummaryPrompt(job: Record<string, unknown>, locale: string = 'zh'): string {
+function buildJobSummaryPrompt(job: Record<string, unknown>, locale: string = 'en'): string {
   if (locale === 'en') {
     return `
 Please provide a deep critique and analysis of the following job position.
@@ -461,7 +463,7 @@ function parseDelimiterFormat(responseText: string): {
 function buildFlexiblePrompt(
   job: Record<string, unknown>,
   resume: Record<string, unknown>,
-  locale: string = 'zh'
+  locale: string = 'en'
 ): string {
   const resumeContent = (resume.content as Record<string, unknown>) || {}
   const personalInfo =

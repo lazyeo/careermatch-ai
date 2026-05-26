@@ -70,14 +70,14 @@ export default async function JobAnalysisPage({
                   {t('backToJob')}
                 </Button>
               </Link>
-              <p className="text-sm font-medium text-gray-500">Analysis workspace</p>
+              <p className="text-sm font-medium text-gray-500">{t('v2.pageHeaderKicker')}</p>
               <h1 className="mt-1 text-2xl font-semibold tracking-tight text-gray-950">{t('title')}</h1>
               <p className="mt-2 text-sm text-gray-600">
                 {t('jobAt', { title: job.title, company: job.company })}
               </p>
             </div>
             <div className="max-w-sm text-sm leading-6 text-gray-500">
-              这里负责完整分析；详情页里的岗位点评只保留快速摘要，避免两块内容重复承担同样角色。
+              {t('v2.pageHeaderNote')}
             </div>
           </div>
         </div>

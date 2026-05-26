@@ -47,7 +47,7 @@ const SYSTEM_PROMPT_CONTENT = {
 /**
  * 根据语言生成 System Prompt
  */
-export function getJobMatchingV2SystemPrompt(locale: string = 'zh'): string {
+export function getJobMatchingV2SystemPrompt(locale: string = 'en'): string {
   const lang = locale.startsWith('en') ? 'en' : 'zh'
   const content = SYSTEM_PROMPT_CONTENT[lang]
   const languageHint = lang === 'en' ? LANGUAGE_HINTS.ENGLISH : LANGUAGE_HINTS.CHINESE
@@ -72,8 +72,7 @@ ${content.formatRequirement}
 ${content.formatNote}`
 }
 
-// 默认中文版本（向后兼容）
-export const JOB_MATCHING_V2_SYSTEM_PROMPT = getJobMatchingV2SystemPrompt('zh')
+export const JOB_MATCHING_V2_SYSTEM_PROMPT = getJobMatchingV2SystemPrompt('en')
 
 // ============================================
 // 8维度分析 User Prompt 模板
@@ -722,9 +721,9 @@ const PLACEHOLDER_CONTENT = {
 /**
  * 构建 V2 Prompt (支持多语言)
  * @param input 输入参数
- * @param locale 语言设置 (默认 'zh')
+ * @param locale 语言设置 (默认 'en')
  */
-export function buildJobMatchingV2Prompt(input: JobMatchingV2Input, locale: string = 'zh'): string {
+export function buildJobMatchingV2Prompt(input: JobMatchingV2Input, locale: string = 'en'): string {
   const { job, profile } = input
   const lang = locale.startsWith('en') ? 'en' : 'zh'
   const placeholders = PLACEHOLDER_CONTENT[lang]

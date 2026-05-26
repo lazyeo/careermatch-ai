@@ -34,6 +34,7 @@ import {
   generateDefaultCVStrategy,
   type JobMatchingV2Output,
 } from '@/lib/ai/prompts/features/job-matching-v2'
+import { getAnalysisOutputLocale } from '@/lib/ai/analysis-locale'
 
 
 // =====================================================
@@ -70,7 +71,7 @@ export async function POST(
 
     // 3. 解析请求参数
     const body = await request.json()
-    const { resumeId, provider, force, locale } = body as {
+    const { resumeId, provider, force } = body as {
       resumeId?: string
       provider?: AIProviderType
       force?: boolean
@@ -155,7 +156,7 @@ export async function POST(
       profileData,
       resumeData,
       provider,
-      locale
+      getAnalysisOutputLocale()
     )
 
     // 8. 保存到数据库
@@ -485,14 +486,14 @@ async function perform8DimensionAnalysis(
         benefits: job.benefits as string | undefined,
       },
       profile: profileData,
-    }, locale || 'zh')
+    }, locale || getAnalysisOutputLocale())
 
     // 调用AI使用统一接口
     const response = await createAICompletion({
       messages: [
         {
           role: 'system',
-          content: getJobMatchingV2SystemPrompt(locale || 'zh'),
+          content: getJobMatchingV2SystemPrompt(locale || getAnalysisOutputLocale()),
         },
         {
           role: 'user',

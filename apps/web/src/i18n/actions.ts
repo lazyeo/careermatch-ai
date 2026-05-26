@@ -1,7 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { LOCALE_COOKIE_NAME, locales, type Locale } from './config'
+import { defaultLocale, LOCALE_COOKIE_NAME, locales, type Locale } from './config'
 
 /**
  * 设置语言偏好
@@ -25,5 +25,5 @@ export async function setLocale(locale: Locale) {
 export async function getLocale(): Promise<Locale> {
   const cookieStore = await cookies()
   const locale = cookieStore.get(LOCALE_COOKIE_NAME)?.value as Locale | undefined
-  return locale && locales.includes(locale) ? locale : 'zh-CN'
+  return locale && locales.includes(locale) ? locale : defaultLocale
 }

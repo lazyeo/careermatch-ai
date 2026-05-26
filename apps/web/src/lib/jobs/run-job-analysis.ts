@@ -12,6 +12,7 @@ import {
   parseJobMatchingV2Output,
   type JobMatchingV2Output,
 } from '../ai/prompts/features/job-matching-v2'
+import { getAnalysisOutputLocale } from '../ai/analysis-locale'
 import type { AutomaticJobAnalysisSource, FullProfile } from '@careermatch/shared'
 import { buildJobAnalysisSummaryUpdate } from '../../server/job-processing/decide-next-action'
 
@@ -232,6 +233,7 @@ async function perform8DimensionAnalysis(
     })),
   }
 
+  const outputLocale = getAnalysisOutputLocale()
   const userPrompt = buildJobMatchingV2Prompt(
     {
       job: {
@@ -248,12 +250,12 @@ async function perform8DimensionAnalysis(
       },
       profile: profileData,
     },
-    'zh'
+    outputLocale
   )
 
   const response = await createAICompletion({
     messages: [
-      { role: 'system', content: getJobMatchingV2SystemPrompt('zh') },
+      { role: 'system', content: getJobMatchingV2SystemPrompt(outputLocale) },
       { role: 'user', content: userPrompt },
     ],
     temperature: TEMPERATURE_PRESETS.BALANCED,

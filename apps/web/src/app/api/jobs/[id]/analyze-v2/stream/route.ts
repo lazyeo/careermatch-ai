@@ -27,6 +27,7 @@ import {
   generateDefaultCVStrategy,
   type JobMatchingV2Output,
 } from '@/lib/ai/prompts/features/job-matching-v2'
+import { getAnalysisOutputLocale } from '@/lib/ai/analysis-locale'
 
 type AIStreamChunk = {
   type?: string
@@ -71,14 +72,13 @@ export async function POST(
 
     // 3. 解析请求参数
     const body = await request.json()
-    const { provider, force, locale } = body as {
+    const { provider, force } = body as {
       provider?: AIProviderType
       force?: boolean
       locale?: string
     }
 
-    // 获取语言设置
-    const language = locale || 'zh'
+    const language = getAnalysisOutputLocale()
 
     // 4. 检查缓存（除非force=true）
     if (!force) {

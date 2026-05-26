@@ -3,9 +3,16 @@
 import { useTranslations } from 'next-intl'
 import type { AnalysisRecommendation } from '@careermatch/shared'
 
+type ScoreRecommendation =
+  | AnalysisRecommendation
+  | 'strong_match'
+  | 'good_match'
+  | 'moderate_match'
+  | 'weak_match'
+
 interface ScoreCardProps {
   score: number
-  recommendation: AnalysisRecommendation
+  recommendation: ScoreRecommendation
 }
 
 /**
@@ -24,7 +31,7 @@ export function ScoreCard({ score, recommendation }: ScoreCardProps) {
           <div className={`text-5xl font-bold ${scoreColor}`}>
             {score}
           </div>
-          <div className="text-gray-500 text-lg">/100</div>
+          <div className="text-gray-500 text-lg">{t('outOf')}</div>
         </div>
 
         {/* 推荐等级 */}
@@ -62,21 +69,25 @@ export function ScoreCard({ score, recommendation }: ScoreCardProps) {
 /**
  * 获取推荐等级的样式
  */
-function getRecommendationStyle(recommendation: AnalysisRecommendation) {
+function getRecommendationStyle(recommendation: ScoreRecommendation) {
   switch (recommendation) {
     case 'strong':
+    case 'strong_match':
       return {
         bgColor: 'bg-success-50',
         textColor: 'text-success-700',
         borderColor: 'border-success-200',
       }
     case 'moderate':
+    case 'good_match':
+    case 'moderate_match':
       return {
         bgColor: 'bg-primary-50',
         textColor: 'text-primary-700',
         borderColor: 'border-primary-200',
       }
     case 'weak':
+    case 'weak_match':
       return {
         bgColor: 'bg-warning-50',
         textColor: 'text-warning-700',
