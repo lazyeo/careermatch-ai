@@ -1,8 +1,9 @@
 import { createClient, getCurrentUser } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, EmptyState } from '@careermatch/ui'
 import { ApplicationCard } from './components/ApplicationCard'
+import { Briefcase, Inbox, PlusCircle } from 'lucide-react'
 
 import { getTranslations } from 'next-intl/server'
 
@@ -66,19 +67,30 @@ export default async function ApplicationsPage() {
   const activeApplications = stats.submitted + stats.under_review + stats.interview_scheduled
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      {/* AppHeader removed in favor of Sidebar layout */}
+    <div className="space-y-8">
+      <section className="rounded-lg border border-line bg-surface p-6 shadow-xs">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="cm-eyebrow">{t('myApplications')}</p>
+            <h1 className="mt-2 font-display text-4xl leading-tight text-ink sm:text-5xl">{t('myApplications')}</h1>
+            <p className="mt-2 text-sm leading-6 text-ink-2">{t('noApplicationsDesc')}</p>
+          </div>
+          <Link href="/jobs">
+            <Button variant="primary">
+              <PlusCircle className="h-4 w-4" />
+              {t('browseAndApply')}
+            </Button>
+          </Link>
+        </div>
+      </section>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary-600">{stats.total}</div>
-                <div className="text-sm text-gray-600 mt-1">{t('totalApplications')}</div>
+                <div className="font-display text-4xl text-brick">{stats.total}</div>
+                <div className="mt-1 text-sm text-ink-3">{t('totalApplications')}</div>
               </div>
             </CardContent>
           </Card>
@@ -86,8 +98,8 @@ export default async function ApplicationsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">{activeApplications}</div>
-                <div className="text-sm text-gray-600 mt-1">{t('inProgress')}</div>
+                <div className="font-display text-4xl text-indigo">{activeApplications}</div>
+                <div className="mt-1 text-sm text-ink-3">{t('inProgress')}</div>
               </div>
             </CardContent>
           </Card>
@@ -95,8 +107,8 @@ export default async function ApplicationsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">{stats.interview_scheduled}</div>
-                <div className="text-sm text-gray-600 mt-1">{t('interviewScheduled')}</div>
+                <div className="font-display text-4xl text-ochre">{stats.interview_scheduled}</div>
+                <div className="mt-1 text-sm text-ink-3">{t('interviewScheduled')}</div>
               </div>
             </CardContent>
           </Card>
@@ -104,99 +116,55 @@ export default async function ApplicationsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-success-600">{stats.offer_received}</div>
-                <div className="text-sm text-gray-600 mt-1">{t('offerReceived')}</div>
+                <div className="font-display text-4xl text-sage">{stats.offer_received}</div>
+                <div className="mt-1 text-sm text-ink-3">{t('offerReceived')}</div>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Status Breakdown */}
-        <Card className="mb-8">
+        <Card>
           <CardHeader>
             <CardTitle>{t('statusBreakdown')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-600">{t('draft')}</span>
-                <span className="text-lg font-semibold text-gray-900">{stats.draft}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <span className="text-sm text-blue-700">{t('submitted')}</span>
-                <span className="text-lg font-semibold text-blue-900">{stats.submitted}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                <span className="text-sm text-yellow-700">{t('underReview')}</span>
-                <span className="text-lg font-semibold text-yellow-900">{stats.under_review}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                <span className="text-sm text-purple-700">{t('interviewScheduled')}</span>
-                <span className="text-lg font-semibold text-purple-900">{stats.interview_scheduled}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <span className="text-sm text-green-700">{t('offerReceived')}</span>
-                <span className="text-lg font-semibold text-green-900">{stats.offer_received}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                <span className="text-sm text-red-700">{t('rejected')}</span>
-                <span className="text-lg font-semibold text-red-900">{stats.rejected}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-600">{t('withdrawn')}</span>
-                <span className="text-lg font-semibold text-gray-900">{stats.withdrawn}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-teal-50 rounded-lg">
-                <span className="text-sm text-teal-700">{t('accepted')}</span>
-                <span className="text-lg font-semibold text-teal-900">{stats.accepted}</span>
-              </div>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <StatusCount label={t('draft')} value={stats.draft} tone="ghost" />
+              <StatusCount label={t('submitted')} value={stats.submitted} tone="indigo" />
+              <StatusCount label={t('underReview')} value={stats.under_review} tone="ochre" />
+              <StatusCount label={t('interviewScheduled')} value={stats.interview_scheduled} tone="brick" />
+              <StatusCount label={t('offerReceived')} value={stats.offer_received} tone="sage" />
+              <StatusCount label={t('rejected')} value={stats.rejected} tone="clay" />
+              <StatusCount label={t('withdrawn')} value={stats.withdrawn} tone="ghost" />
+              <StatusCount label={t('accepted')} value={stats.accepted} tone="sage" />
             </div>
           </CardContent>
         </Card>
 
         {/* Action Bar */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">{t('myApplications')}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-ink">{t('myApplications')}</h2>
           <Link href="/jobs">
-            <Button variant="primary">
-              + {t('browseAndApply')}
+            <Button variant="secondary">
+              <Briefcase className="h-4 w-4" />
+              {t('browseAndApply')}
             </Button>
           </Link>
         </div>
 
         {/* Application List */}
         {applicationCount === 0 ? (
-          <Card>
-            <CardContent className="py-16">
-              <div className="text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">{t('noApplications')}</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {t('noApplicationsDesc')}
-                </p>
-                <div className="mt-6">
-                  <Link href="/jobs">
-                    <Button variant="primary">
-                      {t('browseJobs')}
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={<Inbox className="h-5 w-5" />}
+            title={t('noApplications')}
+            description={t('noApplicationsDesc')}
+            action={
+              <Link href="/jobs">
+                <Button variant="primary">{t('browseJobs')}</Button>
+              </Link>
+            }
+          />
         ) : (
           <div className="space-y-4">
             {applications?.map((application) => (
@@ -204,7 +172,23 @@ export default async function ApplicationsPage() {
             ))}
           </div>
         )}
-      </main>
+    </div>
+  )
+}
+
+function StatusCount({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: number
+  tone: 'brick' | 'sage' | 'ochre' | 'clay' | 'indigo' | 'ghost'
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-md bg-surface-2 p-3">
+      <Badge tone={tone} plain>{label}</Badge>
+      <span className="font-display text-2xl text-ink">{value}</span>
     </div>
   )
 }

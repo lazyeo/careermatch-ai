@@ -15,9 +15,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from '@careermatch/ui'
+import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Field, fieldControlClasses } from '@careermatch/ui'
 import { createClient } from '@/lib/supabase'
 import { useTranslations } from 'next-intl'
+import { AlertCircle } from 'lucide-react'
 
 type LoginFormData = {
   email: string
@@ -132,14 +133,14 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-paper p-4">
       <div className="w-full max-w-md">
         {/* Logo和标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary-600 mb-2">
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 font-display text-5xl text-ink">
             CareerMatch AI
           </h1>
-          <p className="text-neutral-600">{t('welcomeBack')}</p>
+          <p className="text-ink-2">{t('welcomeBack')}</p>
         </div>
 
         {/* 登录表单卡片 */}
@@ -154,64 +155,35 @@ function LoginPageContent() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* 错误提示 */}
               {errorMessage && (
-                <div className="p-3 rounded-lg bg-error-50 border border-error-300 text-error-700 text-sm">
+                <div className="flex items-start gap-2 rounded-md border border-clay-soft bg-clay-soft p-3 text-sm text-clay">
+                  <AlertCircle className="mt-0.5 h-4 w-4 flex-none" />
                   {errorMessage}
                 </div>
               )}
 
               {/* 邮箱输入 */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-neutral-700 mb-1"
-                >
-                  {t('emailAddress')}
-                </label>
+              <Field label={t('emailAddress')} error={errors.email?.message}>
                 <input
                   {...register('email')}
                   id="email"
                   type="email"
                   autoComplete="email"
                   placeholder={t('emailPlaceholder')}
-                  className={`
-                    w-full px-3 py-2 border rounded-lg
-                    focus:outline-none focus:ring-2 focus:ring-primary-500
-                    ${errors.email ? 'border-error-500' : 'border-neutral-300'}
-                  `}
+                  className={fieldControlClasses}
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-error-600">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
+              </Field>
 
               {/* 密码输入 */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-neutral-700 mb-1"
-                >
-                  {t('password')}
-                </label>
+              <Field label={t('password')} error={errors.password?.message}>
                 <input
                   {...register('password')}
                   id="password"
                   type="password"
                   autoComplete="current-password"
                   placeholder={t('passwordPlaceholder')}
-                  className={`
-                    w-full px-3 py-2 border rounded-lg
-                    focus:outline-none focus:ring-2 focus:ring-primary-500
-                    ${errors.password ? 'border-error-500' : 'border-neutral-300'}
-                  `}
+                  className={fieldControlClasses}
                 />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-error-600">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
+              </Field>
 
               {/* Remember Me 和 忘记密码 */}
               <div className="flex items-center justify-between">
@@ -219,17 +191,10 @@ function LoginPageContent() {
                   <input
                     {...register('rememberMe')}
                     type="checkbox"
-                    className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                    className="rounded border-line-2 text-brick focus:ring-brick"
                   />
-                  <span className="text-sm text-neutral-700">{t('rememberMe')}</span>
+                  <span className="text-sm text-ink-2">{t('rememberMe')}</span>
                 </label>
-
-                <a
-                  href="/forgot-password"
-                  className="text-sm text-primary-600 hover:text-primary-700 hover:underline"
-                >
-                  {t('forgotPassword')}
-                </a>
               </div>
 
               {/* 登录按钮 */}
@@ -245,10 +210,10 @@ function LoginPageContent() {
               {/* OAuth分割线 */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-neutral-300"></div>
+                  <div className="w-full border-t border-line"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-neutral-500">
+                  <span className="bg-surface px-2 text-ink-3">
                     {t('orLoginWith')}
                   </span>
                 </div>
@@ -257,7 +222,7 @@ function LoginPageContent() {
               {/* Google OAuth 登录按钮 */}
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 className="w-full flex items-center justify-center gap-2"
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
@@ -286,10 +251,10 @@ function LoginPageContent() {
               {/* 分割线 */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-neutral-300"></div>
+                  <div className="w-full border-t border-line"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-neutral-500">
+                  <span className="bg-surface px-2 text-ink-3">
                     {t('noAccount')}
                   </span>
                 </div>
@@ -298,7 +263,7 @@ function LoginPageContent() {
               {/* 注册链接 */}
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 className="w-full"
                 onClick={() => router.push('/register')}
               >
@@ -309,15 +274,14 @@ function LoginPageContent() {
         </Card>
 
         {/* 底部说明 */}
-        <p className="mt-6 text-center text-sm text-neutral-600">
+        <p className="mt-6 text-center text-sm text-ink-3">
           {t('loginFooter')}
-          <a href="/terms" className="text-primary-600 hover:underline mx-1">
-            {t('termsOfService')}
-          </a>
+          {' '}
+          <span className="mx-1 text-brick">{t('termsOfService')}</span>
+          {' '}
           &amp;
-          <a href="/privacy" className="text-primary-600 hover:underline mx-1">
-            {t('privacyPolicy')}
-          </a>
+          {' '}
+          <span className="mx-1 text-brick">{t('privacyPolicy')}</span>
         </p>
       </div>
     </div>
@@ -326,7 +290,7 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-paper">Loading...</div>}>
       <LoginPageContent />
     </Suspense>
   )

@@ -1,12 +1,14 @@
 import { redirect, notFound } from 'next/navigation'
 import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
-import { Button, Card, CardContent } from '@careermatch/ui'
+import { Badge, Button, Card, CardContent, ScoreRing } from '@careermatch/ui'
 import { ApplyJobButton } from './components/ApplyJobButton'
 import { RefreshJobButton } from './components/RefreshJobButton'
 import { JobDetailTabs } from './components/JobDetailTabs'
 import { JobSummary } from './components/JobSummary'
 import { getTranslations, getLocale } from 'next-intl/server'
+import { ArrowLeft, Briefcase, Calendar, ExternalLink, MapPin, Pencil, Wallet } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 // Job detail page component
 export default async function JobDetailPage({
@@ -100,16 +102,16 @@ export default async function JobDetailPage({
     return key ? t(key as keyof typeof t) : status
   }
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      'saved': 'bg-neutral-100 text-neutral-800',
-      'applied': 'bg-primary-100 text-primary-800',
-      'interview': 'bg-warning-100 text-warning-800',
-      'rejected': 'bg-error-100 text-error-800',
-      'offer': 'bg-success-100 text-success-800',
-      'withdrawn': 'bg-neutral-200 text-neutral-600',
+  const getStatusTone = (status: string) => {
+    const tones: Record<string, 'neutral' | 'brick' | 'sage' | 'ochre' | 'clay' | 'indigo' | 'ghost'> = {
+      'saved': 'ghost',
+      'applied': 'sage',
+      'interview': 'ochre',
+      'rejected': 'clay',
+      'offer': 'brick',
+      'withdrawn': 'ghost',
     }
-    return colors[status] || 'bg-neutral-100 text-neutral-800'
+    return tones[status] || 'ghost'
   }
 
   const getAnalysisTaskBadge = () => {
@@ -118,7 +120,7 @@ export default async function JobDetailPage({
     if (latestProcessingTask.status === 'pending') {
       return {
         label: t('detail.analysisQueued'),
-        className: 'bg-blue-50 text-blue-700 border-blue-200',
+        tone: 'indigo' as const,
         description: t('detail.analysisQueuedDesc'),
       }
     }
@@ -126,7 +128,7 @@ export default async function JobDetailPage({
     if (latestProcessingTask.status === 'processing') {
       return {
         label: t('detail.analysisRunning'),
-        className: 'bg-amber-50 text-amber-700 border-amber-200',
+        tone: 'ochre' as const,
         description: t('detail.analysisRunningDesc'),
       }
     }
@@ -134,14 +136,14 @@ export default async function JobDetailPage({
     if (latestProcessingTask.status === 'completed') {
       return {
         label: t('detail.analysisCompleted'),
-        className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        tone: 'sage' as const,
         description: t('detail.analysisCompletedDesc'),
       }
     }
 
     return {
       label: t('detail.analysisFailed'),
-      className: 'bg-red-50 text-red-700 border-red-200',
+      tone: 'clay' as const,
       description: latestProcessingTask.error || t('detail.analysisFailedDesc'),
     }
   }
@@ -159,105 +161,84 @@ export default async function JobDetailPage({
   const analysisTaskBadge = getAnalysisTaskBadge()
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(job.status)}`}>
-                  {getStatusLabel(job.status)}
-                </span>
+    <div className="space-y-6">
+      <section className="rounded-lg border border-line bg-surface p-6 shadow-xs">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <Badge tone={getStatusTone(job.status)}>{getStatusLabel(job.status)}</Badge>
+                {analysisTaskBadge && <Badge tone={analysisTaskBadge.tone}>{analysisTaskBadge.label}</Badge>}
               </div>
+              <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">{job.title}</h1>
+              <p className="mt-2 text-lg text-ink-2">{job.company}</p>
 
-              {/* Basic Info Grid in Header */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm mt-4">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <span className="font-medium text-gray-900">{t('companyName')}:</span>
-                  {job.company}
-                </div>
+              <div className="mt-5 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                 {job.location && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <span className="font-medium text-gray-900">{t('location')}:</span>
-                    {job.location}
-                  </div>
+                  <InfoPill icon={<MapPin className="h-4 w-4" />} label={t('location')} value={job.location} />
                 )}
                 {job.job_type && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <span className="font-medium text-gray-900">{t('jobType')}:</span>
-                    {getJobTypeLabel(job.job_type)}
-                  </div>
+                  <InfoPill icon={<Briefcase className="h-4 w-4" />} label={t('jobType')} value={getJobTypeLabel(job.job_type)} />
                 )}
                 {(job.salary_min || job.salary_max) && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <span className="font-medium text-gray-900">{t('salaryRange')}:</span>
-                    {job.salary_currency} {job.salary_min?.toLocaleString() || '0'}
-                    {job.salary_max ? ` - ${job.salary_max.toLocaleString()}` : '+'}
-                  </div>
+                  <InfoPill
+                    icon={<Wallet className="h-4 w-4" />}
+                    label={t('salaryRange')}
+                    value={`${job.salary_currency} ${job.salary_min?.toLocaleString() || '0'}${job.salary_max ? ` - ${job.salary_max.toLocaleString()}` : '+'}`}
+                  />
                 )}
-                <div className="flex items-center gap-2 text-gray-600">
-                  <span className="font-medium text-gray-900">{t('updatedAt')}:</span>
-                  {new Date(job.updated_at).toLocaleDateString(locale)}
-                </div>
-                {sourceUrl && (
-                  <div className="flex items-center gap-2 text-gray-600 col-span-1 md:col-span-2">
-                    <span className="font-medium text-gray-900">{t('sourceUrl')}:</span>
+                <InfoPill icon={<Calendar className="h-4 w-4" />} label={t('updatedAt')} value={new Date(job.updated_at).toLocaleDateString(locale)} />
+              </div>
+
+              {sourceUrl && (
+                <div className="mt-4 flex min-w-0 items-center gap-2 text-sm text-ink-3">
+                    <ExternalLink className="h-4 w-4 flex-none" />
                     <a
                       href={sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary-600 hover:underline truncate max-w-md"
+                      className="truncate text-brick hover:text-brick-hover"
                     >
                       {sourceUrl}
                     </a>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
-            <div className="flex gap-2 ml-4">
+            <div className="flex flex-wrap gap-2">
               <RefreshJobButton jobId={params.id} label={t('refresh')} />
               <Link href={`/jobs/${params.id}/edit`}>
-                <Button variant="primary">{t('edit')}</Button>
+                <Button variant="primary">
+                  <Pencil className="h-4 w-4" />
+                  {t('edit')}
+                </Button>
               </Link>
               <Link href="/jobs">
-                <Button variant="outline">{t('backToList')}</Button>
+                <Button variant="secondary">
+                  <ArrowLeft className="h-4 w-4" />
+                  {t('backToList')}
+                </Button>
               </Link>
             </div>
           </div>
-        </div>
-      </header>
+      </section>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <JobDetailTabs
           original={originalContent}
           aiInsights={
             <div className="space-y-6">
-              {/* Job Summary / Critique */}
-              <JobSummary jobId={params.id} initialContent={job.ai_analysis} />
-
               <div className="space-y-6">
-                <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                  <div className="flex flex-col gap-3 border-b border-gray-100 pb-4 md:flex-row md:items-end md:justify-between">
+                <section className="rounded-lg border border-line bg-surface p-5 shadow-xs">
+                  <div className="flex flex-col gap-3 border-b border-line pb-4 md:flex-row md:items-end md:justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">{t('detail.decisionKicker')}</p>
-                      <h2 className="mt-1 text-xl font-semibold text-gray-950">{t('detail.decisionTitle')}</h2>
-                      <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+                      <p className="cm-eyebrow">{t('detail.decisionKicker')}</p>
+                      <h2 className="mt-2 text-xl font-semibold text-ink">{t('detail.decisionTitle')}</h2>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-2">
                         {t('detail.decisionDesc')}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {analysisTaskBadge && (
-                        <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${analysisTaskBadge.className}`}>
-                          {analysisTaskBadge.label}
-                        </span>
-                      )}
                       {latestAnalysis && (
-                        <span className="inline-flex items-center rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700">
-                          {t('detail.matchScore', { score: latestAnalysis.score })}
-                        </span>
+                        <Badge tone="brick">{t('detail.matchScore', { score: latestAnalysis.score })}</Badge>
                       )}
                     </div>
                   </div>
@@ -268,40 +249,42 @@ export default async function JobDetailPage({
                     </div>
 
                     <div className="space-y-4">
-                      <Card className="border-gray-200 shadow-none">
+                      <Card variant="inset">
                         <CardContent className="space-y-4 p-5">
                           <div>
-                            <h3 className="text-base font-semibold text-gray-900">{t('detail.matchAnalysis')}</h3>
-                            <p className="mt-1 text-sm text-gray-500">
+                            <h3 className="text-base font-semibold text-ink">{t('detail.matchAnalysis')}</h3>
+                            <p className="mt-1 text-sm text-ink-3">
                               {t('detail.matchAnalysisDesc')}
                             </p>
                           </div>
 
                           {latestAnalysis ? (
-                            <div className="rounded-xl border border-primary-200 bg-primary-50 p-4">
-                              <div className="text-sm text-primary-700">{t('detail.latestResult')}</div>
-                              <div className="mt-2 text-3xl font-semibold text-primary-700">
-                                {latestAnalysis.score}/100
-                              </div>
-                              <div className="mt-1 text-xs text-primary-600">
-                                {new Date(latestAnalysis.created_at).toLocaleDateString(locale)}
+                            <div className="rounded-lg border border-brick-soft bg-brick-tint p-4">
+                              <div className="flex items-center gap-4">
+                                <ScoreRing value={latestAnalysis.score} label={t('detail.latestResult')} size={96} stroke={8} />
+                                <div className="min-w-0">
+                                  <div className="text-sm font-medium text-brick-ink">{t('detail.latestResult')}</div>
+                                  <div className="mt-1 text-xs text-brick-ink/80">
+                                    {new Date(latestAnalysis.created_at).toLocaleDateString(locale)}
+                                  </div>
+                                </div>
                               </div>
                               <Link href={`/jobs/${params.id}/analysis?mode=profile`} className="mt-4 inline-flex">
                                 <Button variant="primary">{t('detail.viewDetailedAnalysis')}</Button>
                               </Link>
                             </div>
                           ) : latestProcessingTask?.status === 'pending' || latestProcessingTask?.status === 'processing' ? (
-                            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
+                            <div className="rounded-lg border border-indigo-soft bg-indigo-soft p-4 text-sm text-indigo">
                               {t('detail.analysisGenerating')}
                             </div>
                           ) : (
-                            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                            <div className="rounded-lg border border-line bg-surface p-4 text-sm text-ink-2">
                               {t('detail.analysisEmpty')}
                             </div>
                           )}
 
                           {latestProcessingTask?.status === 'failed' && (
-                            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                            <div className="rounded-lg border border-clay-soft bg-clay-soft p-4 text-sm text-clay">
                               {latestProcessingTask.error || t('detail.analysisFailedDesc')}
                             </div>
                           )}
@@ -320,19 +303,19 @@ export default async function JobDetailPage({
                         </CardContent>
                       </Card>
 
-                      <Card className="border-gray-200 shadow-none">
+                      <Card variant="inset">
                         <CardContent className="space-y-4 p-5">
                           <div>
-                            <h3 className="text-base font-semibold text-gray-900">{t('detail.nextActions')}</h3>
-                            <p className="mt-1 text-sm text-gray-500">
+                            <h3 className="text-base font-semibold text-ink">{t('detail.nextActions')}</h3>
+                            <p className="mt-1 text-sm text-ink-3">
                               {t('detail.nextActionsDesc')}
                             </p>
                           </div>
                           <div className="space-y-3">
                             <Link href={`/jobs/${params.id}/cover-letter`} className="block">
-                              <Button variant="outline" className="w-full justify-between">
+                              <Button variant="secondary" className="w-full justify-between">
                                 <span>{t('generateCoverLetter')}</span>
-                                <span className="text-xs text-gray-500">{t('detail.optional')}</span>
+                                <span className="text-xs text-ink-3">{t('detail.optional')}</span>
                               </Button>
                             </Link>
                             <ApplyJobButton jobId={params.id} />
@@ -344,11 +327,11 @@ export default async function JobDetailPage({
                 </section>
 
                 {(resumes.length > 0 || coverLetters.length > 0) && (
-                  <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                  <section className="rounded-lg border border-line bg-surface p-5 shadow-xs">
+                    <div className="flex items-center justify-between gap-4 border-b border-line pb-4">
                       <div>
-                        <h3 className="text-base font-semibold text-gray-900">{t('detail.generatedMaterials')}</h3>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <h3 className="text-base font-semibold text-ink">{t('detail.generatedMaterials')}</h3>
+                        <p className="mt-1 text-sm text-ink-3">
                           {t('detail.generatedMaterialsDesc')}
                         </p>
                       </div>
@@ -356,22 +339,22 @@ export default async function JobDetailPage({
                     <div className="mt-4 grid gap-6 lg:grid-cols-2">
                       {resumes.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-semibold text-gray-700">{t('detail.resumes')}</h4>
+                          <h4 className="text-sm font-semibold text-ink-2">{t('detail.resumes')}</h4>
                           <div className="mt-3 space-y-2">
                             {resumes.map((resume) => (
                               <Link
                                 key={resume.id}
                                 href={`/resumes/preview/${resume.id}`}
-                                className="block rounded-xl border border-gray-200 p-3 transition-colors hover:border-primary-300 hover:bg-primary-50/40"
+                                className="block rounded-lg border border-line p-3 transition-colors hover:border-brick-soft hover:bg-brick-tint"
                               >
                                 <div className="flex items-start justify-between gap-3">
                                   <div>
-                                    <div className="font-medium text-gray-900">{resume.title}</div>
-                                    <div className="mt-1 text-sm text-gray-500">
+                                    <div className="font-medium text-ink">{resume.title}</div>
+                                    <div className="mt-1 text-sm text-ink-3">
                                       {new Date(resume.created_at).toLocaleDateString(locale)} · {resume.source === 'ai_generated' ? t('detail.sourceGenerated') : t('detail.sourceManual')}
                                     </div>
                                   </div>
-                                  <svg className="mt-0.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <svg className="mt-0.5 h-5 w-5 text-ink-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                   </svg>
                                 </div>
@@ -383,12 +366,12 @@ export default async function JobDetailPage({
 
                       {coverLetters.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-semibold text-gray-700">{t('detail.coverLetters')}</h4>
+                          <h4 className="text-sm font-semibold text-ink-2">{t('detail.coverLetters')}</h4>
                           <div className="mt-3 space-y-2">
                             {coverLetters.map((letter) => (
-                              <div key={letter.id} className="rounded-xl border border-gray-200 p-3">
-                                <div className="font-medium text-gray-900">{letter.title}</div>
-                                <div className="mt-1 text-sm text-gray-500">
+                              <div key={letter.id} className="rounded-lg border border-line p-3">
+                                <div className="font-medium text-ink">{letter.title}</div>
+                                <div className="mt-1 text-sm text-ink-3">
                                   {new Date(letter.created_at).toLocaleDateString(locale)} · {letter.source === 'ai_generated' ? t('detail.sourceGenerated') : t('detail.sourceManual')}
                                 </div>
                               </div>
@@ -403,7 +386,24 @@ export default async function JobDetailPage({
             </div>
           }
         />
-      </main>
+    </div>
+  )
+}
+
+function InfoPill({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode
+  label: string
+  value: string
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-2 rounded-md bg-surface-2 px-3 py-2 text-ink-2">
+      <span className="text-ink-3">{icon}</span>
+      <span className="font-medium text-ink">{label}:</span>
+      <span className="truncate">{value}</span>
     </div>
   )
 }

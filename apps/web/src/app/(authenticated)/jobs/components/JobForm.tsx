@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
+import { Button, Card, CardContent, CardHeader, CardTitle, Field, fieldControlClasses } from '@careermatch/ui'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
@@ -140,7 +140,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
-        <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded">
+        <div className="rounded-md border border-clay-soft bg-clay-soft px-4 py-3 text-sm text-clay">
           {error}
         </div>
       )}
@@ -151,56 +151,38 @@ export function JobForm({ initialData, mode }: JobFormProps) {
           <CardTitle>{formT('basicInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {formT('jobTitleRequired')}
-            </label>
+          <Field label={formT('jobTitleRequired')} error={errors.title?.message}>
             <input
               {...register('title')}
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={fieldControlClasses}
               placeholder={formT('jobTitlePlaceholder')}
             />
-            {errors.title && (
-              <p className="text-error-600 text-sm mt-1">{errors.title.message}</p>
-            )}
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {formT('companyRequired')}
-            </label>
+          <Field label={formT('companyRequired')} error={errors.company?.message}>
             <input
               {...register('company')}
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={fieldControlClasses}
               placeholder={formT('companyPlaceholder')}
             />
-            {errors.company && (
-              <p className="text-error-600 text-sm mt-1">{errors.company.message}</p>
-            )}
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('location')}
-            </label>
+          <Field label={t('location')}>
             <input
               {...register('location')}
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={fieldControlClasses}
               placeholder={formT('locationPlaceholder')}
             />
-          </div>
+          </Field>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('jobType')}
-              </label>
+            <Field label={t('jobType')}>
               <select
                 {...register('job_type')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className={fieldControlClasses}
               >
                 <option value="">{formT('selectPlaceholder')}</option>
                 <option value="full-time">{t('fullTime')}</option>
@@ -209,15 +191,12 @@ export function JobForm({ initialData, mode }: JobFormProps) {
                 <option value="internship">{t('internship')}</option>
                 <option value="casual">{t('casual')}</option>
               </select>
-            </div>
+            </Field>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('status')}
-              </label>
+            <Field label={t('status')}>
               <select
                 {...register('status')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className={fieldControlClasses}
               >
                 <option value="saved">{t('statusLabels.saved')}</option>
                 <option value="applied">{t('statusLabels.applied')}</option>
@@ -226,7 +205,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
                 <option value="offer">{t('statusLabels.offer')}</option>
                 <option value="withdrawn">{t('statusLabels.withdrawn')}</option>
               </select>
-            </div>
+            </Field>
           </div>
         </CardContent>
       </Card>
@@ -238,44 +217,35 @@ export function JobForm({ initialData, mode }: JobFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formT('minSalary')}
-              </label>
+            <Field label={formT('minSalary')}>
               <input
                 {...register('salary_min', { valueAsNumber: true })}
                 type="number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className={fieldControlClasses}
                 placeholder="80000"
               />
-            </div>
+            </Field>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formT('maxSalary')}
-              </label>
+            <Field label={formT('maxSalary')}>
               <input
                 {...register('salary_max', { valueAsNumber: true })}
                 type="number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className={fieldControlClasses}
                 placeholder="120000"
               />
-            </div>
+            </Field>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formT('currency')}
-              </label>
+            <Field label={formT('currency')}>
               <select
                 {...register('salary_currency')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className={fieldControlClasses}
               >
                 <option value="NZD">NZD</option>
                 <option value="AUD">AUD</option>
                 <option value="USD">USD</option>
                 <option value="CNY">CNY</option>
               </select>
-            </div>
+            </Field>
           </div>
         </CardContent>
       </Card>
@@ -286,41 +256,32 @@ export function JobForm({ initialData, mode }: JobFormProps) {
           <CardTitle>{formT('jobDetails')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('description')}
-            </label>
+          <Field label={t('description')}>
             <textarea
               {...register('description')}
               rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={`${fieldControlClasses} h-auto py-2`}
               placeholder={formT('descriptionPlaceholder')}
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('requirements')}
-            </label>
+          <Field label={t('requirements')}>
             <textarea
               {...register('requirements')}
               rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={`${fieldControlClasses} h-auto py-2`}
               placeholder={formT('requirementsPlaceholder')}
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('benefits')}
-            </label>
+          <Field label={t('benefits')}>
             <textarea
               {...register('benefits')}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={`${fieldControlClasses} h-auto py-2`}
               placeholder={formT('benefitsPlaceholder')}
             />
-          </div>
+          </Field>
         </CardContent>
       </Card>
 
@@ -330,43 +291,31 @@ export function JobForm({ initialData, mode }: JobFormProps) {
           <CardTitle>{formT('otherInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {formT('sourceUrl')}
-            </label>
+          <Field label={formT('sourceUrl')} error={errors.source_url?.message}>
             <input
               {...register('source_url')}
               type="url"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={fieldControlClasses}
               placeholder="https://www.seek.co.nz/job/..."
             />
-            {errors.source_url && (
-              <p className="text-error-600 text-sm mt-1">{errors.source_url.message}</p>
-            )}
-          </div>
+          </Field>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formT('postedDate')}
-              </label>
+            <Field label={formT('postedDate')}>
               <input
                 {...register('posted_date')}
                 type="date"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className={fieldControlClasses}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formT('deadline')}
-              </label>
+            <Field label={formT('deadline')}>
               <input
                 {...register('deadline')}
                 type="date"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className={fieldControlClasses}
               />
-            </div>
+            </Field>
           </div>
         </CardContent>
       </Card>
@@ -375,7 +324,7 @@ export function JobForm({ initialData, mode }: JobFormProps) {
       <div className="flex gap-4 justify-end">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           onClick={() => router.back()}
           disabled={isSubmitting}
         >

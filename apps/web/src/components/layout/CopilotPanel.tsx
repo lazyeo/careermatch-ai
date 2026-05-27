@@ -21,10 +21,10 @@ export function CopilotPanel() {
                         variant="outline"
                         size="sm"
                         onClick={toggleCopilot}
-                        className="h-12 w-8 rounded-l-xl rounded-r-none shadow-lg border-l border-y border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center p-0"
+                        className="flex h-12 w-8 items-center justify-center rounded-l-lg rounded-r-none border-y border-l border-line bg-surface p-0 shadow-strong hover:bg-surface-2"
                         title={t('expand')}
                     >
-                        <ChevronLeft className="w-4 h-4 text-gray-600" />
+                        <ChevronLeft className="h-4 w-4 text-ink-2" />
                     </Button>
                 </div>
             )}
@@ -32,29 +32,29 @@ export function CopilotPanel() {
             {/* Main Panel */}
             <div
                 className={cn(
-                    "fixed inset-y-0 right-0 z-30 w-[400px] bg-white border-l border-gray-200 shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col",
+                    "fixed inset-y-0 right-0 z-30 flex w-[min(400px,100vw)] transform flex-col border-l border-line bg-surface shadow-warm transition-transform duration-300 ease-in-out",
                     isCopilotOpen ? "translate-x-0" : "translate-x-full"
                 )}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white">
+                <div className="flex items-center justify-between border-b border-line bg-paper-tint px-4 py-3">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
-                            <MessageSquare className="w-4 h-4 text-primary-600" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brick-soft">
+                            <MessageSquare className="h-4 w-4 text-brick" />
                         </div>
                         <div>
-                            <h3 className="font-semibold text-gray-900 text-sm">{t('title')}</h3>
-                            <p className="text-xs text-gray-500">{t('subtitle')}</p>
+                            <h3 className="text-sm font-semibold text-ink">{t('title')}</h3>
+                            <p className="text-xs text-ink-3">{t('subtitle')}</p>
                         </div>
                     </div>
                     <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         onClick={toggleCopilot}
-                        className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                        className="h-8 w-8 rounded-full p-0"
                         title={t('close')}
                     >
-                        <ChevronRight className="w-4 h-4 text-gray-500" />
+                        <ChevronRight className="h-4 w-4 text-ink-3" />
                     </Button>
                 </div>
 

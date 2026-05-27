@@ -3,16 +3,19 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
+  Badge,
   Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
+  EmptyState,
+  Field,
+  fieldControlClasses,
 } from '@careermatch/ui'
 import type { ParsedJobData } from '@careermatch/job-scraper'
 import { useTranslations } from 'next-intl'
-
-type ImportMode = 'url' | 'text'
+import { AlertCircle, CheckCircle2, LinkIcon, RotateCcw } from 'lucide-react'
 
 interface ParsedJobResult {
   success: boolean
@@ -32,9 +35,7 @@ interface BatchImportResponse {
 export function JobImportForm() {
   const router = useRouter()
   const t = useTranslations('jobs.import')
-  const [mode, setMode] = useState<ImportMode>('url')
   const [urls, setUrls] = useState('')
-  const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [parsedResults, setParsedResults] = useState<ParsedJobResult[]>([])
@@ -54,14 +55,10 @@ export function JobImportForm() {
         throw new Error(t('errors.noUrl'))
       }
 
-      const payload = mode === 'url'
-        ? { urls: uniqueUrls }
-        : { content }
-
       const response = await fetch('/api/jobs/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ urls: uniqueUrls }),
       })
 
       const result: BatchImportResponse = await response.json()
@@ -100,7 +97,7 @@ export function JobImportForm() {
           description: data.description,
           requirements: data.requirements,
           benefits: data.benefits,
-          source_url: originalUrl || (mode === 'url' ? urls.split('\n')[0] : null), // Fallback
+          source_url: originalUrl || urls.split('\n')[0] || null,
           posted_date: data.posted_date,
           deadline: data.deadline,
           status: 'saved',
@@ -147,78 +144,42 @@ export function JobImportForm() {
     setParsedResults([])
     setError(null)
     setUrls('')
-    setContent('')
   }
 
   return (
     <div className="space-y-6">
       {/* 导入方式选择 */}
       {parsedResults.length === 0 && (
-        <Card className="border-gray-200 shadow-sm">
-          <CardHeader className="border-b border-gray-100 pb-4">
-            <CardTitle className="text-xl font-semibold text-gray-900">{t('title')}</CardTitle>
-            <p className="text-sm text-gray-500">
+        <Card>
+          <CardHeader className="border-b border-line pb-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-brick-soft text-brick">
+                <LinkIcon className="h-4 w-4" />
+              </span>
+              <div>
+                <CardTitle>{t('title')}</CardTitle>
+                <p className="mt-1 text-sm text-ink-3">
               {t('description')}
-            </p>
+                </p>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
-            <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
-              <button
-                onClick={() => setMode('url')}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition ${mode === 'url'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                {t('urlMode')}
-              </button>
-              <button
-                onClick={() => setMode('text')}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition ${mode === 'text'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                {t('textMode')}
-              </button>
-            </div>
+            <Badge tone="brick" plain>{t('urlMode')}</Badge>
 
-            {mode === 'url' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('urlLabel')}
-                </label>
-                <textarea
-                  value={urls}
-                  onChange={(e) => setUrls(e.target.value)}
-                  rows={5}
-                  placeholder={t('urlPlaceholder')}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
-                />
-                <p className="mt-2 text-sm text-gray-500">
-                  {t('urlHelp')}
-                </p>
-              </div>
-            ) : (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('contentLabel')}
-                </label>
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  rows={10}
-                  placeholder={t('contentPlaceholder')}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-                <p className="mt-2 text-sm text-gray-500">
-                  {t('contentHelp')}
-                </p>
-              </div>
-            )}
+            <Field label={t('urlLabel')} hint={t('urlHelp')}>
+              <textarea
+                value={urls}
+                onChange={(e) => setUrls(e.target.value)}
+                rows={5}
+                placeholder={t('urlPlaceholder')}
+                className={`${fieldControlClasses} h-auto min-h-32 py-3 font-mono`}
+              />
+            </Field>
 
             {error && (
-              <div className="mt-4 p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg">
+              <div className="mt-4 flex items-start gap-2 rounded-md border border-clay-soft bg-clay-soft p-3 text-sm text-clay">
+                <AlertCircle className="mt-0.5 h-4 w-4 flex-none" />
                 {error}
               </div>
             )}
@@ -227,7 +188,7 @@ export function JobImportForm() {
               <Button
                 onClick={handleParse}
                 variant="primary"
-                disabled={isLoading || (mode === 'url' ? !urls.trim() : !content.trim())}
+                disabled={isLoading || !urls.trim()}
               >
                 {isLoading ? t('parsingButton') : t('parseButton')}
               </Button>
@@ -239,20 +200,21 @@ export function JobImportForm() {
       {/* 解析结果预览 */}
       {parsedResults.length > 0 && (
         <div className="space-y-4">
-          <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-5 shadow-xs sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-ink">
                 {t('resultsTitle', {
                   success: parsedResults.filter(r => r.success).length,
                   total: parsedResults.length,
                 })}
               </h2>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-ink-3">
                 {t('resultsDescription')}
               </p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={handleReset}>
+              <Button variant="secondary" onClick={handleReset}>
+                <RotateCcw className="h-4 w-4" />
                 {t('restart')}
               </Button>
               <Button
@@ -266,15 +228,16 @@ export function JobImportForm() {
           </div>
 
           {parsedResults.map((result, index) => (
-            <Card key={index} className={result.success ? 'border-gray-200 shadow-sm' : 'border-red-200 shadow-sm'}>
-              <CardHeader className="border-b border-gray-100 pb-4">
+            <Card key={index} className={result.success ? '' : 'border-clay-soft'}>
+              <CardHeader className="border-b border-line pb-4">
                 <CardTitle className="flex items-center justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${result.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                    <Badge tone={result.success ? 'sage' : 'clay'}>
+                      {result.success ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
                       {result.success ? t('success') : t('failed')}
-                    </span>
+                    </Badge>
                     {result.input && (
-                      <span className="truncate text-sm font-normal text-gray-500">
+                      <span className="truncate text-sm font-normal text-ink-3">
                         {result.input}
                       </span>
                     )}
@@ -286,20 +249,20 @@ export function JobImportForm() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs text-gray-500">{t('jobTitle')}</label>
+                        <label className="text-xs text-ink-3">{t('jobTitle')}</label>
                         <div className="font-medium">{result.parsed_data.title}</div>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">{t('company')}</label>
+                        <label className="text-xs text-ink-3">{t('company')}</label>
                         <div className="font-medium">{result.parsed_data.company}</div>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">{t('location')}</label>
+                        <label className="text-xs text-ink-3">{t('location')}</label>
                         <div>{result.parsed_data.location || '-'}</div>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-500">{t('salary')}</label>
-                        <div className="text-success-600">
+                        <label className="text-xs text-ink-3">{t('salary')}</label>
+                        <div className="text-sage">
                           {result.parsed_data.salary_min
                             ? `${result.parsed_data.salary_currency} ${result.parsed_data.salary_min.toLocaleString()}`
                             : '-'}
@@ -308,16 +271,14 @@ export function JobImportForm() {
                     </div>
                     {/* 简略描述 */}
                     <div>
-                      <label className="text-xs text-gray-500">{t('descriptionPreview')}</label>
-                      <div className="text-sm text-gray-600 line-clamp-2">
+                      <label className="text-xs text-ink-3">{t('descriptionPreview')}</label>
+                      <div className="line-clamp-2 text-sm text-ink-2">
                         {result.parsed_data.description}
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-error-600 text-sm">
-                    {result.error || t('unknownError')}
-                  </div>
+                  <EmptyState title={result.error || t('unknownError')} icon={<AlertCircle className="h-5 w-5" />} />
                 )}
               </CardContent>
             </Card>

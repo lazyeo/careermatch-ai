@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import { getCurrentUser, createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import type { ResumeContent } from '@careermatch/shared'
 import { ExportPDFButton } from '@/components/ExportPDFButton'
 import { getTranslations, getLocale } from 'next-intl/server'
@@ -60,33 +60,32 @@ export default async function ResumeDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-start">
+    <div className="min-h-screen bg-paper">
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{resume.title}</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="cm-eyebrow">{t('title')}</p>
+              <h1 className="font-display text-3xl font-semibold text-ink">{resume.title}</h1>
+              <p className="mt-1 text-sm text-ink-3">
                 {t('version')} {t('versionPrefix')}{resume.version} · {t('lastUpdatedAt')}{' '}
                 {new Date(resume.updated_at).toLocaleDateString(locale)}
               </p>
             </div>
-            <div className="flex gap-2 flex-shrink-0">
+            <div className="flex flex-wrap gap-2 lg:flex-shrink-0">
               <ExportPDFButton resumeId={params.id} resumeTitle={resume.title} />
               <Link href={`/resumes/${params.id}/edit`}>
                 <Button variant="primary">{t('edit')}</Button>
               </Link>
               <Link href="/resumes">
-                <Button variant="outline">{t('backToList')}</Button>
+                <Button variant="secondary">{t('backToList')}</Button>
               </Link>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         {/* Personal Info */}
         <Card>
           <CardHeader>
@@ -121,7 +120,7 @@ export default async function ResumeDetailPage({
                     href={content.personalInfo.linkedIn}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary-600 hover:underline"
+                    className="text-brick hover:underline"
                   >
                     {content.personalInfo.linkedIn}
                   </a>
@@ -134,7 +133,7 @@ export default async function ResumeDetailPage({
                     href={content.personalInfo.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary-600 hover:underline"
+                    className="text-brick hover:underline"
                   >
                     {content.personalInfo.github}
                   </a>
@@ -151,7 +150,7 @@ export default async function ResumeDetailPage({
               <CardTitle>{t('careerObjective')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700 whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap text-sm leading-6 text-ink-2">
                 {content.careerObjective}
               </p>
             </CardContent>
@@ -167,10 +166,7 @@ export default async function ResumeDetailPage({
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {content.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800"
-                  >
+                  <Badge key={index} tone="brick">
                     {skill.name}
                     {skill.level && (
                       <span className="ml-2 text-xs">
@@ -179,7 +175,7 @@ export default async function ResumeDetailPage({
                         {skill.level === 'expert' && t('skillLevels.expert')}
                       </span>
                     )}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             </CardContent>
@@ -194,22 +190,22 @@ export default async function ResumeDetailPage({
             </CardHeader>
             <CardContent className="space-y-6">
               {content.workExperience.map((work) => (
-                <div key={work.id} className="border-l-4 border-primary-500 pl-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                <div key={work.id} className="border-l-2 border-brick pl-4">
+                  <h3 className="text-lg font-semibold text-ink">
                     {work.position}
                   </h3>
-                  <p className="text-gray-600 font-medium">{work.company}</p>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="font-medium text-ink-2">{work.company}</p>
+                  <p className="mt-1 text-sm text-ink-3">
                     {work.startDate} - {work.isCurrent ? t('present') : work.endDate}
                     {work.location && ` · ${work.location}`}
                   </p>
                   {work.description && (
-                    <p className="mt-3 text-gray-700 whitespace-pre-wrap">
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink-2">
                       {work.description}
                     </p>
                   )}
                   {work.achievements && work.achievements.length > 0 && (
-                    <ul className="mt-2 list-disc list-inside text-gray-700">
+                    <ul className="mt-2 list-inside list-disc text-sm text-ink-2">
                       {work.achievements.map((achievement, idx) => (
                         <li key={idx}>{achievement}</li>
                       ))}
@@ -218,12 +214,7 @@ export default async function ResumeDetailPage({
                   {work.technologies && work.technologies.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {work.technologies.map((tech, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 text-xs rounded bg-gray-200 text-gray-700"
-                        >
-                          {tech}
-                        </span>
+                        <Badge key={idx} tone="sage">{tech}</Badge>
                       ))}
                     </div>
                   )}
@@ -241,23 +232,23 @@ export default async function ResumeDetailPage({
             </CardHeader>
             <CardContent className="space-y-6">
               {content.projects.map((project) => (
-                <div key={project.id} className="border-l-4 border-accent-500 pl-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                <div key={project.id} className="border-l-2 border-ochre pl-4">
+                  <h3 className="text-lg font-semibold text-ink">
                     {project.name}
                   </h3>
                   {project.role && (
-                    <p className="text-gray-600 font-medium">{project.role}</p>
+                    <p className="font-medium text-ink-2">{project.role}</p>
                   )}
                   {(project.startDate || project.endDate) && (
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="mt-1 text-sm text-ink-3">
                       {project.startDate} - {project.endDate || t('present')}
                     </p>
                   )}
-                  <p className="mt-3 text-gray-700 whitespace-pre-wrap">
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink-2">
                     {project.description}
                   </p>
                   {project.highlights && project.highlights.length > 0 && (
-                    <ul className="mt-2 list-disc list-inside text-gray-700">
+                    <ul className="mt-2 list-inside list-disc text-sm text-ink-2">
                       {project.highlights.map((highlight, idx) => (
                         <li key={idx}>{highlight}</li>
                       ))}
@@ -266,12 +257,7 @@ export default async function ResumeDetailPage({
                   {project.technologies && project.technologies.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {project.technologies.map((tech, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 text-xs rounded bg-gray-200 text-gray-700"
-                        >
-                          {tech}
-                        </span>
+                        <Badge key={idx} tone="sage">{tech}</Badge>
                       ))}
                     </div>
                   )}
@@ -280,7 +266,7 @@ export default async function ResumeDetailPage({
                       href={project.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary-600 hover:underline text-sm mt-2 inline-block"
+                      className="mt-2 inline-block text-sm text-brick hover:underline"
                     >
                       {t('viewProject')} →
                     </a>
@@ -300,19 +286,19 @@ export default async function ResumeDetailPage({
             <CardContent className="space-y-4">
               {content.education.map((edu) => (
                 <div key={edu.id}>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-ink">
                     {edu.degree} - {edu.major}
                   </h3>
-                  <p className="text-gray-600 font-medium">{edu.institution}</p>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="font-medium text-ink-2">{edu.institution}</p>
+                  <p className="mt-1 text-sm text-ink-3">
                     {edu.startDate} - {edu.endDate}
                     {edu.location && ` · ${edu.location}`}
                   </p>
                   {edu.gpa && (
-                    <p className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</p>
+                    <p className="mt-1 text-sm text-ink-2">GPA: {edu.gpa}</p>
                   )}
                   {edu.achievements && edu.achievements.length > 0 && (
-                    <ul className="mt-2 list-disc list-inside text-gray-700">
+                    <ul className="mt-2 list-inside list-disc text-sm text-ink-2">
                       {edu.achievements.map((achievement, idx) => (
                         <li key={idx}>{achievement}</li>
                       ))}
@@ -333,14 +319,14 @@ export default async function ResumeDetailPage({
             <CardContent className="space-y-4">
               {content.certifications.map((cert) => (
                 <div key={cert.id}>
-                  <h3 className="text-lg font-semibold text-gray-900">{cert.name}</h3>
-                  <p className="text-gray-600">{cert.issuer}</p>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <h3 className="text-lg font-semibold text-ink">{cert.name}</h3>
+                  <p className="text-ink-2">{cert.issuer}</p>
+                  <p className="mt-1 text-sm text-ink-3">
                     {t('issueDate')}: {cert.issueDate}
                     {cert.expiryDate && ` · ${t('expiryDate')}: ${cert.expiryDate}`}
                   </p>
                   {cert.credentialId && (
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="mt-1 text-sm text-ink-2">
                       {t('credentialId')}: {cert.credentialId}
                     </p>
                   )}
@@ -349,7 +335,7 @@ export default async function ResumeDetailPage({
                       href={cert.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary-600 hover:underline text-sm mt-1 inline-block"
+                      className="mt-1 inline-block text-sm text-brick hover:underline"
                     >
                       {t('verifyCertificate')} →
                     </a>
@@ -369,12 +355,7 @@ export default async function ResumeDetailPage({
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {content.interests.map((interest, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700"
-                  >
-                    {interest}
-                  </span>
+                  <Badge key={index} tone="neutral">{interest}</Badge>
                 ))}
               </div>
             </CardContent>

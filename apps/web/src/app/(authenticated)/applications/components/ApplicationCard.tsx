@@ -1,8 +1,7 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import Link from 'next/link'
-import { Button } from '@careermatch/ui'
 import { formatDistanceToNow } from 'date-fns'
 import { enUS, zhCN } from 'date-fns/locale'
 import { useLocale, useTranslations } from 'next-intl'
@@ -47,14 +46,14 @@ interface ApplicationCardProps {
 }
 
 const STATUS_CONFIG = {
-  draft: { labelKey: 'draft', color: 'bg-gray-100 text-gray-800' },
-  submitted: { labelKey: 'submitted', color: 'bg-blue-100 text-blue-800' },
-  under_review: { labelKey: 'underReview', color: 'bg-yellow-100 text-yellow-800' },
-  interview_scheduled: { labelKey: 'interviewScheduled', color: 'bg-purple-100 text-purple-800' },
-  offer_received: { labelKey: 'offerReceived', color: 'bg-green-100 text-green-800' },
-  rejected: { labelKey: 'rejected', color: 'bg-red-100 text-red-800' },
-  withdrawn: { labelKey: 'withdrawn', color: 'bg-gray-100 text-gray-800' },
-  accepted: { labelKey: 'accepted', color: 'bg-teal-100 text-teal-800' },
+  draft: { labelKey: 'draft', tone: 'ghost' },
+  submitted: { labelKey: 'submitted', tone: 'indigo' },
+  under_review: { labelKey: 'underReview', tone: 'ochre' },
+  interview_scheduled: { labelKey: 'interviewScheduled', tone: 'brick' },
+  offer_received: { labelKey: 'offerReceived', tone: 'sage' },
+  rejected: { labelKey: 'rejected', tone: 'clay' },
+  withdrawn: { labelKey: 'withdrawn', tone: 'ghost' },
+  accepted: { labelKey: 'accepted', tone: 'sage' },
 }
 
 export function ApplicationCard({ application }: ApplicationCardProps) {
@@ -64,7 +63,7 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
   const dateLocale = locale === 'zh-CN' ? zhCN : enUS
   const statusConfig = STATUS_CONFIG[application.status as keyof typeof STATUS_CONFIG] || {
     labelKey: null,
-    color: 'bg-gray-100 text-gray-800',
+    tone: 'ghost',
   }
 
   const job = application.jobs
@@ -83,21 +82,19 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
     : null
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card variant="interactive">
       <CardHeader>
-        <div className="flex justify-between items-start">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
               <CardTitle className="text-lg">
                 {job?.title || t('unknownJob')}
               </CardTitle>
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig.color}`}
-              >
+              <Badge tone={statusConfig.tone as 'brick' | 'sage' | 'ochre' | 'clay' | 'indigo' | 'ghost'}>
                 {statusConfig.labelKey ? t(statusConfig.labelKey) : application.status}
-              </span>
+              </Badge>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-ink-2">
               {job?.company || t('unknownCompany')}
               {job?.location && ` · ${job.location}`}
             </div>
@@ -109,8 +106,8 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
           {/* Job Details */}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <div className="text-gray-500">{t('jobType')}</div>
-              <div className="font-medium text-gray-900">
+              <div className="text-ink-3">{t('jobType')}</div>
+              <div className="font-medium text-ink">
                 {job?.job_type === 'full_time' && tJobs('fullTime')}
                 {job?.job_type === 'part_time' && tJobs('partTime')}
                 {job?.job_type === 'contract' && tJobs('contract')}
@@ -119,8 +116,8 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
               </div>
             </div>
             <div>
-              <div className="text-gray-500">{t('salaryRange')}</div>
-              <div className="font-medium text-gray-900">
+              <div className="text-ink-3">{t('salaryRange')}</div>
+              <div className="font-medium text-ink">
                 {job?.salary_min && job?.salary_max
                   ? `${job.salary_currency || 'NZD'} ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`
                   : '-'}
@@ -130,19 +127,19 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
 
           {/* Resume Used */}
           <div className="text-sm">
-            <div className="text-gray-500">{t('resumeUsed')}</div>
-            <div className="font-medium text-gray-900">
+            <div className="text-ink-3">{t('resumeUsed')}</div>
+            <div className="font-medium text-ink">
               {resume?.title || resume?.content?.personal_info?.full_name || t('unnamedResume')}
             </div>
           </div>
 
           {/* Latest Event */}
           {latestEvent && (
-            <div className="text-sm bg-gray-50 p-3 rounded-lg">
-              <div className="flex justify-between items-start">
+            <div className="rounded-lg bg-surface-2 p-3 text-sm">
+              <div className="flex items-start justify-between">
                 <div>
-                  <div className="font-medium text-gray-900">{latestEventDescription}</div>
-                  <div className="text-gray-500 text-xs mt-1">
+                  <div className="font-medium text-ink">{latestEventDescription}</div>
+                  <div className="mt-1 text-xs text-ink-3">
                     {formatDistanceToNow(new Date(latestEvent.date), {
                       addSuffix: true,
                       locale: dateLocale,
@@ -156,13 +153,13 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
           {/* Notes */}
           {application.notes && (
             <div className="text-sm">
-              <div className="text-gray-500">{t('notes')}</div>
-              <div className="text-gray-700 mt-1 line-clamp-2">{application.notes}</div>
+              <div className="text-ink-3">{t('notes')}</div>
+              <div className="mt-1 line-clamp-2 text-ink-2">{application.notes}</div>
             </div>
           )}
 
           {/* Timeline Count */}
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-ink-3">
             {t('timelineEventsCount', { count: application.timeline?.length || 0 })}
           </div>
 
@@ -174,7 +171,7 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
               </Button>
             </Link>
             <Link href={`/jobs/${job?.id}`} className="flex-1">
-              <Button variant="outline" className="w-full">
+              <Button variant="secondary" className="w-full">
                 {t('viewJob')}
               </Button>
             </Link>

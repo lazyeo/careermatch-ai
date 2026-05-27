@@ -16,9 +16,10 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from '@careermatch/ui'
+import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Field, fieldControlClasses, ProgressBar } from '@careermatch/ui'
 import { createClient } from '@/lib/supabase'
 import { useTranslations } from 'next-intl'
+import { AlertCircle } from 'lucide-react'
 
 type RegisterFormData = {
   fullName: string
@@ -90,9 +91,9 @@ export default function RegisterPage() {
     if (/[0-9]/.test(pwd)) strength++
     if (/[^a-zA-Z0-9]/.test(pwd)) strength++
 
-    if (strength <= 2) return { strength: 1, label: t('passwordStrength.weak'), color: 'bg-error-500' }
-    if (strength <= 3) return { strength: 2, label: t('passwordStrength.medium'), color: 'bg-warning-500' }
-    return { strength: 3, label: t('passwordStrength.strong'), color: 'bg-success-500' }
+    if (strength <= 2) return { strength: 1, label: t('passwordStrength.weak') }
+    if (strength <= 3) return { strength: 2, label: t('passwordStrength.medium') }
+    return { strength: 3, label: t('passwordStrength.strong') }
   }
 
   const passwordStrength = getPasswordStrength(password)
@@ -174,14 +175,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-paper p-4">
       <div className="w-full max-w-md">
         {/* Logo和标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary-600 mb-2">
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 font-display text-5xl text-ink">
             CareerMatch AI
           </h1>
-          <p className="text-neutral-600">{t('welcomeRegister')}</p>
+          <p className="text-ink-2">{t('welcomeRegister')}</p>
         </div>
 
         {/* 注册表单卡片 */}
@@ -196,138 +197,74 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* 错误提示 */}
               {errorMessage && (
-                <div className="p-3 rounded-lg bg-error-50 border border-error-300 text-error-700 text-sm">
+                <div className="flex items-start gap-2 rounded-md border border-clay-soft bg-clay-soft p-3 text-sm text-clay">
+                  <AlertCircle className="mt-0.5 h-4 w-4 flex-none" />
                   {errorMessage}
                 </div>
               )}
 
               {/* 姓名输入 */}
-              <div>
-                <label
-                  htmlFor="fullName"
-                  className="block text-sm font-medium text-neutral-700 mb-1"
-                >
-                  {t('fullName')}
-                </label>
+              <Field label={t('fullName')} error={errors.fullName?.message}>
                 <input
                   {...register('fullName')}
                   id="fullName"
                   type="text"
                   autoComplete="name"
                   placeholder={t('namePlaceholder')}
-                  className={`
-                    w-full px-3 py-2 border rounded-lg
-                    focus:outline-none focus:ring-2 focus:ring-primary-500
-                    ${errors.fullName ? 'border-error-500' : 'border-neutral-300'}
-                  `}
+                  className={fieldControlClasses}
                 />
-                {errors.fullName && (
-                  <p className="mt-1 text-sm text-error-600">
-                    {errors.fullName.message}
-                  </p>
-                )}
-              </div>
+              </Field>
 
               {/* 邮箱输入 */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-neutral-700 mb-1"
-                >
-                  {t('emailAddress')}
-                </label>
+              <Field label={t('emailAddress')} error={errors.email?.message}>
                 <input
                   {...register('email')}
                   id="email"
                   type="email"
                   autoComplete="email"
                   placeholder={t('emailPlaceholder')}
-                  className={`
-                    w-full px-3 py-2 border rounded-lg
-                    focus:outline-none focus:ring-2 focus:ring-primary-500
-                    ${errors.email ? 'border-error-500' : 'border-neutral-300'}
-                  `}
+                  className={fieldControlClasses}
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-error-600">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
+              </Field>
 
               {/* 密码输入 */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-neutral-700 mb-1"
-                >
-                  {t('password')}
-                </label>
+              <Field label={t('password')} error={errors.password?.message}>
                 <input
                   {...register('password')}
                   id="password"
                   type="password"
                   autoComplete="new-password"
                   placeholder={t('passwordPlaceholder')}
-                  className={`
-                    w-full px-3 py-2 border rounded-lg
-                    focus:outline-none focus:ring-2 focus:ring-primary-500
-                    ${errors.password ? 'border-error-500' : 'border-neutral-300'}
-                  `}
+                  className={fieldControlClasses}
                 />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-error-600">
-                    {errors.password.message}
-                  </p>
-                )}
 
                 {/* 密码强度指示器 */}
                 {password && passwordStrength.strength > 0 && (
                   <div className="mt-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="flex-1 h-2 bg-neutral-200 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${passwordStrength.color} transition-all`}
-                          style={{ width: `${(passwordStrength.strength / 3) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-neutral-600">
+                    <div className="mb-1 flex items-center gap-2">
+                      <ProgressBar value={(passwordStrength.strength / 3) * 100} size="thin" tone={passwordStrength.strength === 3 ? 'sage' : passwordStrength.strength === 2 ? 'ochre' : 'clay'} />
+                      <span className="text-xs text-ink-2">
                         {passwordStrength.label}
                       </span>
                     </div>
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-ink-3">
                       {t('passwordHint')}
                     </p>
                   </div>
                 )}
-              </div>
+              </Field>
 
               {/* 确认密码输入 */}
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-neutral-700 mb-1"
-                >
-                  {t('confirmPassword')}
-                </label>
+              <Field label={t('confirmPassword')} error={errors.confirmPassword?.message}>
                 <input
                   {...register('confirmPassword')}
                   id="confirmPassword"
                   type="password"
                   autoComplete="new-password"
                   placeholder={t('passwordPlaceholder')}
-                  className={`
-                    w-full px-3 py-2 border rounded-lg
-                    focus:outline-none focus:ring-2 focus:ring-primary-500
-                    ${errors.confirmPassword ? 'border-error-500' : 'border-neutral-300'}
-                  `}
+                  className={fieldControlClasses}
                 />
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-error-600">
-                    {errors.confirmPassword.message}
-                  </p>
-                )}
-              </div>
+              </Field>
 
               {/* 同意条款 */}
               <div>
@@ -335,21 +272,24 @@ export default function RegisterPage() {
                   <input
                     {...register('agreeToTerms')}
                     type="checkbox"
-                    className="mt-1 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                    className="mt-1 rounded border-line-2 text-brick focus:ring-brick"
                   />
-                  <span className="text-sm text-neutral-700">
+                  <span className="text-sm text-ink-2">
                     {t('agreeToTerms')}
-                    <a href="/terms" className="text-primary-600 hover:underline mx-1">
+                    {' '}
+                    <span className="mx-1 text-brick">
                       {t('termsOfService')}
-                    </a>
+                    </span>
+                    {' '}
                     &amp;
-                    <a href="/privacy" className="text-primary-600 hover:underline mx-1">
+                    {' '}
+                    <span className="mx-1 text-brick">
                       {t('privacyPolicy')}
-                    </a>
+                    </span>
                   </span>
                 </label>
                 {errors.agreeToTerms && (
-                  <p className="mt-1 text-sm text-error-600">
+                  <p className="mt-1 text-sm text-clay">
                     {errors.agreeToTerms.message}
                   </p>
                 )}
@@ -368,10 +308,10 @@ export default function RegisterPage() {
               {/* OAuth分割线 */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-neutral-300"></div>
+                  <div className="w-full border-t border-line"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-neutral-500">
+                  <span className="bg-surface px-2 text-ink-3">
                     {t('orRegisterWith')}
                   </span>
                 </div>
@@ -380,7 +320,7 @@ export default function RegisterPage() {
               {/* Google OAuth 注册按钮 */}
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 className="w-full flex items-center justify-center gap-2"
                 onClick={handleGoogleSignup}
                 disabled={isLoading}
@@ -409,10 +349,10 @@ export default function RegisterPage() {
               {/* 分割线 */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-neutral-300"></div>
+                  <div className="w-full border-t border-line"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-neutral-500">
+                  <span className="bg-surface px-2 text-ink-3">
                     {t('hasAccount')}
                   </span>
                 </div>
@@ -421,7 +361,7 @@ export default function RegisterPage() {
               {/* 登录链接 */}
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 className="w-full"
                 onClick={() => router.push('/login')}
               >

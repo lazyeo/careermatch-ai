@@ -1,11 +1,12 @@
 import { createClient, getCurrentUser } from '@/lib/supabase-server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
 import { Timeline } from '../components/Timeline'
 import { StatusUpdater } from '../components/StatusUpdater'
 import { DeleteApplicationButton } from '../components/DeleteApplicationButton'
 import { getTranslations, getLocale } from 'next-intl/server'
+import { ExternalLink } from 'lucide-react'
 
 interface PageProps {
   params: {
@@ -66,57 +67,54 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
   const resume = application.resumes
 
   const STATUS_CONFIG = {
-    draft: { label: t('draft'), color: 'bg-gray-100 text-gray-800' },
-    submitted: { label: t('submitted'), color: 'bg-blue-100 text-blue-800' },
-    under_review: { label: t('underReview'), color: 'bg-yellow-100 text-yellow-800' },
-    interview_scheduled: { label: t('interviewScheduled'), color: 'bg-purple-100 text-purple-800' },
-    offer_received: { label: t('offerReceived'), color: 'bg-green-100 text-green-800' },
-    rejected: { label: t('rejected'), color: 'bg-red-100 text-red-800' },
-    withdrawn: { label: t('withdrawn'), color: 'bg-gray-100 text-gray-800' },
-    accepted: { label: t('accepted'), color: 'bg-teal-100 text-teal-800' },
+    draft: { label: t('draft'), tone: 'neutral' },
+    submitted: { label: t('submitted'), tone: 'indigo' },
+    under_review: { label: t('underReview'), tone: 'ochre' },
+    interview_scheduled: { label: t('interviewScheduled'), tone: 'brick' },
+    offer_received: { label: t('offerReceived'), tone: 'sage' },
+    rejected: { label: t('rejected'), tone: 'clay' },
+    withdrawn: { label: t('withdrawn'), tone: 'ghost' },
+    accepted: { label: t('accepted'), tone: 'sage' },
   }
 
   const statusConfig = STATUS_CONFIG[application.status as keyof typeof STATUS_CONFIG] || {
     label: application.status,
-    color: 'bg-gray-100 text-gray-800',
+    tone: 'neutral',
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-paper">
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-gray-900">
+              <p className="cm-eyebrow">{t('applicationDetail')}</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="font-display text-3xl font-semibold text-ink">
                   {job?.title || t('applicationDetail')}
                 </h1>
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusConfig.color}`}
-                >
+                <Badge tone={statusConfig.tone as 'neutral' | 'brick' | 'sage' | 'ochre' | 'clay' | 'indigo' | 'ghost'}>
                   {statusConfig.label}
-                </span>
+                </Badge>
               </div>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="mt-1 text-sm text-ink-3">
                 {job?.company || t('unknownCompany')}
                 {job?.location && ` · ${job.location}`}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Link href={`/jobs/${job?.id}`}>
-                <Button variant="outline">{t('viewJob')}</Button>
+                <Button variant="secondary">{t('viewJob')}</Button>
               </Link>
               <Link href="/applications">
-                <Button variant="outline">{t('backToList')}</Button>
+                <Button variant="ghost">{t('backToList')}</Button>
               </Link>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">
@@ -147,9 +145,9 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
               </CardHeader>
               <CardContent>
                 {application.notes ? (
-                  <p className="text-gray-700 whitespace-pre-wrap">{application.notes}</p>
+                  <p className="whitespace-pre-wrap text-sm leading-6 text-ink-2">{application.notes}</p>
                 ) : (
-                  <p className="text-gray-500 italic">{t('noNotes')}</p>
+                  <p className="text-sm italic text-ink-3">{t('noNotes')}</p>
                 )}
               </CardContent>
             </Card>
@@ -163,7 +161,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                       <CardTitle>{tJobs('description')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-700 whitespace-pre-wrap">{job.description}</p>
+                      <p className="whitespace-pre-wrap text-sm leading-6 text-ink-2">{job.description}</p>
                     </CardContent>
                   </Card>
                 )}
@@ -174,7 +172,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                       <CardTitle>{tJobs('requirements')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-700 whitespace-pre-wrap">{job.requirements}</p>
+                      <p className="whitespace-pre-wrap text-sm leading-6 text-ink-2">{job.requirements}</p>
                     </CardContent>
                   </Card>
                 )}
@@ -185,7 +183,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                       <CardTitle>{tJobs('benefits')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-700 whitespace-pre-wrap">{job.benefits}</p>
+                      <p className="whitespace-pre-wrap text-sm leading-6 text-ink-2">{job.benefits}</p>
                     </CardContent>
                   </Card>
                 )}
@@ -202,20 +200,20 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="text-sm text-gray-500">{t('applicationTime')}</div>
-                  <div className="font-medium text-gray-900">
+                  <div className="text-sm text-ink-3">{t('applicationTime')}</div>
+                  <div className="font-medium text-ink">
                     {new Date(application.created_at).toLocaleString(locale)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">{t('lastUpdate')}</div>
-                  <div className="font-medium text-gray-900">
+                  <div className="text-sm text-ink-3">{t('lastUpdate')}</div>
+                  <div className="font-medium text-ink">
                     {new Date(application.updated_at).toLocaleString(locale)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">{t('timelineEvents')}</div>
-                  <div className="font-medium text-gray-900">
+                  <div className="text-sm text-ink-3">{t('timelineEvents')}</div>
+                  <div className="font-medium text-ink">
                     {t('eventsCount', { count: application.timeline?.length || 0 })}
                   </div>
                 </div>
@@ -230,27 +228,27 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-ink">
                       {resume.title || resume.content?.personal_info?.full_name || t('unnamedResume')}
                     </div>
                     {resume.content?.personal_info?.full_name && (
-                      <div className="text-sm text-gray-600 mt-1">{resume.content.personal_info.full_name}</div>
+                      <div className="mt-1 text-sm text-ink-2">{resume.content.personal_info.full_name}</div>
                     )}
                   </div>
                   <div className="space-y-1 text-sm">
                     {resume.content?.personal_info?.email && (
-                      <div className="text-gray-600">
+                      <div className="text-ink-2">
                         📧 {resume.content.personal_info.email}
                       </div>
                     )}
                     {resume.content?.personal_info?.phone && (
-                      <div className="text-gray-600">
+                      <div className="text-ink-2">
                         📱 {resume.content.personal_info.phone}
                       </div>
                     )}
                   </div>
                   <Link href={`/resumes/${resume.id}`}>
-                    <Button variant="outline" className="w-full mt-2">
+                    <Button variant="secondary" className="w-full mt-2">
                       {t('viewResume')}
                     </Button>
                   </Link>
@@ -266,8 +264,8 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <div className="text-sm text-gray-500">{tJobs('jobType')}</div>
-                    <div className="font-medium text-gray-900">
+                    <div className="text-sm text-ink-3">{tJobs('jobType')}</div>
+                    <div className="font-medium text-ink">
                       {job.job_type === 'full_time' && tJobs('fullTime')}
                       {job.job_type === 'part_time' && tJobs('partTime')}
                       {job.job_type === 'contract' && tJobs('contract')}
@@ -277,8 +275,8 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                   </div>
                   {(job.salary_min || job.salary_max) && (
                     <div>
-                      <div className="text-sm text-gray-500">{t('salaryRange')}</div>
-                      <div className="font-medium text-gray-900">
+                      <div className="text-sm text-ink-3">{t('salaryRange')}</div>
+                      <div className="font-medium text-ink">
                         {job.salary_currency || 'NZD'} {job.salary_min?.toLocaleString()} -{' '}
                         {job.salary_max?.toLocaleString()}
                       </div>
@@ -286,16 +284,16 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                   )}
                   {job.posted_date && (
                     <div>
-                      <div className="text-sm text-gray-500">{t('postedDate')}</div>
-                      <div className="font-medium text-gray-900">
+                      <div className="text-sm text-ink-3">{t('postedDate')}</div>
+                      <div className="font-medium text-ink">
                         {new Date(job.posted_date).toLocaleDateString(locale)}
                       </div>
                     </div>
                   )}
                   {job.deadline && (
                     <div>
-                      <div className="text-sm text-gray-500">{t('applicationDeadline')}</div>
-                      <div className="font-medium text-gray-900">
+                      <div className="text-sm text-ink-3">{t('applicationDeadline')}</div>
+                      <div className="font-medium text-ink">
                         {new Date(job.deadline).toLocaleDateString(locale)}
                       </div>
                     </div>
@@ -306,22 +304,10 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
                         href={job.source_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                        className="flex items-center gap-1 text-sm text-brick hover:text-brick-ink"
                       >
-                        🔗 {t('viewOriginalLink')}
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                          />
-                        </svg>
+                        {t('viewOriginalLink')}
+                        <ExternalLink className="h-3.5 w-3.5" />
                       </a>
                     </div>
                   )}
@@ -336,7 +322,7 @@ export default async function ApplicationDetailPage({ params }: PageProps) {
               </CardHeader>
               <CardContent className="space-y-2">
                 <Link href={`/jobs/${job?.id}/analysis`} className="block">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="secondary" className="w-full">
                     {t('viewAIAnalysis')}
                   </Button>
                 </Link>

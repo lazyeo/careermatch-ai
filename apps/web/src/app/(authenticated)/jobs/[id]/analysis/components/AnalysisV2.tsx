@@ -3,8 +3,8 @@
 import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@careermatch/ui'
-import { Sparkles, Loader2, RefreshCw, Palette } from 'lucide-react'
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, EmptyState, ProgressBar } from '@careermatch/ui'
+import { AlertCircle, Check, Loader2, Palette, RefreshCw, Sparkles } from 'lucide-react'
 import { DimensionsDisplay } from './DimensionsDisplay'
 import { ScoreCard } from './ScoreCard'
 import { MarkdownAnalysis } from './MarkdownAnalysis'
@@ -265,22 +265,22 @@ export function AnalysisV2({
   if (state === 'idle') {
     return (
       <div className="space-y-6">
-        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-gray-100 pb-5 md:flex-row md:items-end md:justify-between">
+        <section className="rounded-lg border border-line bg-surface p-6 shadow-xs">
+          <div className="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-end md:justify-between">
             <div className="max-w-3xl">
-              <p className="text-sm font-medium text-gray-500">{t('v2.workspaceKicker')}</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-gray-950">
+              <p className="cm-eyebrow">{t('v2.workspaceKicker')}</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-normal text-ink">
                 {t('v2.workspaceTitle')}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-gray-600">
+              <p className="mt-2 text-sm leading-6 text-ink-2">
                 {t('v2.workspaceDescription')}
               </p>
-              <p className="mt-2 text-xs leading-5 text-gray-500">
+              <p className="mt-2 text-xs leading-5 text-ink-3">
                 {t('v2.outputLanguageNote')}
               </p>
             </div>
             <Button variant="primary" onClick={() => startAnalysis(false)} className="md:min-w-[160px] justify-center gap-2">
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="h-4 w-4" />
               {t('v2.startButton')}
             </Button>
           </div>
@@ -314,32 +314,24 @@ export function AnalysisV2({
       <div className="space-y-6">
 
         {/* 进度状态卡片 */}
-        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-lg border border-line bg-surface p-6 shadow-xs">
           <div className="py-2">
-            <div className="flex items-center gap-4 mb-6">
-              <Loader2 className="w-8 h-8 text-primary-600 animate-spin flex-shrink-0" />
+            <div className="mb-6 flex items-center gap-4">
+              <Loader2 className="h-8 w-8 flex-shrink-0 animate-spin text-brick" />
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-ink">
                   {t('v2.analyzing')}
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-ink-3">
                   {streamProgress.status}
                 </p>
               </div>
-              <span className="text-2xl font-bold text-indigo-600">
+              <span className="font-display text-3xl text-brick">
                 {streamProgress.progress}%
               </span>
             </div>
 
-            {/* 进度条 */}
-            <div className="mb-6">
-              <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-primary-600 h-2 rounded-full transition-all duration-300 ease-out"
-                  style={{ width: `${Math.max(2, streamProgress.progress)}%` }}
-                />
-              </div>
-            </div>
+            <ProgressBar value={Math.max(2, streamProgress.progress)} size="thick" className="mb-6" />
 
             {/* 分析阶段指示 */}
             <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
@@ -382,21 +374,19 @@ export function AnalysisV2({
 
         <Card>
           <CardContent className="py-12">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">!</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t('v2.error')}
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">{error}</p>
+            <EmptyState
+              icon={<AlertCircle className="h-5 w-5" />}
+              title={t('v2.error')}
+              description={error || undefined}
+              action={
               <Button
                 variant="primary"
                 onClick={() => startAnalysis(true)}
               >
                 {t('v2.retry')}
               </Button>
-            </div>
+              }
+            />
           </CardContent>
         </Card>
       </div>
@@ -405,23 +395,23 @@ export function AnalysisV2({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-gray-100 pb-4 md:flex-row md:items-end md:justify-between">
+      <section className="rounded-lg border border-line bg-surface p-6 shadow-xs">
+        <div className="flex flex-col gap-4 border-b border-line pb-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500">{t('v2.resultKicker')}</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-gray-950">
+            <p className="cm-eyebrow">{t('v2.resultKicker')}</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-normal text-ink">
               {t('v2.resultTitle')}
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-600">
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-ink-2">
               {t('v2.resultDescription')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+            <Badge tone="indigo">
               <Sparkles className="h-3 w-3" />
               {t('v2.badge')}
-            </span>
-            <span className="text-xs text-gray-500">
+            </Badge>
+            <span className="text-xs text-ink-3">
               {t('v2.providedBy')} {result?.provider?.toUpperCase()} · {result?.model}
             </span>
           </div>
@@ -436,7 +426,7 @@ export function AnalysisV2({
               />
 
               {result?.analysis && (
-                <Card className="border-gray-200 shadow-none">
+                <Card variant="inset">
                   <CardHeader>
                     <CardTitle className="text-base">
                       {t('v2.conclusionTitle')}
@@ -450,20 +440,20 @@ export function AnalysisV2({
             </div>
 
             <div className="space-y-4">
-              <Card className="border-gray-200 shadow-none">
+              <Card variant="inset">
                 <CardContent className="space-y-4 p-5">
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900">{t('v2.nextActionsTitle')}</h3>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <h3 className="text-base font-semibold text-ink">{t('v2.nextActionsTitle')}</h3>
+                    <p className="mt-1 text-sm text-ink-3">
                       {t('v2.nextActionsDescription')}
                     </p>
                   </div>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => startAnalysis(true)}
                     className="w-full justify-center gap-2"
                   >
-                    <RefreshCw className="w-4 h-4" />
+                    <RefreshCw className="h-4 w-4" />
                     {t('v2.reAnalyze')}
                   </Button>
                   <Button
@@ -472,7 +462,7 @@ export function AnalysisV2({
                     className="w-full justify-center gap-2"
                     disabled={!result?.sessionId || !result?.dimensions}
                   >
-                    <Palette className="w-4 h-4" />
+                    <Palette className="h-4 w-4" />
                     {t('v2.selectTemplateAndGenerate')}
                   </Button>
                 </CardContent>
@@ -499,9 +489,9 @@ export function AnalysisV2({
 
 function AnalysisScopeCard({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="min-h-[132px] rounded-lg border border-gray-200 bg-gray-50 p-4">
-      <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-gray-600">{desc}</p>
+    <div className="min-h-[132px] rounded-lg border border-line bg-surface-2 p-4">
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-ink-2">{desc}</p>
     </div>
   )
 }
@@ -519,25 +509,23 @@ function ProgressStep({
   return (
     <div className="flex flex-col items-center">
       <div
-        className={`w-6 h-6 rounded-full flex items-center justify-center mb-1 transition-colors ${
+      className={`mb-1 flex h-6 w-6 items-center justify-center rounded-full transition-colors ${
           completed
-            ? 'bg-green-500 text-white'
+            ? 'bg-sage text-white'
             : active
-              ? 'bg-indigo-500 text-white animate-pulse'
-              : 'bg-gray-200 text-gray-400'
+              ? 'animate-pulse bg-brick text-white'
+              : 'bg-surface-3 text-ink-4'
         }`}
       >
         {completed ? (
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
+          <Check className="h-3 w-3" />
         ) : (
           <span className="text-xs">{active ? '•' : ''}</span>
         )}
       </div>
       <span
         className={`text-center ${
-          completed ? 'text-green-600' : active ? 'text-indigo-600 font-medium' : 'text-gray-400'
+          completed ? 'text-sage' : active ? 'font-medium text-brick' : 'text-ink-4'
         }`}
       >
         {label}

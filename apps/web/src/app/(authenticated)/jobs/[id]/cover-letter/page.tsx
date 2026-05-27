@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import {
+  Badge,
   Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
+  Segmented,
 } from '@careermatch/ui'
-import { ArrowLeft, Loader2, FileText, Copy, Download, Check } from 'lucide-react'
+import { ArrowLeft, Loader2, FileText, Copy, Download, Check, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 interface CoverLetterResult {
@@ -163,40 +165,36 @@ export default function CoverLetterPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
+    <div className="space-y-6">
+      <section className="rounded-lg border border-line bg-surface p-6 shadow-xs">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
             <Link href={`/jobs/${params.id}`}>
-              <Button variant="ghost" className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
+              <Button variant="ghost" className="mb-3 gap-2 px-0 text-ink-3 hover:text-ink">
+                <ArrowLeft className="h-4 w-4" />
                 {t('backToJob')}
               </Button>
             </Link>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary-600" />
-                <h1 className="text-xl font-bold text-gray-900">
+              <div className="flex items-center gap-2 text-brick">
+                <FileText className="h-5 w-5" />
+                <p className="cm-eyebrow">{t('title')}</p>
+              </div>
+                <h1 className="mt-2 font-display text-4xl leading-tight text-ink">
                   {t('title')}
                 </h1>
-              </div>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="mt-2 text-sm leading-6 text-ink-2">
                 {t('subtitle')}
               </p>
             </div>
           </div>
-        </div>
-      </header>
+      </section>
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading && !result ? (
           <Card>
             <CardContent className="py-12">
               <div className="text-center">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary-600 mb-4" />
-                <p className="text-gray-600">{t('loading')}</p>
+                <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-brick" />
+                <p className="text-ink-2">{t('loading')}</p>
               </div>
             </CardContent>
           </Card>
@@ -208,10 +206,10 @@ export default function CoverLetterPage({
             <CardContent className="space-y-6">
               {/* Tone Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-ink-2">
                   {t('toneStyle')}
                 </label>
-                <div className="flex gap-3">
+                <div className="grid gap-3 md:grid-cols-3">
                   {[
                     { value: 'professional', label: t('tones.professional'), desc: t('tones.professionalDesc') },
                     { value: 'friendly', label: t('tones.friendly'), desc: t('tones.friendlyDesc') },
@@ -224,14 +222,14 @@ export default function CoverLetterPage({
                           option.value as 'professional' | 'friendly' | 'formal'
                         )
                       }
-                      className={`flex-1 p-4 rounded-lg border-2 transition-all text-left ${
+                      className={`rounded-md border p-4 text-left transition ${
                         tone === option.value
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-brick-soft bg-brick-tint text-brick-ink'
+                          : 'border-line bg-surface hover:border-line-strong'
                       }`}
                     >
                       <div className="font-medium">{option.label}</div>
-                      <div className="text-sm text-gray-500">{option.desc}</div>
+                      <div className="mt-1 text-sm text-ink-3">{option.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -239,32 +237,22 @@ export default function CoverLetterPage({
 
               {/* Language Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-ink-2">
                   {t('language')}
                 </label>
-                <div className="flex gap-3">
-                  {[
-                    { value: 'en', label: t('languages.en'), desc: t('languages.enDesc') },
-                    { value: 'zh', label: t('languages.zh'), desc: t('languages.zhDesc') },
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => setLanguage(option.value as 'en' | 'zh')}
-                      className={`flex-1 p-4 rounded-lg border-2 transition-all text-left ${
-                        language === option.value
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="font-medium">{option.label}</div>
-                      <div className="text-sm text-gray-500">{option.desc}</div>
-                    </button>
-                  ))}
-                </div>
+                <Segmented
+                  value={language}
+                  onValueChange={(value) => setLanguage(value as 'en' | 'zh')}
+                  options={[
+                    { value: 'en', label: t('languages.en') },
+                    { value: 'zh', label: t('languages.zh') },
+                  ]}
+                />
               </div>
 
               {error && (
-                <div className="p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg">
+                <div className="flex items-start gap-2 rounded-md border border-clay-soft bg-clay-soft p-3 text-sm text-clay">
+                  <AlertCircle className="mt-0.5 h-4 w-4 flex-none" />
                   {error}
                 </div>
               )}
@@ -278,19 +266,19 @@ export default function CoverLetterPage({
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       {t('generating')}
                     </>
                   ) : (
                     <>
-                      <FileText className="w-4 h-4" />
+                      <FileText className="h-4 w-4" />
                       {t('generate')}
                     </>
                   )}
                 </Button>
               </div>
 
-              <p className="text-sm text-gray-500 text-center">
+              <p className="text-center text-sm text-ink-3">
                 {t('ensureProfile')}
               </p>
             </CardContent>
@@ -299,15 +287,15 @@ export default function CoverLetterPage({
           <div className="space-y-6">
             {/* 已保存提示 */}
             {existingCoverLetter && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-3 rounded-lg border border-indigo-soft bg-indigo-soft p-4">
+                <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-indigo" />
                 <div className="flex-1">
-                  <p className="text-sm text-blue-900">
+                  <p className="text-sm text-indigo">
                     <span className="font-medium">{t('savedNotice')}</span>
                     {' - '}
                     {t('generatedAt', { date: new Date(existingCoverLetter.created_at).toLocaleString() })}
                   </p>
-                  <p className="text-xs text-blue-700 mt-1">
+                  <p className="mt-1 text-xs text-indigo">
                     {t('regenerateHint')}
                   </p>
                 </div>
@@ -319,14 +307,14 @@ export default function CoverLetterPage({
               <CardContent className="py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-ink">
                       {result.job.title}
                     </h3>
-                    <p className="text-sm text-gray-600">{result.job.company}</p>
+                    <p className="text-sm text-ink-2">{result.job.company}</p>
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <Badge tone="ghost" plain>
                     {result.coverLetter.wordCount} {t('wordCount')}
-                  </div>
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -342,9 +330,9 @@ export default function CoverLetterPage({
                     {result.coverLetter.highlights.map((highlight, index) => (
                       <li
                         key={index}
-                        className="flex items-start gap-2 text-sm text-gray-700"
+                        className="flex items-start gap-2 text-sm text-ink-2"
                       >
-                        <Check className="w-4 h-4 text-success-600 mt-0.5 flex-shrink-0" />
+                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-sage" />
                         {highlight}
                       </li>
                     ))}
@@ -360,37 +348,37 @@ export default function CoverLetterPage({
                   <CardTitle>{t('content')}</CardTitle>
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={handleCopy}
                       className="gap-1"
                     >
                       {copied ? (
                         <>
-                          <Check className="w-4 h-4" />
+                          <Check className="h-4 w-4" />
                           {tCommon('copied')}
                         </>
                       ) : (
                         <>
-                          <Copy className="w-4 h-4" />
+                          <Copy className="h-4 w-4" />
                           {tCommon('copy')}
                         </>
                       )}
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={handleDownload}
                       className="gap-1"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="h-4 w-4" />
                       {tCommon('download')}
                     </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-gray-50 rounded-lg p-6 whitespace-pre-wrap text-gray-800 leading-relaxed">
+                <div className="whitespace-pre-wrap rounded-lg border border-line bg-surface-2 p-6 leading-relaxed text-ink-2">
                   {result.coverLetter.content}
                 </div>
               </CardContent>
@@ -399,11 +387,11 @@ export default function CoverLetterPage({
             {/* Actions */}
             <div className="flex gap-4 justify-between">
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => setResult(null)}
                 className="gap-2"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 {t('regenerate')}
               </Button>
               <Link href={`/jobs/${params.id}`}>
@@ -412,7 +400,6 @@ export default function CoverLetterPage({
             </div>
           </div>
         )}
-      </main>
     </div>
   )
 }

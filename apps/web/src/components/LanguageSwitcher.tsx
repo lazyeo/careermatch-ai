@@ -33,12 +33,12 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
           variant="ghost"
           size="sm"
           onClick={() => setIsOpen(!isOpen)}
-          className="gap-1.5 text-gray-600 hover:text-gray-900"
+          className="gap-1.5 text-ink-2 hover:text-ink"
           disabled={isPending}
         >
-          <Globe className="w-4 h-4" />
+          <Globe className="h-4 w-4" />
           <span className="text-xs">{locale === 'zh-CN' ? 'ZH' : 'EN'}</span>
-          <ChevronDown className="w-3 h-3" />
+          <ChevronDown className="h-3 w-3" />
         </Button>
 
         {isOpen && (
@@ -47,16 +47,16 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
               className="fixed inset-0 z-40"
               onClick={() => setIsOpen(false)}
             />
-            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 min-w-[120px]">
+            <div className="absolute right-0 top-full z-50 mt-1 min-w-[120px] rounded-md border border-line bg-surface py-1 shadow-strong">
               {(Object.entries(localeNames) as [Locale, string][]).map(([key, name]) => (
                 <button
                   key={key}
                   onClick={() => handleLocaleChange(key)}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center justify-between"
+                  className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-ink-2 hover:bg-surface-2 hover:text-ink"
                   disabled={isPending}
                 >
                   <span>{name}</span>
-                  {locale === key && <Check className="w-4 h-4 text-primary-600" />}
+                  {locale === key && <Check className="h-4 w-4 text-brick" />}
                 </button>
               ))}
             </div>
@@ -74,9 +74,9 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
         className="gap-2"
         disabled={isPending}
       >
-        <Globe className="w-4 h-4" />
+        <Globe className="h-4 w-4" />
         <span>{localeNames[locale]}</span>
-        <ChevronDown className="w-4 h-4" />
+        <ChevronDown className="h-4 w-4" />
       </Button>
 
       {isOpen && (
@@ -85,16 +85,16 @@ export function LanguageSwitcher({ variant = 'default' }: LanguageSwitcherProps)
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 min-w-[160px]">
+          <div className="absolute right-0 top-full z-50 mt-2 min-w-[160px] rounded-md border border-line bg-surface py-1 shadow-strong">
             {(Object.entries(localeNames) as [Locale, string][]).map(([key, name]) => (
               <button
                 key={key}
                 onClick={() => handleLocaleChange(key)}
-                className="w-full px-4 py-2.5 text-sm text-left hover:bg-gray-50 flex items-center justify-between"
+                className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm text-ink-2 hover:bg-surface-2 hover:text-ink"
                 disabled={isPending}
               >
                 <span>{name}</span>
-                {locale === key && <Check className="w-4 h-4 text-primary-600" />}
+                {locale === key && <Check className="h-4 w-4 text-brick" />}
               </button>
             ))}
           </div>

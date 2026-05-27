@@ -42,14 +42,14 @@ function ParsedDataPreview({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-neutral-900">{t('title')}</h2>
-        <p className="text-sm text-neutral-500">{t('selectSections')}</p>
+        <h2 className="text-xl font-semibold text-ink">{t('title')}</h2>
+        <p className="text-sm text-ink-3">{t('selectSections')}</p>
       </div>
 
       {/* 基本信息 */}
-      <div className="border rounded-lg overflow-hidden">
+      <div className="overflow-hidden rounded-lg border border-line">
         <div
-          className={`p-4 cursor-pointer flex items-center justify-between ${selectedSections.personal_info ? 'bg-green-50' : 'bg-neutral-50'
+          className={`flex cursor-pointer items-center justify-between p-4 ${selectedSections.personal_info ? 'bg-sage-soft' : 'bg-surface-2'
             }`}
           onClick={() => toggleSection('personal_info')}
         >
@@ -58,43 +58,43 @@ function ParsedDataPreview({
               type="checkbox"
               checked={selectedSections.personal_info}
               onChange={() => toggleSection('personal_info')}
-              className="w-4 h-4 text-primary-600"
+              className="h-4 w-4 text-brick"
             />
             <span className="font-medium">{t('basicInfo')}</span>
           </div>
         </div>
         {selectedSections.personal_info && data.personal_info && (
-          <div className="p-4 border-t bg-white">
+          <div className="border-t border-line bg-surface p-4">
             <dl className="grid grid-cols-2 gap-2 text-sm">
               {data.personal_info.full_name && (
                 <>
-                  <dt className="text-neutral-500">{t('fields.name')}</dt>
+                  <dt className="text-ink-3">{t('fields.name')}</dt>
                   <dd>{data.personal_info.full_name}</dd>
                 </>
               )}
               {data.personal_info.email && (
                 <>
-                  <dt className="text-neutral-500">{t('fields.email')}</dt>
+                  <dt className="text-ink-3">{t('fields.email')}</dt>
                   <dd>{data.personal_info.email}</dd>
                 </>
               )}
               {data.personal_info.phone && (
                 <>
-                  <dt className="text-neutral-500">{t('fields.phone')}</dt>
+                  <dt className="text-ink-3">{t('fields.phone')}</dt>
                   <dd>{data.personal_info.phone}</dd>
                 </>
               )}
               {data.personal_info.location && (
                 <>
-                  <dt className="text-neutral-500">{t('fields.location')}</dt>
+                  <dt className="text-ink-3">{t('fields.location')}</dt>
                   <dd>{data.personal_info.location}</dd>
                 </>
               )}
             </dl>
             {data.personal_info.professional_summary && (
               <div className="mt-3">
-                <dt className="text-sm text-neutral-500 mb-1">{t('fields.professionalSummary')}</dt>
-                <dd className="text-sm bg-neutral-50 p-2 rounded">
+                <dt className="mb-1 text-sm text-ink-3">{t('fields.professionalSummary')}</dt>
+                <dd className="rounded bg-surface-2 p-2 text-sm">
                   {data.personal_info.professional_summary}
                 </dd>
               </div>
@@ -105,9 +105,9 @@ function ParsedDataPreview({
 
       {/* 工作经历 */}
       {data.work_experiences && data.work_experiences.length > 0 && (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-line">
           <div
-            className={`p-4 cursor-pointer flex items-center justify-between ${selectedSections.work_experiences ? 'bg-green-50' : 'bg-neutral-50'
+            className={`flex cursor-pointer items-center justify-between p-4 ${selectedSections.work_experiences ? 'bg-sage-soft' : 'bg-surface-2'
               }`}
             onClick={() => toggleSection('work_experiences')}
           >
@@ -116,7 +116,7 @@ function ParsedDataPreview({
                 type="checkbox"
                 checked={selectedSections.work_experiences}
                 onChange={() => toggleSection('work_experiences')}
-                className="w-4 h-4 text-primary-600"
+                className="h-4 w-4 text-brick"
               />
               <span className="font-medium">
                 {t('workExperience')} {t('sectionCount', { count: data.work_experiences.length })}
@@ -126,14 +126,14 @@ function ParsedDataPreview({
           {selectedSections.work_experiences && (
             <div className="divide-y">
               {data.work_experiences.map((work, i) => (
-                <div key={i} className="p-4 bg-white">
+                <div key={i} className="bg-surface p-4">
                   <div className="font-medium">{work.position}</div>
-                  <div className="text-sm text-neutral-600">{work.company}</div>
-                  <div className="text-xs text-neutral-500">
+                  <div className="text-sm text-ink-2">{work.company}</div>
+                  <div className="text-xs text-ink-3">
                     {work.start_date} - {work.is_current ? t('present') : work.end_date}
                   </div>
                   {work.description && (
-                    <p className="mt-2 text-sm text-neutral-700">{work.description}</p>
+                    <p className="mt-2 text-sm text-ink-2">{work.description}</p>
                   )}
                 </div>
               ))}
@@ -144,9 +144,9 @@ function ParsedDataPreview({
 
       {/* 教育背景 */}
       {data.education && data.education.length > 0 && (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-line">
           <div
-            className={`p-4 cursor-pointer flex items-center justify-between ${selectedSections.education ? 'bg-green-50' : 'bg-neutral-50'
+            className={`flex cursor-pointer items-center justify-between p-4 ${selectedSections.education ? 'bg-sage-soft' : 'bg-surface-2'
               }`}
             onClick={() => toggleSection('education')}
           >
@@ -155,7 +155,7 @@ function ParsedDataPreview({
                 type="checkbox"
                 checked={selectedSections.education}
                 onChange={() => toggleSection('education')}
-                className="w-4 h-4 text-primary-600"
+                className="h-4 w-4 text-brick"
               />
               <span className="font-medium">
                 {t('education')} {t('sectionCount', { count: data.education.length })}
@@ -165,12 +165,12 @@ function ParsedDataPreview({
           {selectedSections.education && (
             <div className="divide-y">
               {data.education.map((edu, i) => (
-                <div key={i} className="p-4 bg-white">
+                <div key={i} className="bg-surface p-4">
                   <div className="font-medium">{edu.institution}</div>
-                  <div className="text-sm text-neutral-600">
+                  <div className="text-sm text-ink-2">
                     {edu.degree} · {edu.major}
                   </div>
-                  <div className="text-xs text-neutral-500">
+                  <div className="text-xs text-ink-3">
                     {edu.start_date} - {edu.is_current ? t('present') : edu.end_date}
                   </div>
                 </div>
@@ -182,9 +182,9 @@ function ParsedDataPreview({
 
       {/* 技能 */}
       {data.skills && data.skills.length > 0 && (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-line">
           <div
-            className={`p-4 cursor-pointer flex items-center justify-between ${selectedSections.skills ? 'bg-green-50' : 'bg-neutral-50'
+            className={`flex cursor-pointer items-center justify-between p-4 ${selectedSections.skills ? 'bg-sage-soft' : 'bg-surface-2'
               }`}
             onClick={() => toggleSection('skills')}
           >
@@ -193,7 +193,7 @@ function ParsedDataPreview({
                 type="checkbox"
                 checked={selectedSections.skills}
                 onChange={() => toggleSection('skills')}
-                className="w-4 h-4 text-primary-600"
+                className="h-4 w-4 text-brick"
               />
               <span className="font-medium">
                 {t('skills')} {t('sectionCount', { count: data.skills.length })}
@@ -201,16 +201,16 @@ function ParsedDataPreview({
             </div>
           </div>
           {selectedSections.skills && (
-            <div className="p-4 bg-white">
+            <div className="bg-surface p-4">
               <div className="flex flex-wrap gap-2">
                 {data.skills.map((skill, i) => (
                   <span
                     key={i}
-                    className="px-2 py-1 bg-primary-50 text-primary-700 rounded-full text-sm"
+                    className="rounded-full bg-brick-soft px-2 py-1 text-sm text-brick-ink"
                   >
                     {skill.name}
                     {skill.level && (
-                      <span className="text-primary-400 ml-1">
+                      <span className="ml-1 text-brick">
                         ({skill.level})
                       </span>
                     )}
@@ -224,9 +224,9 @@ function ParsedDataPreview({
 
       {/* 项目 */}
       {data.projects && data.projects.length > 0 && (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-line">
           <div
-            className={`p-4 cursor-pointer flex items-center justify-between ${selectedSections.projects ? 'bg-green-50' : 'bg-neutral-50'
+            className={`flex cursor-pointer items-center justify-between p-4 ${selectedSections.projects ? 'bg-sage-soft' : 'bg-surface-2'
               }`}
             onClick={() => toggleSection('projects')}
           >
@@ -235,7 +235,7 @@ function ParsedDataPreview({
                 type="checkbox"
                 checked={selectedSections.projects}
                 onChange={() => toggleSection('projects')}
-                className="w-4 h-4 text-primary-600"
+                className="h-4 w-4 text-brick"
               />
               <span className="font-medium">
                 {t('projects')} {t('sectionCount', { count: data.projects.length })}
@@ -245,12 +245,12 @@ function ParsedDataPreview({
           {selectedSections.projects && (
             <div className="divide-y">
               {data.projects.map((project, i) => (
-                <div key={i} className="p-4 bg-white">
+                <div key={i} className="bg-surface p-4">
                   <div className="font-medium">{project.name}</div>
                   {project.role && (
-                    <div className="text-sm text-neutral-600">{project.role}</div>
+                    <div className="text-sm text-ink-2">{project.role}</div>
                   )}
-                  <p className="mt-1 text-sm text-neutral-700">{project.description}</p>
+                  <p className="mt-1 text-sm text-ink-2">{project.description}</p>
                 </div>
               ))}
             </div>
@@ -260,9 +260,9 @@ function ParsedDataPreview({
 
       {/* 证书 */}
       {data.certifications && data.certifications.length > 0 && (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-line">
           <div
-            className={`p-4 cursor-pointer flex items-center justify-between ${selectedSections.certifications ? 'bg-green-50' : 'bg-neutral-50'
+            className={`flex cursor-pointer items-center justify-between p-4 ${selectedSections.certifications ? 'bg-sage-soft' : 'bg-surface-2'
               }`}
             onClick={() => toggleSection('certifications')}
           >
@@ -271,7 +271,7 @@ function ParsedDataPreview({
                 type="checkbox"
                 checked={selectedSections.certifications}
                 onChange={() => toggleSection('certifications')}
-                className="w-4 h-4 text-primary-600"
+                className="h-4 w-4 text-brick"
               />
               <span className="font-medium">
                 {t('certifications')} {t('sectionCount', { count: data.certifications.length })}
@@ -281,10 +281,10 @@ function ParsedDataPreview({
           {selectedSections.certifications && (
             <div className="divide-y">
               {data.certifications.map((cert, i) => (
-                <div key={i} className="p-4 bg-white">
+                <div key={i} className="bg-surface p-4">
                   <div className="font-medium">{cert.name}</div>
-                  <div className="text-sm text-neutral-600">{cert.issuer}</div>
-                  <div className="text-xs text-neutral-500">{cert.issue_date}</div>
+                  <div className="text-sm text-ink-2">{cert.issuer}</div>
+                  <div className="text-xs text-ink-3">{cert.issue_date}</div>
                 </div>
               ))}
             </div>
@@ -471,22 +471,24 @@ export default function ResumeUploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* 顶部导航 */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-paper">
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto max-w-4xl px-4 py-5 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/profile" className="text-neutral-600 hover:text-neutral-900">
+              <Link href="/profile" className="text-sm text-ink-3 hover:text-ink">
                 ← {t('backToProfile')}
               </Link>
             </div>
-            <h1 className="text-lg font-semibold text-neutral-900">{t('pageTitle')}</h1>
+            <div className="text-left sm:text-right">
+              <p className="cm-eyebrow">{t('importTitle')}</p>
+              <h1 className="font-display text-2xl font-semibold text-ink">{t('pageTitle')}</h1>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
         {parsedData ? (
           // 显示解析结果预览
           <Card>
@@ -506,17 +508,17 @@ export default function ResumeUploadPage() {
               <CardTitle>{t('importTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-neutral-600 mb-6">
+              <p className="mb-6 text-sm leading-6 text-ink-3">
                 {t('importDescription')}
               </p>
 
               {/* 文件上传区域 */}
               <div
-                className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive
-                  ? 'border-primary-500 bg-primary-50'
+                className={`relative rounded-lg border-2 border-dashed p-8 text-center transition-colors ${dragActive
+                  ? 'border-brick bg-brick-soft'
                   : file
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-neutral-300 hover:border-neutral-400'
+                    ? 'border-sage bg-sage-soft'
+                    : 'border-line-strong bg-surface-2 hover:border-brick'
                   }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -533,8 +535,8 @@ export default function ResumeUploadPage() {
                 {file ? (
                   <div className="flex flex-col items-center">
                     {getFileIcon(file)}
-                    <p className="mt-2 font-medium text-neutral-900">{file.name}</p>
-                    <p className="text-sm text-neutral-500">
+                    <p className="mt-2 font-medium text-ink">{file.name}</p>
+                    <p className="text-sm text-ink-3">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                     <button
@@ -542,7 +544,7 @@ export default function ResumeUploadPage() {
                         e.preventDefault()
                         setFile(null)
                       }}
-                      className="mt-2 text-sm text-red-600 hover:text-red-700"
+                      className="mt-2 text-sm text-clay hover:text-clay"
                     >
                       {t('removeFile')}
                     </button>
@@ -550,7 +552,7 @@ export default function ResumeUploadPage() {
                 ) : (
                   <div className="flex flex-col items-center">
                     <svg
-                      className="w-12 h-12 text-neutral-400"
+                      className="h-12 w-12 text-ink-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -562,10 +564,10 @@ export default function ResumeUploadPage() {
                         d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                       />
                     </svg>
-                    <p className="mt-2 text-sm text-neutral-600">
-                      <span className="font-medium text-primary-600">{t('dragDropHint')}</span> {t('dragDropOr')}
+                    <p className="mt-2 text-sm text-ink-2">
+                      <span className="font-medium text-brick">{t('dragDropHint')}</span> {t('dragDropOr')}
                     </p>
-                    <p className="mt-1 text-xs text-neutral-500">
+                    <p className="mt-1 text-xs text-ink-3">
                       {t('fileTypeHint')}
                     </p>
                   </div>
@@ -573,7 +575,7 @@ export default function ResumeUploadPage() {
               </div>
 
               {error && (
-                <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                <div className="mt-4 rounded-lg border border-clay/30 bg-clay-soft p-3 text-sm text-clay">
                   {error}
                 </div>
               )}
@@ -614,11 +616,11 @@ export default function ResumeUploadPage() {
               </div>
 
               {/* 提示信息 */}
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <h4 className="text-sm font-medium text-blue-900 mb-2">
+              <div className="mt-6 rounded-lg border border-indigo/20 bg-indigo-soft p-4">
+                <h4 className="mb-2 text-sm font-medium text-indigo">
                   {t('aiExtractionHint')}
                 </h4>
-                <ul className="text-sm text-blue-700 space-y-1">
+                <ul className="space-y-1 text-sm text-ink-2">
                   <li>• {tExtraction('basicInfo')}</li>
                   <li>• {tExtraction('workExperience')}</li>
                   <li>• {tExtraction('education')}</li>
@@ -635,9 +637,9 @@ export default function ResumeUploadPage() {
         {/* 手动输入提示 */}
         {!parsedData && (
           <div className="mt-6 text-center">
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-ink-3">
               {t('noResumePrompt')}
-              <Link href="/profile/edit" className="text-primary-600 hover:text-primary-700 ml-1">
+              <Link href="/profile/edit" className="ml-1 text-brick hover:text-brick-ink">
                 {t('manualEntry')}
               </Link>
             </p>

@@ -13,25 +13,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     const { isCopilotOpen } = useUIStore()
 
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden">
-            {/* Left Sidebar */}
+        <div className="flex h-screen overflow-hidden bg-paper text-ink">
             <SidebarNavigation />
 
-            {/* Main Content Area */}
             <main
                 className={cn(
-                    "flex-1 overflow-y-auto transition-all duration-300 ease-in-out",
-                    // Add right margin when copilot is open to prevent overlap
-                    // assuming CopilotPanel is fixed width 400px
-                    isCopilotOpen ? "mr-[400px]" : "mr-0"
+                    "min-w-0 flex-1 overflow-y-auto pt-16 transition-all duration-300 ease-in-out md:pt-0",
+                    isCopilotOpen ? "lg:mr-[400px]" : "mr-0"
                 )}
             >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
                     {children}
                 </div>
             </main>
 
-            {/* Right Co-pilot Panel */}
             <CopilotPanel />
         </div>
     )

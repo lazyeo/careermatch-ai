@@ -4,6 +4,7 @@ import { JobForm } from '../components/JobForm'
 import Link from 'next/link'
 import { Button } from '@careermatch/ui'
 import { getTranslations } from 'next-intl/server'
+import { ArrowLeft, Search } from 'lucide-react'
 
 export default async function NewJobPage() {
   const user = await getCurrentUser()
@@ -15,33 +16,34 @@ export default async function NewJobPage() {
   const t = await getTranslations('jobs')
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{t('addJob')}</h1>
-              <p className="text-sm text-gray-600 mt-1">
+    <div className="space-y-6">
+      <section className="rounded-lg border border-line bg-surface p-6 shadow-xs">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <p className="cm-eyebrow">{t('manualCreate')}</p>
+              <h1 className="mt-2 font-display text-4xl leading-tight text-ink">{t('addJob')}</h1>
+              <p className="mt-2 text-sm leading-6 text-ink-2">
                 {t('addJobDesc')}
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Link href="/jobs/import">
-                <Button variant="outline">{t('smartImport')}</Button>
+                <Button variant="secondary">
+                  <Search className="h-4 w-4" />
+                  {t('smartImport')}
+                </Button>
               </Link>
               <Link href="/jobs">
-                <Button variant="outline">{t('backToList')}</Button>
+                <Button variant="ghost">
+                  <ArrowLeft className="h-4 w-4" />
+                  {t('backToList')}
+                </Button>
               </Link>
             </div>
           </div>
-        </div>
-      </header>
+      </section>
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <JobForm mode="create" />
-      </main>
+      <JobForm mode="create" />
     </div>
   )
 }

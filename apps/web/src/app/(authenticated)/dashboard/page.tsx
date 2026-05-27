@@ -7,8 +7,10 @@
 
 import { redirect } from 'next/navigation'
 import { createClient, getCurrentUser } from '@/lib/supabase-server'
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@careermatch/ui'
+import { Badge, Button, Card, CardContent, EmptyState, ProgressBar } from '@careermatch/ui'
 import Link from 'next/link'
+import { Briefcase, FileText, Inbox, MapPin, PlusCircle, Sparkles, Target } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 import { getTranslations } from 'next-intl/server'
 
@@ -76,220 +78,197 @@ export default async function DashboardPage() {
     (a) => a.status === 'offer_received'
   ).length || 0
 
+  const stats = [
+    { href: '/resumes', label: t('resumeCount'), value: resumeCount || 0, valueClassName: 'text-brick', icon: FileText },
+    { href: '/jobs', label: t('savedJobs'), value: jobCount || 0, valueClassName: 'text-ochre', icon: Briefcase },
+    { href: '/applications', label: t('totalApplications'), value: applicationCount || 0, valueClassName: 'text-sage', icon: Inbox },
+    { href: '/applications', label: t('interviewScheduled'), value: interviewScheduledCount, valueClassName: 'text-indigo', icon: Target },
+  ]
+
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* 顶部导航栏 - 已移除，使用 Sidebar 布局 */}
-
-      {/* 主要内容区域 */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 欢迎区域 */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-neutral-900 mb-2">
-            {profile?.full_name
-              ? t('welcomeBack', { name: profile.full_name })
-              : t('welcomeGuest')}
-          </h2>
-          <p className="text-neutral-600">
-            {t('subtitle')}
-          </p>
-        </div>
-
-        {/* 功能卡片网格 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* 简历管理卡片 */}
-          <Link href="/resumes">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">📝</span>
-                  {t('resumeManagement')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <p className="text-sm text-neutral-600 mb-4">
-                  {t('resumeManagementDesc')}
-                </p>
-                <Button variant="primary" size="sm" className="w-full">
-                  {t('manageResumes')}
-                </Button>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* 岗位管理卡片 */}
-          <Link href="/jobs">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">💼</span>
-                  {t('jobManagement')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <p className="text-sm text-neutral-600 mb-4">
-                  {t('jobManagementDesc')}
-                </p>
-                <Button variant="primary" size="sm" className="w-full">
-                  {t('manageJobs')}
-                </Button>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* 申请追踪卡片 */}
-          <Link href="/applications">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">📊</span>
-                  {t('applicationTracking')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <p className="text-sm text-neutral-600 mb-4">
-                  {t('applicationTrackingDesc')}
-                </p>
-                <Button variant="primary" size="sm" className="w-full">
-                  {t('manageApplications')}
-                </Button>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-
-        {/* 快速统计 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Link href="/resumes">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-primary-600 mb-1">
-                  {resumeCount || 0}
-                </div>
-                <div className="text-sm text-neutral-600">{t('resumeCount')}</div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/jobs">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-accent-600 mb-1">
-                  {jobCount || 0}
-                </div>
-                <div className="text-sm text-neutral-600">{t('savedJobs')}</div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/applications">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-success-600 mb-1">
-                  {applicationCount || 0}
-                </div>
-                <div className="text-sm text-neutral-600">{t('totalApplications')}</div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/applications">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-warning-600 mb-1">
-                  {interviewScheduledCount}
-                </div>
-                <div className="text-sm text-neutral-600">{t('interviewScheduled')}</div>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-
-        {/* 申请状态快速概览 */}
-        {(applicationCount || 0) > 0 && (
-          <Card className="mt-8 border-blue-200">
-            <CardHeader>
-              <CardTitle className="text-blue-900">{t('applicationOverview')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {applications?.filter((a) => a.status === 'submitted').length || 0}
-                  </div>
-                  <div className="text-xs text-blue-700 mt-1">{t('submitted')}</div>
-                </div>
-                <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">
-                    {applications?.filter((a) => a.status === 'under_review').length || 0}
-                  </div>
-                  <div className="text-xs text-yellow-700 mt-1">{t('underReview')}</div>
-                </div>
-                <div className="text-center p-3 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">
-                    {interviewScheduledCount}
-                  </div>
-                  <div className="text-xs text-purple-700 mt-1">{t('interviewScheduled')}</div>
-                </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
-                    {offerReceivedCount}
-                  </div>
-                  <div className="text-xs text-green-700 mt-1">{t('offerReceived')}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 最近添加的岗位 */}
-        <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">{t('recentJobs')}</h3>
-            <Link href="/jobs">
-              <Button variant="ghost" size="sm">
-                {t('viewAll')}
+    <div className="space-y-8">
+      <section className="rounded-lg border border-line bg-surface p-6 shadow-xs">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="cm-eyebrow">{t('title')}</p>
+            <h1 className="mt-3 font-display text-4xl leading-tight text-ink sm:text-5xl">
+              {profile?.full_name
+                ? t('welcomeBack', { name: profile.full_name })
+                : t('welcomeGuest')}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-2">
+              {t('subtitle')}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/jobs/import">
+              <Button variant="primary">
+                <PlusCircle className="h-4 w-4" />
+                {t('importJob')}
+              </Button>
+            </Link>
+            <Link href="/assistant">
+              <Button variant="secondary">
+                <Sparkles className="h-4 w-4" />
+                AI Copilot
               </Button>
             </Link>
           </div>
-
-          {recentJobs && recentJobs.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recentJobs.map((job) => (
-                <Link key={job.id} href={`/jobs/${job.id}`}>
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer h-full border-l-4 border-l-primary-500">
-                    <CardContent className="p-5">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-gray-900 line-clamp-1" title={job.title}>
-                          {job.title}
-                        </h4>
-                        <span className={`text-xs px-2 py-1 rounded-full ${job.status === 'saved' ? 'bg-gray-100 text-gray-600' :
-                            job.status === 'applied' ? 'bg-primary-100 text-primary-600' :
-                              'bg-gray-100 text-gray-600'
-                          }`}>
-                          {job.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-1">{job.company}</p>
-                      <div className="flex items-center text-xs text-gray-500 gap-4">
-                        <span>{new Date(job.created_at).toLocaleDateString()}</span>
-                        {job.location && <span>{job.location}</span>}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <Card className="bg-gray-50 border-dashed">
-              <CardContent className="py-8 text-center">
-                <p className="text-gray-500 mb-4">{t('noRecentJobs')}</p>
-                <Link href="/jobs/import">
-                  <Button variant="primary" size="sm">
-                    {t('importJob')}
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          )}
         </div>
-      </main>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon
+          return (
+            <Link key={stat.label} href={stat.href}>
+              <Card variant="interactive" className="h-full">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="cm-eyebrow">{stat.label}</span>
+                    <Icon className="h-4 w-4 text-ink-3" />
+                  </div>
+                  <div className={`mt-4 font-display text-4xl leading-none ${stat.valueClassName}`}>
+                    {stat.value}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )
+        })}
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <DashboardAction href="/resumes" icon={<FileText className="h-4 w-4" />} title={t('resumeManagement')} description={t('resumeManagementDesc')} cta={t('manageResumes')} />
+        <DashboardAction href="/jobs" icon={<Briefcase className="h-4 w-4" />} title={t('jobManagement')} description={t('jobManagementDesc')} cta={t('manageJobs')} />
+        <DashboardAction href="/applications" icon={<Inbox className="h-4 w-4" />} title={t('applicationTracking')} description={t('applicationTrackingDesc')} cta={t('manageApplications')} />
+      </section>
+
+      {(applicationCount || 0) > 0 && (
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="cm-eyebrow">{t('applicationOverview')}</p>
+                <h2 className="mt-2 text-lg font-semibold text-ink">{t('applicationTracking')}</h2>
+              </div>
+              <div className="grid flex-1 grid-cols-2 gap-3 md:grid-cols-4">
+                <ApplicationMetric label={t('submitted')} value={applications?.filter((a) => a.status === 'submitted').length || 0} tone="indigo" />
+                <ApplicationMetric label={t('underReview')} value={applications?.filter((a) => a.status === 'under_review').length || 0} tone="ochre" />
+                <ApplicationMetric label={t('interviewScheduled')} value={interviewScheduledCount} tone="brick" />
+                <ApplicationMetric label={t('offerReceived')} value={offerReceivedCount} tone="sage" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <section>
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="cm-eyebrow">{t('recentJobs')}</p>
+            <h2 className="mt-2 text-xl font-semibold text-ink">{t('jobManagement')}</h2>
+          </div>
+          <Link href="/jobs">
+            <Button variant="ghost" size="sm">{t('viewAll')}</Button>
+          </Link>
+        </div>
+
+        {recentJobs && recentJobs.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {recentJobs.map((job) => (
+              <Link key={job.id} href={`/jobs/${job.id}`}>
+                <Card variant="interactive" className="h-full">
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="line-clamp-2 font-semibold leading-6 text-ink" title={job.title}>
+                        {job.title}
+                      </h3>
+                      <Badge tone={job.status === 'applied' ? 'sage' : 'ghost'}>{job.status}</Badge>
+                    </div>
+                    <p className="mt-2 line-clamp-1 text-sm font-medium text-ink-2">{job.company}</p>
+                    <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-ink-3">
+                      <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                      {job.location && (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="h-3.5 w-3.5" />
+                          {job.location}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={<Briefcase className="h-5 w-5" />}
+            title={t('noRecentJobs')}
+            action={
+              <Link href="/jobs/import">
+                <Button variant="primary" size="sm">{t('importJob')}</Button>
+              </Link>
+            }
+          />
+        )}
+      </section>
+    </div>
+  )
+}
+
+function DashboardAction({
+  href,
+  icon,
+  title,
+  description,
+  cta,
+}: {
+  href: string
+  icon: ReactNode
+  title: string
+  description: string
+  cta: string
+}) {
+  return (
+    <Link href={href}>
+      <Card variant="interactive" className="h-full">
+        <CardContent className="flex h-full flex-col justify-between p-5">
+          <div>
+            <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-md bg-brick-soft text-brick">
+              {icon}
+            </div>
+            <h3 className="text-base font-semibold text-ink">{title}</h3>
+            <p className="mt-2 text-sm leading-6 text-ink-3">{description}</p>
+          </div>
+          <Button variant="soft" size="sm" className="mt-5 w-full">{cta}</Button>
+        </CardContent>
+      </Card>
+    </Link>
+  )
+}
+
+function ApplicationMetric({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: number
+  tone: 'brick' | 'sage' | 'ochre' | 'indigo'
+}) {
+  const toneClassName = {
+    brick: 'text-brick',
+    sage: 'text-sage',
+    ochre: 'text-ochre',
+    indigo: 'text-indigo',
+  }[tone]
+
+  return (
+    <div className="rounded-md bg-surface-2 p-3">
+      <div className={`font-display text-3xl leading-none ${toneClassName}`}>{value}</div>
+      <div className="mt-1 text-xs text-ink-3">{label}</div>
+      <ProgressBar value={Math.min(100, value * 12)} tone={tone} size="thin" className="mt-3" />
     </div>
   )
 }

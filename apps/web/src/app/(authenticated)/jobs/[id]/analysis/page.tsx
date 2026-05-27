@@ -58,34 +58,29 @@ export default async function JobAnalysisPage({
   const autoStart = searchParams.autoStart === 'true'
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+    <div className="space-y-6">
+      <section className="rounded-lg border border-line bg-surface p-6 shadow-xs">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="min-w-0">
+            <div className="min-w-0 max-w-3xl">
               <Link href={`/jobs/${params.id}`}>
-                <Button variant="ghost" className="mb-3 gap-2 px-0 text-gray-500 hover:text-gray-900">
-                  <ArrowLeft className="w-4 h-4" />
+                <Button variant="ghost" className="mb-3 gap-2 px-0 text-ink-3 hover:text-ink">
+                  <ArrowLeft className="h-4 w-4" />
                   {t('backToJob')}
                 </Button>
               </Link>
-              <p className="text-sm font-medium text-gray-500">{t('v2.pageHeaderKicker')}</p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-gray-950">{t('title')}</h1>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="cm-eyebrow">{t('v2.pageHeaderKicker')}</p>
+              <h1 className="mt-2 font-display text-4xl leading-tight text-ink sm:text-5xl">{t('title')}</h1>
+              <p className="mt-2 text-sm leading-6 text-ink-2">
                 {t('jobAt', { title: job.title, company: job.company })}
               </p>
             </div>
-            <div className="max-w-sm text-sm leading-6 text-gray-500">
+            <div className="max-w-sm text-sm leading-6 text-ink-3">
               {t('v2.pageHeaderNote')}
             </div>
           </div>
-        </div>
-      </header>
+      </section>
 
-      {/* Main Content - V2 Analysis */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <AnalysisV2
+      <AnalysisV2
           jobId={params.id}
           autoStart={autoStart}
           existingSession={session ? {
@@ -98,7 +93,6 @@ export default async function JobAnalysisPage({
             model: session.model,
           } : null}
         />
-      </main>
     </div>
   )
 }

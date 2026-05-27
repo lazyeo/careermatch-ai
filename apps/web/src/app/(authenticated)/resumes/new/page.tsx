@@ -15,26 +15,25 @@ export default async function NewResumePage() {
   const t = await getTranslations('resumes')
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-paper">
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{t('createNewResume')}</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="cm-eyebrow">{t('title')}</p>
+              <h1 className="font-display text-3xl font-semibold text-ink">{t('createNewResume')}</h1>
+              <p className="mt-1 text-sm text-ink-3">
                 {t('createResumeDesc')}
               </p>
             </div>
             <Link href="/resumes">
-              <Button variant="outline">{t('backToList')}</Button>
+              <Button variant="secondary">{t('backToList')}</Button>
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <ResumeForm mode="create" />
       </main>
     </div>

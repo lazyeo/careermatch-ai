@@ -1,7 +1,8 @@
 import { createClient, getCurrentUser } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Button, Card, CardContent } from '@careermatch/ui'
+import { Badge, Button, Card, CardContent, EmptyState } from '@careermatch/ui'
+import { Briefcase, DollarSign, ExternalLink, MapPin, PlusCircle, Search } from 'lucide-react'
 
 import { getTranslations } from 'next-intl/server'
 
@@ -85,27 +86,28 @@ export default async function JobsPage() {
   const archivedJobs = jobsWithAnalysisState.filter((job) => ['rejected', 'offer', 'withdrawn'].includes(job.status))
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      {/* AppHeader removed in favor of Sidebar layout */}
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <section className="mb-8 rounded-2xl border border-gray-200 bg-white px-6 py-6 shadow-sm">
+    <div className="space-y-8">
+        <section className="rounded-lg border border-line bg-surface px-6 py-6 shadow-xs">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl space-y-2">
-              <p className="text-sm font-medium text-gray-500">{t('workspaceKicker')}</p>
-              <h1 className="text-3xl font-semibold tracking-tight text-gray-950">{t('myJobs')}</h1>
-              <p className="text-sm leading-6 text-gray-600">
+              <p className="cm-eyebrow">{t('workspaceKicker')}</p>
+              <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl">{t('myJobs')}</h1>
+              <p className="text-sm leading-6 text-ink-2">
                 {t('workspaceDescription')}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/jobs/import">
-                <Button variant="outline">{t('smartImport')}</Button>
+                <Button variant="secondary">
+                  <Search className="h-4 w-4" />
+                  {t('smartImport')}
+                </Button>
               </Link>
               <Link href="/jobs/new">
-                <Button variant="primary">{t('manualCreate')}</Button>
+                <Button variant="primary">
+                  <PlusCircle className="h-4 w-4" />
+                  {t('manualCreate')}
+                </Button>
               </Link>
             </div>
           </div>
@@ -120,38 +122,21 @@ export default async function JobsPage() {
         </section>
 
         {jobCount === 0 ? (
-          <Card>
-            <CardContent className="py-16">
-              <div className="text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">{t('noJobsTitle')}</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {t('noJobsDesc')}
-                </p>
-                <div className="mt-6 flex gap-3 justify-center">
-                  <Link href="/jobs/import">
-                    <Button variant="outline">{t('smartImport')}</Button>
-                  </Link>
-                  <Link href="/jobs/new">
-                    <Button variant="primary">{t('manualCreate')}</Button>
-                  </Link>
-                </div>
+          <EmptyState
+            icon={<Briefcase className="h-5 w-5" />}
+            title={t('noJobsTitle')}
+            description={t('noJobsDesc')}
+            action={
+              <div className="flex flex-wrap justify-center gap-3">
+                <Link href="/jobs/import">
+                  <Button variant="secondary">{t('smartImport')}</Button>
+                </Link>
+                <Link href="/jobs/new">
+                  <Button variant="primary">{t('manualCreate')}</Button>
+                </Link>
               </div>
-            </CardContent>
-          </Card>
+            }
+          />
         ) : (
           <div className="space-y-8">
             <JobSection
@@ -177,17 +162,15 @@ export default async function JobsPage() {
             />
 
             {archivedJobs.length > 0 && (
-              <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-4">
+              <section className="rounded-lg border border-line bg-surface p-5 shadow-xs">
+                <div className="flex items-center justify-between gap-4 border-b border-line pb-4">
                   <div>
-                    <h2 className="text-base font-semibold text-gray-900">{t('board.archived')}</h2>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <h2 className="text-base font-semibold text-ink">{t('board.archived')}</h2>
+                    <p className="mt-1 text-sm text-ink-3">
                       {t('sectionDescriptions.archived')}
                     </p>
                   </div>
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-                    {archivedJobs.length}
-                  </span>
+                  <Badge tone="ghost" plain>{archivedJobs.length}</Badge>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {archivedJobs.map((job) => (
@@ -198,7 +181,6 @@ export default async function JobsPage() {
             )}
           </div>
         )}
-      </main>
     </div>
   )
 }
@@ -244,16 +226,16 @@ function SummaryChip({
   tone?: 'default' | 'neutral' | 'primary' | 'warning' | 'info'
 }) {
   const toneClassName: Record<NonNullable<typeof tone>, string> = {
-    default: 'border-gray-200 bg-white text-gray-700',
-    neutral: 'border-gray-200 bg-gray-50 text-gray-700',
-    primary: 'border-primary-200 bg-primary-50 text-primary-700',
-    warning: 'border-amber-200 bg-amber-50 text-amber-700',
-    info: 'border-blue-200 bg-blue-50 text-blue-700',
+    default: 'border-line bg-surface text-ink-2',
+    neutral: 'border-line bg-surface-2 text-ink-2',
+    primary: 'border-sage-soft bg-sage-soft text-sage',
+    warning: 'border-ochre-soft bg-ochre-soft text-ochre',
+    info: 'border-indigo-soft bg-indigo-soft text-indigo',
   }
 
   return (
     <div className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 ${toneClassName[tone]}`}>
-      <span className="text-xs font-medium uppercase tracking-[0.12em] text-current/80">{label}</span>
+      <span className="text-xs font-medium uppercase tracking-[0.08em] text-current/80">{label}</span>
       <span className="text-sm font-semibold text-current">{value}</span>
     </div>
   )
@@ -274,17 +256,17 @@ function JobSection({
   t: any
 }) {
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-4">
+    <section className="rounded-lg border border-line bg-surface p-5 shadow-xs">
+      <div className="flex items-center justify-between gap-4 border-b border-line pb-4">
         <div>
-          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
-          <p className="mt-1 text-sm text-gray-500">{description}</p>
+          <h2 className="text-base font-semibold text-ink">{title}</h2>
+          <p className="mt-1 text-sm text-ink-3">{description}</p>
         </div>
-        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">{count}</span>
+        <Badge tone="ghost" plain>{count}</Badge>
       </div>
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {jobs.length > 0 ? jobs.map((job) => <JobCard key={job.id} job={job} t={t} />) : (
-          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-sm text-gray-500">
+          <div className="rounded-lg border border-dashed border-line-strong bg-surface-2 px-4 py-6 text-sm text-ink-3">
             {t('sectionEmpty')}
           </div>
         )}
@@ -299,27 +281,27 @@ function getAnalysisTaskBadge(task?: Job['latest_processing_task']) {
   if (task.status === 'pending') {
     return {
       labelKey: 'analysisStatus.pending',
-      className: 'bg-blue-50 text-blue-700 border-blue-200',
+      tone: 'indigo' as const,
     }
   }
 
   if (task.status === 'processing') {
     return {
       labelKey: 'analysisStatus.processing',
-      className: 'bg-amber-50 text-amber-700 border-amber-200',
+      tone: 'ochre' as const,
     }
   }
 
   if (task.status === 'completed') {
     return {
       labelKey: 'analysisStatus.completed',
-      className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      tone: 'sage' as const,
     }
   }
 
   return {
     labelKey: 'analysisStatus.failed',
-    className: 'bg-red-50 text-red-700 border-red-200',
+    tone: 'clay' as const,
   }
 }
 
@@ -327,12 +309,12 @@ function JobCard({ job, t, compact = false }: JobCardProps) {
   const analysisTaskBadge = getAnalysisTaskBadge(job.latest_processing_task)
 
   return (
-    <Card className="relative overflow-hidden border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <Card variant="interactive" className="relative h-full overflow-hidden">
       <CardContent className={compact ? 'p-4' : 'p-5'}>
-        <div className="flex justify-between items-start mb-2">
+        <div className="mb-2 flex items-start justify-between">
           <div className="flex-1 pr-2">
-            <Link href={`/jobs/${job.id}`} className="hover:text-primary-600 transition-colors">
-              <h4 className="font-semibold text-gray-900 line-clamp-1" title={job.title}>
+            <Link href={`/jobs/${job.id}`} className="transition-colors hover:text-brick">
+              <h4 className="line-clamp-2 font-semibold leading-6 text-ink" title={job.title}>
                 {job.title}
               </h4>
             </Link>
@@ -344,47 +326,38 @@ function JobCard({ job, t, compact = false }: JobCardProps) {
                   href={cleanUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 mt-1"
+                  className="mt-1 inline-flex items-center gap-1 text-xs text-brick hover:text-brick-hover"
                 >
                   <span>{t('viewOriginal')}</span>
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
+                  <ExternalLink className="h-3 w-3" />
                 </a>
               )
             })()}
           </div>
         </div>
-        <div className="text-sm text-gray-600 font-medium mb-2">{job.company}</div>
+        <div className="mb-2 text-sm font-medium text-ink-2">{job.company}</div>
 
         {analysisTaskBadge && (
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${analysisTaskBadge.className}`}>
-              {t(analysisTaskBadge.labelKey)}
-            </span>
+            <Badge tone={analysisTaskBadge.tone}>{t(analysisTaskBadge.labelKey)}</Badge>
             {job.latest_processing_task?.status === 'failed' && job.latest_processing_task.error && (
-              <span className="text-xs text-red-600 line-clamp-1" title={job.latest_processing_task.error}>
+              <span className="line-clamp-1 text-xs text-clay" title={job.latest_processing_task.error}>
                 {job.latest_processing_task.error}
               </span>
             )}
           </div>
         )}
 
-        <div className="space-y-1 text-xs text-gray-500 mb-3">
+        <div className="mb-3 space-y-1 text-xs text-ink-3">
           {job.location && (
             <div className="flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <MapPin className="h-3.5 w-3.5" />
               <span className="line-clamp-1">{job.location}</span>
             </div>
           )}
           {(job.salary_min || job.salary_max) && (
             <div className="flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <DollarSign className="h-3.5 w-3.5" />
               <span>
                 {job.salary_currency} {job.salary_min?.toLocaleString()}
                 {job.salary_max ? ` - ${job.salary_max.toLocaleString()}` : '+'}
@@ -395,7 +368,7 @@ function JobCard({ job, t, compact = false }: JobCardProps) {
 
         <div className="flex gap-2 mt-3">
           <Link href={`/jobs/${job.id}`} className="flex-1">
-            <Button variant="outline" className="w-full h-8 text-xs" size="sm">
+            <Button variant="secondary" className="h-8 w-full text-xs" size="sm">
               {t('view')}
             </Button>
           </Link>

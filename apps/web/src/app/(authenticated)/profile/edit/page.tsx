@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@careermatch/ui'
+import { Card, CardContent, CardHeader, CardTitle, Button, fieldControlClasses } from '@careermatch/ui'
 import type {
   FullProfile,
   UserProfile,
@@ -54,75 +54,75 @@ function BasicInfoForm({
     <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            {t('fullName')} <span className="text-red-500">*</span>
+          <label className="mb-1 block text-xs font-medium text-ink-2">
+            {t('fullName')} <span className="text-clay">*</span>
           </label>
           <input
             type="text"
             value={formData.full_name}
             onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={fieldControlClasses}
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            {t('email')} <span className="text-red-500">*</span>
+          <label className="mb-1 block text-xs font-medium text-ink-2">
+            {t('email')} <span className="text-clay">*</span>
           </label>
           <input
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={fieldControlClasses}
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('phone')}</label>
+          <label className="mb-1 block text-xs font-medium text-ink-2">{t('phone')}</label>
           <input
             type="tel"
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={fieldControlClasses}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('location')}</label>
+          <label className="mb-1 block text-xs font-medium text-ink-2">{t('location')}</label>
           <input
             type="text"
             value={formData.location}
             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={fieldControlClasses}
             placeholder={t('edit.placeholders.location')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('linkedin')}</label>
+          <label className="mb-1 block text-xs font-medium text-ink-2">{t('linkedin')}</label>
           <input
             type="url"
             value={formData.linkedin_url}
             onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={fieldControlClasses}
             placeholder={t('edit.placeholders.linkedinUrl')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('github')}</label>
+          <label className="mb-1 block text-xs font-medium text-ink-2">{t('github')}</label>
           <input
             type="url"
             value={formData.github_url}
             onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={fieldControlClasses}
             placeholder={t('edit.placeholders.githubUrl')}
           />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('website')}</label>
+          <label className="mb-1 block text-xs font-medium text-ink-2">{t('website')}</label>
           <input
             type="url"
             value={formData.website_url}
             onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={fieldControlClasses}
             placeholder={t('edit.placeholders.websiteUrl')}
           />
         </div>
@@ -163,22 +163,22 @@ function SummaryForm({
     <form onSubmit={handleSubmit}>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('professionalSummary')}</label>
+          <label className="mb-1 block text-xs font-medium text-ink-2">{t('professionalSummary')}</label>
           <textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={`${fieldControlClasses} min-h-28 py-2`}
             placeholder={t('edit.placeholders.professionalSummary')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">{t('targetRoles')}</label>
+          <label className="mb-1 block text-xs font-medium text-ink-2">{t('targetRoles')}</label>
           <input
             type="text"
             value={targetRoles}
             onChange={(e) => setTargetRoles(e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className={fieldControlClasses}
             placeholder={t('edit.placeholders.targetRoles')}
           />
         </div>
@@ -209,29 +209,29 @@ function WorkExperienceList({
   return (
     <div className="space-y-4">
       {items.map((item) => (
-        <div key={item.id} className="p-4 bg-neutral-50 rounded-lg">
+        <div key={item.id} className="rounded-lg border border-line bg-surface-2 p-4">
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="font-medium text-neutral-900">{item.position}</h4>
-              <p className="text-sm text-neutral-600">{item.company}</p>
-              <p className="text-xs text-neutral-500">
+              <h4 className="font-medium text-ink">{item.position}</h4>
+              <p className="text-sm text-ink-2">{item.company}</p>
+              <p className="text-xs text-ink-3">
                 {item.start_date} - {item.is_current ? t('work.current') : item.end_date}
                 {item.location && ` · ${item.location}`}
               </p>
               {item.description && (
-                <p className="mt-2 text-sm text-neutral-700">{item.description}</p>
+                <p className="mt-2 text-sm text-ink-2">{item.description}</p>
               )}
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(item)}
-                className="text-primary-600 hover:text-primary-700 text-sm"
+                className="text-sm text-brick hover:text-brick-ink"
               >
                 {t('work.editWork')}
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="text-red-600 hover:text-red-700 text-sm"
+                className="text-sm text-clay hover:text-clay"
               >
                 {t('work.deleteWork')}
               </button>
@@ -263,12 +263,12 @@ function EducationList({
   return (
     <div className="space-y-4">
       {items.map((item) => (
-        <div key={item.id} className="p-4 bg-neutral-50 rounded-lg">
+        <div key={item.id} className="rounded-lg border border-line bg-surface-2 p-4">
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="font-medium text-neutral-900">{item.institution}</h4>
-              <p className="text-sm text-neutral-600">{item.degree} · {item.major}</p>
-              <p className="text-xs text-neutral-500">
+              <h4 className="font-medium text-ink">{item.institution}</h4>
+              <p className="text-sm text-ink-2">{item.degree} · {item.major}</p>
+              <p className="text-xs text-ink-3">
                 {item.start_date} - {item.is_current ? t('education.current') : item.end_date}
                 {item.gpa && ` · GPA: ${item.gpa}`}
               </p>
@@ -276,13 +276,13 @@ function EducationList({
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(item)}
-                className="text-primary-600 hover:text-primary-700 text-sm"
+                className="text-sm text-brick hover:text-brick-ink"
               >
                 {t('education.editEducation')}
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="text-red-600 hover:text-red-700 text-sm"
+                className="text-sm text-clay hover:text-clay"
               >
                 {t('education.deleteEducation')}
               </button>
@@ -322,15 +322,15 @@ function SkillsList({
         {items.map((item) => (
           <div
             key={item.id}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-sm"
+            className="inline-flex items-center gap-2 rounded-full bg-brick-soft px-3 py-1 text-sm text-brick-ink"
           >
             <span>{item.name}</span>
             {item.level && (
-              <span className="text-xs text-primary-500">({levelLabels[item.level] || item.level})</span>
+              <span className="text-xs text-brick">({levelLabels[item.level] || item.level})</span>
             )}
             <button
               onClick={() => onDelete(item.id)}
-              className="text-primary-400 hover:text-red-500"
+              className="text-brick hover:text-clay"
             >
               ×
             </button>
@@ -361,16 +361,16 @@ function ProjectsList({
   return (
     <div className="space-y-4">
       {items.map((item) => (
-        <div key={item.id} className="p-4 bg-neutral-50 rounded-lg">
+        <div key={item.id} className="rounded-lg border border-line bg-surface-2 p-4">
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="font-medium text-neutral-900">{item.name}</h4>
-              {item.role && <p className="text-sm text-neutral-600">{item.role}</p>}
-              <p className="mt-1 text-sm text-neutral-700">{item.description}</p>
+              <h4 className="font-medium text-ink">{item.name}</h4>
+              {item.role && <p className="text-sm text-ink-2">{item.role}</p>}
+              <p className="mt-1 text-sm text-ink-2">{item.description}</p>
               {item.technologies.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {item.technologies.map((tech, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-neutral-200 text-neutral-600 rounded text-xs">
+                    <span key={i} className="rounded bg-sage-soft px-2 py-0.5 text-xs text-sage">
                       {tech}
                     </span>
                   ))}
@@ -380,13 +380,13 @@ function ProjectsList({
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(item)}
-                className="text-primary-600 hover:text-primary-700 text-sm"
+                className="text-sm text-brick hover:text-brick-ink"
               >
                 {t('projects.editProject')}
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="text-red-600 hover:text-red-700 text-sm"
+                className="text-sm text-clay hover:text-clay"
               >
                 {t('projects.deleteProject')}
               </button>
@@ -416,19 +416,19 @@ function CertificationsList({
   return (
     <div className="space-y-4">
       {items.map((item) => (
-        <div key={item.id} className="p-4 bg-neutral-50 rounded-lg">
+        <div key={item.id} className="rounded-lg border border-line bg-surface-2 p-4">
           <div className="flex justify-between items-start">
             <div>
-              <h4 className="font-medium text-neutral-900">{item.name}</h4>
-              <p className="text-sm text-neutral-600">{item.issuer}</p>
-              <p className="text-xs text-neutral-500">
+              <h4 className="font-medium text-ink">{item.name}</h4>
+              <p className="text-sm text-ink-2">{item.issuer}</p>
+              <p className="text-xs text-ink-3">
                 {t('certifications.issueDate')}: {item.issue_date}
                 {item.expiry_date && ` · ${t('certifications.expiryDate')}: ${item.expiry_date}`}
               </p>
             </div>
             <button
               onClick={() => onDelete(item.id)}
-              className="text-red-600 hover:text-red-700 text-sm"
+              className="text-sm text-clay hover:text-clay"
             >
               {t('certifications.deleteCertification')}
             </button>
@@ -577,36 +577,38 @@ export default function ProfileEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-          <p className="mt-4 text-neutral-600">{tc('loading')}</p>
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-brick"></div>
+          <p className="mt-4 text-ink-2">{tc('loading')}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* 顶部导航 */}
-      <header className="bg-white border-b border-neutral-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-paper">
+      <header className="sticky top-0 z-10 border-b border-line bg-surface/95 backdrop-blur">
+        <div className="mx-auto max-w-4xl px-4 py-5 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/profile" className="text-neutral-600 hover:text-neutral-900">
+              <Link href="/profile" className="text-sm text-ink-3 hover:text-ink">
                 ← {t('backToProfile')}
               </Link>
             </div>
-            <h1 className="text-lg font-semibold text-neutral-900">{t('title')}</h1>
+            <div className="text-left sm:text-right">
+              <p className="cm-eyebrow">{t('sections.basicInfo')}</p>
+              <h1 className="font-display text-2xl font-semibold text-ink">{t('title')}</h1>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg">
+          <div className="mb-4 rounded-lg border border-clay/30 bg-clay-soft p-4 text-sm text-clay">
             {error}
-            <button onClick={() => setError(null)} className="ml-2 text-red-500">×</button>
+            <button onClick={() => setError(null)} className="ml-2 text-clay">×</button>
           </div>
         )}
 
