@@ -4,7 +4,7 @@
  * 根据用户Profile和岗位信息，生成个性化求职信
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 
 // 用户资料接口
 export interface UserProfile {
@@ -115,16 +115,19 @@ const COVER_LETTER_PROMPT = `你是一位专业的求职顾问，擅长撰写个
  * 生成求职信
  */
 export async function generateCoverLetter(
-  input: CoverLetterInput
-): Promise<GeneratedCoverLetter> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY is not configured')
+  input: CoverLetterInput,
+  options?: {
+    aiComplete?: (prompt: string) => Promise<string>
+    apiKey?: string
+    baseUrl?: string
+    model?: string
   }
-
-  const client = new Anthropic({ apiKey })
-  const model = 'claude-sonnet-4-5-20250929'
+): Promise<GeneratedCoverLetter> {
+  const model =
+    options?.model ||
+    process.env.OPENAI_MODEL_BEST ||
+    process.env.OPENAI_MODEL ||
+    'gpt-4o'
 
   // 格式化工作经历
   const workExpStr = input.workExperiences
@@ -165,18 +168,35 @@ export async function generateCoverLetter(
   console.log('📝 Generating cover letter...')
   console.log(`📊 Using model: ${model}`)
 
-  const response = await client.messages.create({
-    model,
-    max_tokens: 2000,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  })
+  let responseText = ''
+  if (options?.aiComplete) {
+    responseText = await options.aiComplete(prompt)
+  } else {
+    const apiKey = options?.apiKey || process.env.OPENAI_API_KEY
 
-  const responseText = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    if (!apiKey) {
+      throw new Error('No AI provider is configured for cover letter generation')
+    }
+
+    const client = new OpenAI({
+      apiKey,
+      baseURL: options?.baseUrl || process.env.OPENAI_BASE_URL,
+    })
+
+    const response = await client.chat.completions.create({
+      model,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    })
+
+    responseText = response.choices[0]?.message?.content || ''
+  }
   console.log(`📝 AI response length: ${responseText.length}`)
 
   // 解析JSON

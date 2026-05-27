@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { MemoryManager } from './MemoryManager'
 import { Tool } from './Tool'
@@ -26,28 +26,47 @@ export interface AgentResponse {
     metadata?: Record<string, any>
 }
 
+export interface AgentServiceConfig {
+    apiKey: string
+    baseUrl?: string
+    model?: string
+}
+
 export class AgentService {
-    private client: Anthropic
+    private client: OpenAI
+    private model: string
     private memoryManager: MemoryManager
     private supabase: SupabaseClient
     private tools: Tool[] = []
 
     constructor(
-        apiKey: string,
+        config: string | AgentServiceConfig,
         memoryManager: MemoryManager,
         supabaseClient: SupabaseClient
     ) {
-        this.client = new Anthropic({
-            apiKey: apiKey,
+        const resolvedConfig =
+            typeof config === 'string'
+                ? { apiKey: config }
+                : config
+
+        this.client = new OpenAI({
+            apiKey: resolvedConfig.apiKey,
+            baseURL: resolvedConfig.baseUrl,
         })
+        this.model = resolvedConfig.model || 'gpt-4o'
         this.memoryManager = memoryManager
         this.supabase = supabaseClient
 
         // Initialize Tools
-        // Note: For scraper tools, we can reuse the Anthropic API key since we updated them to use it
         this.tools = [
-            new JobScraperTool({ apiKey }),
-            new BatchJobImportTool({ apiKey }),
+            new JobScraperTool({
+                apiKey: resolvedConfig.apiKey,
+                baseUrl: resolvedConfig.baseUrl,
+            }),
+            new BatchJobImportTool({
+                apiKey: resolvedConfig.apiKey,
+                baseUrl: resolvedConfig.baseUrl,
+            }),
             new ResumeAnalysisTool(),
             new SaveJobTool()
         ]
@@ -67,93 +86,89 @@ export class AgentService {
 
         const systemPrompt = this.buildSystemPrompt(facts, memories, userProfile)
 
-        let messages: Anthropic.MessageParam[] = [
+        let messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+            { role: 'system', content: systemPrompt },
             { role: 'user', content: message }
         ]
 
         // 2. Plan & Execute (Tool Loop)
         let finalResponseContent = ''
 
-        // Convert tools to Anthropic format
-        const anthropicTools: Anthropic.Tool[] = this.tools.map(t => ({
-            name: t.name,
-            description: t.description,
-            input_schema: t.parameters as Anthropic.Tool.InputSchema,
+        const openAITools: OpenAI.Chat.Completions.ChatCompletionTool[] = this.tools.map(t => ({
+            type: 'function',
+            function: {
+                name: t.name,
+                description: t.description,
+                parameters: t.parameters as unknown as Record<string, unknown>,
+            },
         }))
 
         // Max 5 turns to prevent infinite loops
         for (let i = 0; i < 5; i++) {
-            const response = await this.client.messages.create({
-                model: 'claude-3-5-sonnet-20241022',
+            const response = await this.client.chat.completions.create({
+                model: this.model,
                 max_tokens: 4096,
-                system: systemPrompt,
                 messages,
-                tools: anthropicTools,
+                tools: openAITools,
+                tool_choice: 'auto',
             })
 
-            // Add assistant response to history
-            messages.push({
-                role: 'assistant',
-                content: response.content,
-            })
+            const assistantMessage = response.choices[0]?.message
+            if (!assistantMessage) {
+                break
+            }
 
-            // Check for tool calls
-            const toolUseBlocks = response.content.filter(block => block.type === 'tool_use') as Anthropic.ToolUseBlock[]
+            messages.push(assistantMessage)
 
-            if (toolUseBlocks.length > 0) {
-                console.log(`🛠️ Agent requested ${toolUseBlocks.length} tool calls`)
+            const toolCalls = assistantMessage.tool_calls || []
 
-                const toolResults: Anthropic.ToolResultBlockParam[] = []
+            if (toolCalls.length > 0) {
+                console.log(`🛠️ Agent requested ${toolCalls.length} tool calls`)
 
-                for (const toolUse of toolUseBlocks) {
-                    const toolName = toolUse.name
-                    const toolArgs = toolUse.input
+                for (const toolCall of toolCalls) {
+                    const toolName = toolCall.function.name
+                    let toolArgs: unknown = {}
+
+                    try {
+                        toolArgs = JSON.parse(toolCall.function.arguments || '{}')
+                    } catch {
+                        toolArgs = {}
+                    }
 
                     const tool = this.tools.find(t => t.name === toolName)
+                    let toolResult: unknown
+                    let isError = false
+
                     try {
                         if (tool) {
-                            // Execute tool with context
-                            const result = await tool.execute(toolArgs, {
+                            toolResult = await tool.execute(toolArgs, {
                                 userId,
                                 supabase: this.supabase,
                                 ...context
                             })
-
-                            toolResults.push({
-                                type: 'tool_result',
-                                tool_use_id: toolUse.id,
-                                content: typeof result === 'string' ? result : JSON.stringify(result),
-                            })
                         } else {
-                            toolResults.push({
-                                type: 'tool_result',
-                                tool_use_id: toolUse.id,
-                                content: `Error: Tool ${toolName} not found`,
-                                is_error: true,
-                            })
+                            isError = true
+                            toolResult = `Error: Tool ${toolName} not found`
                         }
                     } catch (error: any) {
-                        toolResults.push({
-                            type: 'tool_result',
-                            tool_use_id: toolUse.id,
-                            content: `Error executing tool ${toolName}: ${error.message}`,
-                            is_error: true,
-                        })
+                        isError = true
+                        toolResult = `Error executing tool ${toolName}: ${error.message}`
+                    }
+
+                    messages.push({
+                        role: 'tool',
+                        tool_call_id: toolCall.id,
+                        content: typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult),
+                    })
+
+                    if (isError) {
+                        console.warn(`Tool ${toolName} failed:`, toolResult)
                     }
                 }
 
-                // Add tool results to history
-                messages.push({
-                    role: 'user',
-                    content: toolResults,
-                })
-
                 // Loop continues to let AI process tool results
             } else {
-                // No more tool calls, this is the final response
-                // Find the first text block
-                const textBlock = response.content.find(block => block.type === 'text') as Anthropic.TextBlock
-                finalResponseContent = textBlock?.text || ''
+                finalResponseContent = assistantMessage.content || ''
                 break
             }
         }

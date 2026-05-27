@@ -229,9 +229,6 @@ importers:
 
   packages/ai-agent:
     dependencies:
-      '@anthropic-ai/sdk':
-        specifier: ^0.71.2
-        version: 0.71.2(zod@3.25.76)
       '@careermatch/job-scraper':
         specifier: workspace:*
         version: link:../job-scraper
@@ -266,9 +263,6 @@ importers:
 
   packages/job-scraper:
     dependencies:
-      '@anthropic-ai/sdk':
-        specifier: ^0.71.2
-        version: 0.71.2(zod@3.25.76)
       '@careermatch/shared':
         specifier: workspace:*
         version: link:../shared
@@ -294,9 +288,6 @@ importers:
 
   packages/resume-parser:
     dependencies:
-      '@anthropic-ai/sdk':
-        specifier: ^0.71.2
-        version: 0.71.2(zod@3.25.76)
       '@careermatch/shared':
         specifier: workspace:*
         version: link:../shared

@@ -4,6 +4,7 @@ import {
   generateCoverLetter,
   type CoverLetterInput,
 } from '@careermatch/ai-agent'
+import { completeCoverLetterPrompt } from '@/lib/cover-letters/cover-letter-ai'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -111,7 +112,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // 生成求职信
     console.log(`📝 Generating cover letter for job: ${job.title}`)
-    const coverLetter = await generateCoverLetter(input)
+    const aiMetadata: { provider?: string; model?: string } = {}
+    const coverLetter = await generateCoverLetter(input, {
+      aiComplete: async (prompt) => {
+        const response = await completeCoverLetterPrompt(prompt)
+        aiMetadata.provider = response.provider
+        aiMetadata.model = response.model
+        return response.content
+      },
+    })
 
     // 保存求职信到数据库
     const coverLetterTitle = `求职信 - ${job.title} at ${job.company}`
@@ -123,6 +132,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         title: coverLetterTitle,
         content: coverLetter.content,
         source: 'ai_generated',
+        provider: aiMetadata?.provider,
+        model: aiMetadata?.model,
       })
       .select()
       .single()

@@ -10,7 +10,6 @@
         "clean": "rm -rf dist .turbo node_modules"
     },
     "dependencies": {
-        "@anthropic-ai/sdk": "^0.71.2",
         "@careermatch/shared": "workspace:*",
         "mammoth": "^1.6.0",
         "openai": "^4.20.1",

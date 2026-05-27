@@ -3,8 +3,9 @@ import { parseJobContent } from '@careermatch/job-scraper'
 
 export interface Env {
     MYBROWSER: any
-    CLAUDE_API_KEY: string
-    CLAUDE_BASE_URL?: string
+    OPENAI_API_KEY?: string
+    OPENAI_BASE_URL?: string
+    OPENAI_MODEL?: string
 }
 
 export default {
@@ -33,8 +34,9 @@ export default {
 
             // Use the shared package to parse the content
             const parsedData = await parseJobContent(content, {
-                apiKey: env.CLAUDE_API_KEY,
-                baseUrl: env.CLAUDE_BASE_URL,
+                apiKey: env.OPENAI_API_KEY,
+                baseUrl: env.OPENAI_BASE_URL,
+                model: env.OPENAI_MODEL,
                 language: language
             })
 

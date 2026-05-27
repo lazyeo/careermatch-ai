@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { AgentService, MemoryManager } from '@careermatch/ai-agent'
+import { getProviderFallbackCandidates } from '@/lib/ai-providers'
 
 interface ChatRequestBody {
   message: string
@@ -30,15 +31,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 })
     }
 
-    // 获取 API Keys
-    const anthropicApiKey = process.env.ANTHROPIC_API_KEY
+    const agentProvider = getProviderFallbackCandidates().find(
+      (provider) => provider.type !== 'claude'
+    )
     const openaiApiKey = process.env.OPENAI_API_KEY
 
-    if (!anthropicApiKey) {
+    if (!agentProvider?.apiKey) {
       return NextResponse.json(
         {
           error: 'AI服务未配置',
-          hint: '请在环境变量中配置 ANTHROPIC_API_KEY',
+          hint: '请在环境变量中配置可用的 OpenAI-compatible AI API 密钥',
         },
         { status: 503 }
       )
@@ -76,7 +78,15 @@ export async function POST(request: NextRequest) {
       .single()
 
     // AgentService 现在接收 (apiKey, memoryManager, supabase)
-    const agentService = new AgentService(anthropicApiKey, memoryManager, supabase)
+    const agentService = new AgentService(
+      {
+        apiKey: agentProvider.apiKey,
+        baseUrl: agentProvider.baseURL,
+        model: agentProvider.models.best,
+      },
+      memoryManager,
+      supabase
+    )
 
     // 4. 调用Agent
     // 注意：这里我们不等待Agent完成，而是返回流 (后续优化，现在还是等待)

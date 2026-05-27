@@ -4,7 +4,7 @@
  * 使用AI从URL或文本内容中智能提取岗位信息
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import TurndownService from 'turndown'
 import {
   ParsedJobData,
@@ -22,6 +22,19 @@ const turndownService = new TurndownService({
   bulletListMarker: '-',
   emDelimiter: '*'
 })
+
+interface WorkableJobData {
+  title?: string
+  location?: {
+    city?: string
+    country?: string
+  }
+  employment_type?: string
+  department?: string
+  description?: string
+  requirements?: string
+  benefits?: string
+}
 
 // Add rule to ensure spacing around headings
 turndownService.addRule('headingSpacing', {
@@ -152,7 +165,7 @@ async function fetchWorkableData(url: string): Promise<string> {
     const response = await fetch(apiUrl)
     if (!response.ok) throw new Error(`Workable API returned ${response.status}`)
 
-    const data = await response.json()
+    const data = await response.json() as WorkableJobData
 
     // Construct a rich text representation for the AI
     return `
@@ -249,6 +262,7 @@ export async function fetchJobPageContent(url: string): Promise<string> {
 export interface JobParserConfig {
   apiKey?: string
   baseUrl?: string
+  model?: string
   scraperUrl?: string
   language?: string
   aiComplete?: (prompt: string) => Promise<string>
@@ -262,7 +276,11 @@ export async function parseJobContent(
   config?: JobParserConfig
 ): Promise<ParsedJobData> {
   const language = config?.language || 'zh'
-  const fallbackModel = 'claude-sonnet-4-5-20250929'
+  const fallbackModel =
+    config?.model ||
+    process.env.OPENAI_MODEL_BEST ||
+    process.env.OPENAI_MODEL ||
+    'gpt-4o'
 
   // Clean HTML aggressively to avoid token limits
   console.log(`📝 Original content length: ${content.length} characters`)
@@ -327,27 +345,31 @@ export async function parseJobContent(
   if (config?.aiComplete) {
     responseText = await config.aiComplete(prompt)
   } else {
-    const apiKey = config?.apiKey || process.env.ANTHROPIC_API_KEY
+    const apiKey = config?.apiKey || process.env.OPENAI_API_KEY
 
     if (!apiKey) {
       throw new Error('No AI provider is configured for job parsing')
     }
 
-    const client = new Anthropic({ apiKey })
-    console.log(`📊 Using fallback model: ${fallbackModel}`)
+    const client = new OpenAI({
+      apiKey,
+      baseURL: config?.baseUrl || process.env.OPENAI_BASE_URL,
+    })
+    console.log(`📊 Using OpenAI-compatible fallback model: ${fallbackModel}`)
 
-    const response = await client.messages.create({
+    const response = await client.chat.completions.create({
       model: fallbackModel,
-      max_tokens: 16000,
       messages: [
         {
           role: 'user',
           content: prompt,
         },
       ],
+      temperature: 0.3,
+      max_tokens: 16000,
     })
 
-    responseText = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    responseText = response.choices[0]?.message?.content || ''
   }
   console.log(`📝 AI response length: ${responseText.length}`)
 

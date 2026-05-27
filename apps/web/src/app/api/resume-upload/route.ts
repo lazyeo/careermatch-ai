@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
-import { parseResumeContent, extractFileContent } from '@careermatch/resume-parser'
+import { extractFileContent } from '@careermatch/resume-parser'
 import type { ResumeFileType } from '@careermatch/shared'
+import { parseResumeWithAI } from '@/lib/resumes/resume-parser-ai'
 
 // 允许的文件类型和MIME类型映射
 const ALLOWED_TYPES: Record<string, ResumeFileType> = {
@@ -153,7 +154,8 @@ export async function POST(request: NextRequest) {
     let parsedData
     let updatedRecord
     try {
-      parsedData = await parseResumeContent(textContent)
+      const resumeAIResult = await parseResumeWithAI(textContent)
+      parsedData = resumeAIResult.parsedData
 
       // 更新记录为完成状态
       const result = await supabase
@@ -161,8 +163,8 @@ export async function POST(request: NextRequest) {
         .update({
           status: 'completed',
           parsed_data: parsedData,
-          ai_provider: 'claude',
-          ai_model: 'claude-3-5-sonnet-20241022',
+          ai_provider: resumeAIResult.provider,
+          ai_model: resumeAIResult.model,
           processed_at: new Date().toISOString(),
         })
         .eq('id', uploadRecord.id)
@@ -182,14 +184,15 @@ export async function POST(request: NextRequest) {
 
       // 5. Sync to Profile & Agent Memory
       try {
-        // Initialize services
-        // Note: Agent needs separate keys now
-        const anthropicApiKey = process.env.ANTHROPIC_API_KEY
         const openaiApiKey = process.env.OPENAI_API_KEY
 
-        if (anthropicApiKey && openaiApiKey) {
+        if (openaiApiKey) {
           const { MemoryManager, ResumeSyncService } = await import('@careermatch/ai-agent')
-          const memoryManager = new MemoryManager(supabase, openaiApiKey)
+          const memoryManager = new MemoryManager(
+            supabase,
+            openaiApiKey,
+            process.env.OPENAI_BASE_URL
+          )
           const syncService = new ResumeSyncService(supabase, memoryManager)
 
           await syncService.syncResumeToProfile(user.id, parsedData)

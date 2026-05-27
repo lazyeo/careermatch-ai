@@ -4,7 +4,7 @@
  * 使用AI从PDF/Word/Text文件中主动挖掘所有有价值的信息
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import type { ParsedResumeData, SkillLevel } from '@careermatch/shared'
 
 // 改进的解析Prompt - 主动挖掘所有有价值信息
@@ -164,23 +164,17 @@ const PARSE_PROMPT = `你是专业的简历解析专家和职业顾问。你的�
 export async function parseResumeContent(
   content: string,
   options?: {
-    provider?: 'claude' | 'openai' | 'gemini'
+    aiComplete?: (prompt: string) => Promise<string>
+    apiKey?: string
+    baseUrl?: string
     model?: string
   }
 ): Promise<ParsedResumeData> {
-  // 使用 ANTHROPIC_API_KEY 与其他AI功能保持一致
-  const apiKey = process.env.ANTHROPIC_API_KEY
-
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY is not configured. Please add it to your environment variables.')
-  }
-
-  console.log('✓ Using ANTHROPIC_API_KEY:', apiKey.substring(0, 10) + '...')
-
-  const client = new Anthropic({ apiKey })
-
-  // 默认使用Claude Sonnet
-  const model = options?.model || 'claude-sonnet-4-5-20250929'
+  const model =
+    options?.model ||
+    process.env.OPENAI_MODEL_BEST ||
+    process.env.OPENAI_MODEL ||
+    'gpt-4o'
 
   // 限制内容长度，避免超过API token限制
   // 估算：200k chars ≈ 100-130k tokens (取决于语言混合比例)
@@ -199,18 +193,35 @@ export async function parseResumeContent(
   console.log(`📊 Using model: ${model}`)
   console.log(`📏 Content length: ${processedContent.length} chars`)
 
-  const response = await client.messages.create({
-    model,
-    max_tokens: 8000,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  })
+  let responseText = ''
+  if (options?.aiComplete) {
+    responseText = await options.aiComplete(prompt)
+  } else {
+    const apiKey = options?.apiKey || process.env.OPENAI_API_KEY
 
-  const responseText = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    if (!apiKey) {
+      throw new Error('No AI provider is configured for resume parsing')
+    }
+
+    const client = new OpenAI({
+      apiKey,
+      baseURL: options?.baseUrl || process.env.OPENAI_BASE_URL,
+    })
+
+    const response = await client.chat.completions.create({
+      model,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.3,
+      max_tokens: 8000,
+    })
+
+    responseText = response.choices[0]?.message?.content || ''
+  }
   console.log(`📝 AI response length: ${responseText.length}`)
 
   // 尝试解析JSON
