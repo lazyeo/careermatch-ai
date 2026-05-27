@@ -251,6 +251,7 @@ export interface JobParserConfig {
   baseUrl?: string
   scraperUrl?: string
   language?: string
+  aiComplete?: (prompt: string) => Promise<string>
 }
 
 /**
@@ -260,15 +261,8 @@ export async function parseJobContent(
   content: string,
   config?: JobParserConfig
 ): Promise<ParsedJobData> {
-  const apiKey = config?.apiKey || process.env.ANTHROPIC_API_KEY
   const language = config?.language || 'zh'
-
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY is not configured')
-  }
-
-  const client = new Anthropic({ apiKey })
-  const model = 'claude-sonnet-4-5-20250929'
+  const fallbackModel = 'claude-sonnet-4-5-20250929'
 
   // Clean HTML aggressively to avoid token limits
   console.log(`📝 Original content length: ${content.length} characters`)
@@ -327,20 +321,34 @@ export async function parseJobContent(
   const prompt = promptTemplate.replace('{CONTENT}', cleanedContent)
 
   console.log('🔍 Parsing job posting with AI...')
-  console.log(`📊 Using model: ${model}, Language: ${language}`)
+  console.log(`📊 Language: ${language}`)
 
-  const response = await client.messages.create({
-    model,
-    max_tokens: 16000,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  })
+  let responseText = ''
+  if (config?.aiComplete) {
+    responseText = await config.aiComplete(prompt)
+  } else {
+    const apiKey = config?.apiKey || process.env.ANTHROPIC_API_KEY
 
-  const responseText = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    if (!apiKey) {
+      throw new Error('No AI provider is configured for job parsing')
+    }
+
+    const client = new Anthropic({ apiKey })
+    console.log(`📊 Using fallback model: ${fallbackModel}`)
+
+    const response = await client.messages.create({
+      model: fallbackModel,
+      max_tokens: 16000,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    })
+
+    responseText = response.content[0]?.type === 'text' ? response.content[0].text : ''
+  }
   console.log(`📝 AI response length: ${responseText.length}`)
 
   // 解析JSON

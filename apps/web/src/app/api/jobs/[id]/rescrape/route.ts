@@ -3,6 +3,7 @@ import { enqueueAutomaticJobAnalysis } from '@/lib/jobs/enqueue-job-analysis'
 import { tasks } from '@trigger.dev/sdk/v3'
 import { NextRequest, NextResponse } from 'next/server'
 import { parseJobFromUrl } from '@careermatch/job-scraper'
+import { completeJobParsingPrompt } from '@/lib/jobs/job-parser-ai'
 
 export async function POST(
     request: NextRequest,
@@ -44,7 +45,7 @@ export async function POST(
         // Note: parseJobFromUrl now uses the improved scraper logic (including Workable API)
         const parsedData = await parseJobFromUrl(job.source_url, {
             scraperUrl: process.env.SCRAPER_API_URL,
-            // Pass other config if needed
+            aiComplete: completeJobParsingPrompt,
         })
 
         if (!parsedData.title || !parsedData.company) {

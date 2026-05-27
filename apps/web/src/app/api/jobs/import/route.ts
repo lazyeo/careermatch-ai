@@ -7,6 +7,7 @@ import {
   parseJobFromUrl,
   type ParsedJobData,
 } from '@careermatch/job-scraper'
+import { completeJobParsingPrompt } from '@/lib/jobs/job-parser-ai'
 
 /**
  * POST /api/jobs/import
@@ -70,12 +71,16 @@ export async function POST(request: NextRequest) {
             console.log(`📥 [${index}] Importing job from URL: ${item.value}`)
             parsedData = await parseJobFromUrl(item.value, {
               scraperUrl: process.env.SCRAPER_API_URL,
-              language: language || 'zh'
+              language: language || 'zh',
+              aiComplete: completeJobParsingPrompt,
             })
             parsedData.application_url = parsedData.application_url || item.value
           } else {
             console.log(`📝 [${index}] Parsing job from content (${item.value.length} chars)`)
-            parsedData = await parseJobContent(item.value, { language: language || 'zh' })
+            parsedData = await parseJobContent(item.value, {
+              language: language || 'zh',
+              aiComplete: completeJobParsingPrompt,
+            })
             console.log(`✅ [${index}] Parsed data - Title: ${parsedData.title}, Company: ${parsedData.company}`)
           }
 
