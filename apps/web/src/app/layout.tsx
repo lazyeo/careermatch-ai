@@ -11,6 +11,14 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'CareerMatch AI - Your Intelligent Job Search Partner',
   description: 'AI-powered job search assistant tailored for the New Zealand market. Find, match, and optimize your job applications with intelligent insights.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 }
 
 export default async function RootLayout({
