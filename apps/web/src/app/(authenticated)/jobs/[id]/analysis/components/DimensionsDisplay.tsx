@@ -168,6 +168,31 @@ function CollapsibleCard({
 // 翻译函数类型
 type TranslationFunction = ReturnType<typeof useTranslations>
 
+function humanizeAnalysisValue(value?: string | null) {
+  if (!value) return ''
+
+  return value
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function translateKnownValue(
+  t: TranslationFunction,
+  keyPrefix: string,
+  value: string | null | undefined,
+  knownValues: readonly string[]
+) {
+  if (!value) return ''
+
+  if (knownValues.includes(value)) {
+    return t(`${keyPrefix}.${value}` as Parameters<typeof t>[0])
+  }
+
+  return humanizeAnalysisValue(value)
+}
+
 // 匹配度评分卡
 function ScoreSummaryCard({
   matchScore,
@@ -196,7 +221,12 @@ function ScoreSummaryCard({
       not_recommended: 'text-red-700 bg-red-100',
     }
     return {
-      text: t(`matchScore.recommendation.${rec}` as Parameters<typeof t>[0]),
+      text: translateKnownValue(
+        t,
+        'matchScore.recommendation',
+        rec,
+        ['strong_match', 'good_match', 'moderate_match', 'weak_match', 'not_recommended', 'strong', 'moderate', 'weak']
+      ),
       color: colorMap[rec] || 'text-gray-700 bg-gray-100'
     }
   }
@@ -242,7 +272,7 @@ function ScoreSummaryCard({
 
         {/* 置信度 */}
         <div className="text-xs text-gray-500">
-          {t('matchScore.confidence.label')}: {t(`matchScore.confidence.${matchScore.confidence}` as Parameters<typeof t>[0])}
+          {t('matchScore.confidence.label')}: {translateKnownValue(t, 'matchScore.confidence', matchScore.confidence, ['high', 'medium', 'low'])}
         </div>
       </div>
     </CollapsibleCard>
@@ -294,7 +324,24 @@ function CVStrategyCard({
                 <span className="w-4 h-4 flex items-center justify-center bg-primary-600 text-white rounded-full text-[10px]">
                   {idx + 1}
                 </span>
-                {t(`sections.${section}` as Parameters<typeof t>[0])}
+                {translateKnownValue(
+                  t,
+                  'sections',
+                  section,
+                  [
+                    'header',
+                    'summary',
+                    'skills',
+                    'experience',
+                    'projects',
+                    'education',
+                    'certifications',
+                    'awards',
+                    'publications',
+                    'languages',
+                    'volunteer',
+                  ]
+                )}
               </span>
             ))}
           </div>
@@ -378,7 +425,12 @@ function CVStrategyCard({
 
         {/* 语气 */}
         <div className="text-xs text-gray-500">
-          {t('cvStrategy.tone.label')}: {t(`cvStrategy.tone.${cvStrategy.tone}` as Parameters<typeof t>[0])}
+          {t('cvStrategy.tone.label')}: {translateKnownValue(
+            t,
+            'cvStrategy.tone',
+            cvStrategy.tone,
+            ['formal', 'conversational', 'technical', 'creative', 'executive']
+          )}
         </div>
       </div>
     </CollapsibleCard>
@@ -445,7 +497,7 @@ function SWOTCard({
               <li key={idx} className="text-sm text-blue-700">
                 {o.point}
                 <span className="text-xs text-blue-500 ml-1">
-                  ({t(`swot.timeframe.${o.timeframe}` as Parameters<typeof t>[0])})
+                  ({translateKnownValue(t, 'swot.timeframe', o.timeframe, ['short_term', 'medium_term', 'long_term'])})
                 </span>
               </li>
             ))}
@@ -514,7 +566,12 @@ function KeywordsCard({
           <div className="text-center p-2 bg-gray-50 rounded-lg">
             <div className="text-xs text-gray-500">{t('keywords.atsFriendliness')}</div>
             <div className="text-lg font-semibold text-gray-900">
-              {t(`keywords.ats.${keywords.atsFriendliness}` as Parameters<typeof t>[0])}
+              {translateKnownValue(
+                t,
+                'keywords.ats',
+                keywords.atsFriendliness,
+                ['excellent', 'good', 'fair', 'poor', 'limited']
+              )}
             </div>
           </div>
         </div>
@@ -687,10 +744,20 @@ function InterviewPrepCard({
                   <p className="text-sm font-medium text-gray-900">{q.question}</p>
                   <div className="flex gap-2 mt-1">
                     <span className="text-xs px-1.5 py-0.5 bg-gray-200 rounded">
-                      {t(`interview.questionType.${q.type}` as Parameters<typeof t>[0])}
+                      {translateKnownValue(
+                        t,
+                        'interview.questionType',
+                        q.type,
+                        ['behavioral', 'technical', 'situational', 'competency', 'motivation', 'screening']
+                      )}
                     </span>
                     <span className="text-xs px-1.5 py-0.5 bg-gray-200 rounded">
-                      {t(`interview.difficulty.${q.difficulty}` as Parameters<typeof t>[0])}
+                      {translateKnownValue(
+                        t,
+                        'interview.difficulty',
+                        q.difficulty,
+                        ['basic', 'intermediate', 'advanced', 'low', 'medium', 'high']
+                      )}
                     </span>
                   </div>
                   {q.answerPoints.length > 0 && (
@@ -780,7 +847,12 @@ function RolePositioningCard({
           <div className="text-center p-2 bg-gray-50 rounded-lg">
             <div className="text-xs text-gray-500">{t('rolePositioning.level')}</div>
             <div className="text-sm font-medium text-gray-900">
-              {t(`rolePositioning.levels.${positioning.level}` as Parameters<typeof t>[0])}
+              {translateKnownValue(
+                t,
+                'rolePositioning.levels',
+                positioning.level,
+                ['entry', 'junior', 'mid', 'senior', 'lead', 'principal', 'executive']
+              )}
             </div>
           </div>
           <div className="text-center p-2 bg-gray-50 rounded-lg">
@@ -798,7 +870,12 @@ function RolePositioningCard({
           <div className="text-center p-2 bg-gray-50 rounded-lg">
             <div className="text-xs text-gray-500">{t('rolePositioning.readiness')}</div>
             <div className="text-sm font-medium text-gray-900">
-              {t(`rolePositioning.readinessStatus.${positioning.candidateFit.readiness}` as Parameters<typeof t>[0])}
+              {translateKnownValue(
+                t,
+                'rolePositioning.readinessStatus',
+                positioning.candidateFit.readiness,
+                ['ready', 'stretch', 'gap', 'overqualified']
+              )}
             </div>
           </div>
         </div>
@@ -883,7 +960,12 @@ function ResponsibilitiesCard({
                         : 'bg-gray-100 text-gray-600'
                   }`}
                 >
-                  {t(`responsibilities.importance.${resp.importance}` as Parameters<typeof t>[0])}
+                  {translateKnownValue(
+                    t,
+                    'responsibilities.importance',
+                    resp.importance,
+                    ['critical', 'important', 'nice_to_have', 'required', 'preferred', 'bonus']
+                  )}
                 </span>
               </div>
             </div>
@@ -893,4 +975,3 @@ function ResponsibilitiesCard({
     </CollapsibleCard>
   )
 }
-

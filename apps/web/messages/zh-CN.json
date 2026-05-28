@@ -955,7 +955,10 @@
           "good_match": "推荐申请",
           "moderate_match": "可以考虑",
           "weak_match": "需提升后申请",
-          "not_recommended": "暂不推荐"
+          "not_recommended": "暂不推荐",
+          "strong": "强烈推荐",
+          "moderate": "可以考虑",
+          "weak": "需要提升"
         },
         "breakdown": {
           "skills": "技能匹配",
@@ -1016,7 +1019,8 @@
           "excellent": "优秀",
           "good": "良好",
           "fair": "一般",
-          "poor": "较差"
+          "poor": "较差",
+          "limited": "有限"
         }
       },
       "requirements": {
@@ -1025,6 +1029,9 @@
         "yourStrengths": "你的优势",
         "needsImprovement": "需要提升",
         "detailedRequirements": "详细要求",
+        "strengths": "你的优势",
+        "gaps": "需要提升",
+        "details": "详细要求",
         "required": "*必需",
         "evidence": "证据"
       },
@@ -1039,12 +1046,16 @@
           "technical": "技术题",
           "situational": "情景题",
           "competency": "能力题",
-          "motivation": "动机题"
+          "motivation": "动机题",
+          "screening": "筛选题"
         },
         "difficulty": {
           "basic": "基础",
           "intermediate": "中级",
-          "advanced": "高级"
+          "advanced": "高级",
+          "low": "低",
+          "medium": "中",
+          "high": "高"
         }
       },
       "rolePositioning": {
@@ -1080,7 +1091,10 @@
         "importance": {
           "critical": "关键",
           "important": "重要",
-          "nice_to_have": "加分项"
+          "nice_to_have": "加分项",
+          "required": "必需",
+          "preferred": "优先",
+          "bonus": "加分"
         }
       },
       "sections": {

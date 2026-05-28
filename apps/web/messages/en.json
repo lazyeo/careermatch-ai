@@ -955,7 +955,10 @@
           "good_match": "Recommend Applying",
           "moderate_match": "Worth Considering",
           "weak_match": "Need Improvement Before Applying",
-          "not_recommended": "Not Recommended"
+          "not_recommended": "Not Recommended",
+          "strong": "Strongly Recommended",
+          "moderate": "Worth Considering",
+          "weak": "Needs Improvement"
         },
         "breakdown": {
           "skills": "Skills Match",
@@ -1016,7 +1019,8 @@
           "excellent": "Excellent",
           "good": "Good",
           "fair": "Fair",
-          "poor": "Poor"
+          "poor": "Poor",
+          "limited": "Limited"
         }
       },
       "requirements": {
@@ -1025,6 +1029,9 @@
         "yourStrengths": "Your Strengths",
         "needsImprovement": "Needs Improvement",
         "detailedRequirements": "Detailed Requirements",
+        "strengths": "Your Strengths",
+        "gaps": "Needs Improvement",
+        "details": "Detailed Requirements",
         "required": "*Required",
         "evidence": "Evidence"
       },
@@ -1039,12 +1046,16 @@
           "technical": "Technical",
           "situational": "Situational",
           "competency": "Competency",
-          "motivation": "Motivation"
+          "motivation": "Motivation",
+          "screening": "Screening"
         },
         "difficulty": {
           "basic": "Basic",
           "intermediate": "Intermediate",
-          "advanced": "Advanced"
+          "advanced": "Advanced",
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High"
         }
       },
       "rolePositioning": {
@@ -1080,7 +1091,10 @@
         "importance": {
           "critical": "Critical",
           "important": "Important",
-          "nice_to_have": "Nice to Have"
+          "nice_to_have": "Nice to Have",
+          "required": "Required",
+          "preferred": "Preferred",
+          "bonus": "Bonus"
         }
       },
       "sections": {
