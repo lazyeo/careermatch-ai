@@ -19,11 +19,11 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
 
         console.log("🔵 [Background] Save job message received", { url })
 
-        const response = await fetch(`${API_ENDPOINTS.IMPORT_JOB} `, {
+        const response = await fetch(API_ENDPOINTS.IMPORT_JOB, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token} `
+                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({
                 url: url,
