@@ -34,6 +34,7 @@ function IndexPopup() {
     "idle" | "loading" | "success" | "error"
   >("idle")
   const [message, setMessage] = useState("")
+  const extensionVersion = chrome.runtime.getManifest().version
 
   const saveCurrentJob = async () => {
     setStatus("loading")
@@ -222,7 +223,8 @@ function IndexPopup() {
         </p>
       )}
       <div className="plasmo-text-xs plasmo-text-gray-400">
-        v0.0.1{ENV_SUFFIX}
+        v{extensionVersion}
+        {ENV_SUFFIX}
       </div>
     </div>
   )
