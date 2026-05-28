@@ -43,6 +43,8 @@ export async function processAutomaticJobAnalysisTask(
       current_step: 'analyzing',
       error: null,
       started_at: new Date().toISOString(),
+      completed_at: null,
+      result: null,
     })
     .eq('id', payload.taskId)
 
