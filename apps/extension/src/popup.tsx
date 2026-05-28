@@ -64,6 +64,36 @@ function IndexPopup() {
             const textFrom = (selector: string) =>
               cleanText(document.querySelector(selector)?.textContent)
 
+            const textFromWithin = (
+              root: ParentNode | null,
+              selector: string
+            ) => cleanText(root?.querySelector(selector)?.textContent)
+
+            const firstTextFrom = (
+              selectors: string[],
+              root: ParentNode | null = document
+            ) => {
+              for (const selector of selectors) {
+                const value = textFromWithin(root, selector)
+                if (value) return value
+              }
+
+              if (root !== document) {
+                for (const selector of selectors) {
+                  const value = textFrom(selector)
+                  if (value) return value
+                }
+              }
+
+              return ""
+            }
+
+            const splitLinkedInSummary = (value: string) =>
+              value
+                .split(/\s(?:·|\|)\s|\n/)
+                .map((part) => cleanText(part))
+                .filter(Boolean)
+
             const getScopedContainer = () => {
               const url = window.location.href
 
@@ -128,16 +158,126 @@ function IndexPopup() {
             const container = getScopedContainer()
             const contentContainer = container || document.body
             const jobUrl = getJobUrl(container)
+            const url = window.location.href
             const pageTitle = cleanText(document.title)
-            const jobTitle =
-              textFrom('[data-automation="job-detail-title"]') ||
-              textFrom("h1") ||
-              pageTitle
-            const company =
-              textFrom('[data-automation="advertiser-name"]') ||
-              textFrom('[data-automation="jobCompany"]') ||
-              textFrom(".job-details-jobs-unified-top-card__company-name") ||
-              textFrom(".jobs-unified-top-card__company-name")
+            let jobTitle = ""
+            let company = ""
+            let location = ""
+
+            if (url.includes("linkedin")) {
+              jobTitle =
+                firstTextFrom(
+                  [
+                    ".job-details-jobs-unified-top-card__job-title",
+                    ".jobs-unified-top-card__job-title",
+                    ".jobs-details__main-content h1",
+                    "h1"
+                  ],
+                  container
+                ) || pageTitle
+              company = firstTextFrom(
+                [
+                  ".job-details-jobs-unified-top-card__company-name a",
+                  ".job-details-jobs-unified-top-card__company-name",
+                  ".jobs-unified-top-card__company-name a",
+                  ".jobs-unified-top-card__company-name",
+                  'a[href*="/company/"]'
+                ],
+                container
+              )
+              location = firstTextFrom(
+                [
+                  ".job-details-jobs-unified-top-card__bullet",
+                  ".jobs-unified-top-card__bullet",
+                  ".jobs-unified-top-card__workplace-type",
+                  ".job-details-jobs-unified-top-card__primary-description-container"
+                ],
+                container
+              )
+
+              const summary = firstTextFrom(
+                [
+                  ".job-details-jobs-unified-top-card__primary-description-container",
+                  ".jobs-unified-top-card__primary-description-container"
+                ],
+                container
+              )
+              const summaryParts = splitLinkedInSummary(summary)
+              company ||= summaryParts[0] || ""
+              location ||=
+                summaryParts.find((part) =>
+                  /new zealand|auckland|wellington|christchurch|remote|hybrid/i.test(
+                    part
+                  )
+                ) || ""
+
+              const linkedInTitle = pageTitle.replace(
+                /\s*\|\s*LinkedIn.*$/i,
+                ""
+              )
+              const hiringMatch = linkedInTitle.match(
+                /^(.+?)\s+hiring\s+(.+?)(?:\s+in\s+.+)?$/i
+              )
+              const atMatch = linkedInTitle.match(/^(.+?)\s+at\s+(.+)$/i)
+              if (hiringMatch) {
+                company ||= cleanText(hiringMatch[1])
+                jobTitle ||= cleanText(hiringMatch[2])
+              } else if (atMatch) {
+                jobTitle ||= cleanText(atMatch[1])
+                company ||= cleanText(atMatch[2])
+              }
+            } else if (url.includes("seek")) {
+              jobTitle =
+                firstTextFrom(
+                  [
+                    '[data-automation="job-detail-title"]',
+                    '[data-automation="jobTitle"]',
+                    "h1"
+                  ],
+                  container
+                ) || pageTitle
+              company = firstTextFrom(
+                [
+                  '[data-automation="advertiser-name"]',
+                  '[data-automation="company-profile-name"]',
+                  '[data-automation="jobCompany"]'
+                ],
+                container
+              )
+              location = firstTextFrom(
+                [
+                  '[data-automation="job-detail-location"]',
+                  '[data-automation="jobLocation"]',
+                  '[data-automation="job-detail-work-type"]'
+                ],
+                container
+              )
+            } else {
+              jobTitle = firstTextFrom(["h1", "h2"], container) || pageTitle
+              company = firstTextFrom(
+                [
+                  '[data-testid*="company"]',
+                  '[class*="company"]',
+                  '[data-automation*="company"]'
+                ],
+                container
+              )
+              location = firstTextFrom(
+                [
+                  '[data-testid*="location"]',
+                  '[class*="location"]',
+                  '[data-automation*="location"]'
+                ],
+                container
+              )
+            }
+
+            const metadata = {
+              title: cleanText(jobTitle),
+              company: cleanText(company),
+              location: cleanText(location),
+              application_url: jobUrl
+            }
             const bodyText = capText(
               cleanText(
                 (contentContainer as HTMLElement).innerText ||
@@ -149,14 +289,16 @@ function IndexPopup() {
               content: [
                 `Source URL: ${jobUrl}`,
                 `Page title: ${pageTitle}`,
-                `Job title: ${jobTitle}`,
-                company ? `Company: ${company}` : "",
+                metadata.title ? `Job title: ${metadata.title}` : "",
+                metadata.company ? `Company: ${metadata.company}` : "",
+                metadata.location ? `Location: ${metadata.location}` : "",
                 "",
                 "Job content:",
                 bodyText
               ]
                 .filter(Boolean)
                 .join("\n"),
+              metadata,
               url: jobUrl
             }
           }
@@ -170,7 +312,7 @@ function IndexPopup() {
         throw new Error("Could not read job content from this page")
       }
 
-      setMessage("Sending to CareerMatch...")
+      setMessage("Parsing and saving. This can take 30-90 seconds...")
 
       const response = await withTimeout(
         sendToBackground({
@@ -216,6 +358,11 @@ function IndexPopup() {
         )}
         {status === "loading" ? "Saving..." : "Save current job"}
       </button>
+      {status === "loading" && (
+        <div className="plasmo-h-1.5 plasmo-overflow-hidden plasmo-rounded-full plasmo-bg-blue-100">
+          <div className="plasmo-h-full plasmo-w-2/3 plasmo-animate-pulse plasmo-rounded-full plasmo-bg-blue-600" />
+        </div>
+      )}
       {message && (
         <p
           className={`plasmo-text-xs ${status === "error" ? "plasmo-text-red-600" : status === "loading" ? "plasmo-text-gray-600" : "plasmo-text-green-700"}`}>

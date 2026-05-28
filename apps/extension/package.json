@@ -1,7 +1,7 @@
 {
   "name": "@careermatch/extension",
   "displayName": "CareerMatch AI",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "CareerMatch AI Browser Extension",
   "author": "CareerMatch Team",
   "scripts": {

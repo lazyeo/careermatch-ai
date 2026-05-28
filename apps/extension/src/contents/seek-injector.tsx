@@ -9,6 +9,9 @@ export const config: PlasmoCSConfig = {
   matches: [
     "https://www.seek.co.nz/*",
     "https://www.seek.com.au/*",
+    "https://nz.seek.com/*",
+    "*://seek.com/*",
+    "*://*.seek.com/*",
     "*://*.seek.co.nz/*",
     "*://*.seek.com.au/*"
   ],

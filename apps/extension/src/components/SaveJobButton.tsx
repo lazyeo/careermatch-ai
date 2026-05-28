@@ -39,6 +39,152 @@ const capText = (value: string, maxLength = 80000): string => {
 const textFrom = (selector: string): string =>
   cleanText(document.querySelector(selector)?.textContent)
 
+const textFromWithin = (root: ParentNode | null, selector: string): string =>
+  cleanText(root?.querySelector(selector)?.textContent)
+
+const firstTextFrom = (
+  selectors: string[],
+  root: ParentNode | null = document
+): string => {
+  for (const selector of selectors) {
+    const value = textFromWithin(root, selector)
+    if (value) return value
+  }
+
+  if (root !== document) {
+    for (const selector of selectors) {
+      const value = textFrom(selector)
+      if (value) return value
+    }
+  }
+
+  return ""
+}
+
+const splitLinkedInSummary = (value: string): string[] =>
+  value
+    .split(/\s(?:·|\|)\s|\n/)
+    .map((part) => cleanText(part))
+    .filter(Boolean)
+
+const extractJobMetadata = (container: Element | null) => {
+  const url = window.location.href
+  const pageTitle = cleanText(document.title)
+  let title = ""
+  let company = ""
+  let location = ""
+
+  if (url.includes("linkedin")) {
+    title =
+      firstTextFrom(
+        [
+          ".job-details-jobs-unified-top-card__job-title",
+          ".jobs-unified-top-card__job-title",
+          ".jobs-details__main-content h1",
+          "h1"
+        ],
+        container
+      ) || pageTitle
+    company = firstTextFrom(
+      [
+        ".job-details-jobs-unified-top-card__company-name a",
+        ".job-details-jobs-unified-top-card__company-name",
+        ".jobs-unified-top-card__company-name a",
+        ".jobs-unified-top-card__company-name",
+        'a[href*="/company/"]'
+      ],
+      container
+    )
+    location = firstTextFrom(
+      [
+        ".job-details-jobs-unified-top-card__bullet",
+        ".jobs-unified-top-card__bullet",
+        ".jobs-unified-top-card__workplace-type",
+        ".job-details-jobs-unified-top-card__primary-description-container"
+      ],
+      container
+    )
+
+    const summary = firstTextFrom(
+      [
+        ".job-details-jobs-unified-top-card__primary-description-container",
+        ".jobs-unified-top-card__primary-description-container"
+      ],
+      container
+    )
+    const summaryParts = splitLinkedInSummary(summary)
+    company ||= summaryParts[0] || ""
+    location ||=
+      summaryParts.find((part) =>
+        /new zealand|auckland|wellington|christchurch|remote|hybrid/i.test(part)
+      ) || ""
+
+    const linkedInTitle = pageTitle.replace(/\s*\|\s*LinkedIn.*$/i, "")
+    const hiringMatch = linkedInTitle.match(
+      /^(.+?)\s+hiring\s+(.+?)(?:\s+in\s+.+)?$/i
+    )
+    const atMatch = linkedInTitle.match(/^(.+?)\s+at\s+(.+)$/i)
+    if (hiringMatch) {
+      company ||= cleanText(hiringMatch[1])
+      title ||= cleanText(hiringMatch[2])
+    } else if (atMatch) {
+      title ||= cleanText(atMatch[1])
+      company ||= cleanText(atMatch[2])
+    }
+  } else if (url.includes("seek")) {
+    title =
+      firstTextFrom(
+        [
+          '[data-automation="job-detail-title"]',
+          '[data-automation="jobTitle"]',
+          "h1"
+        ],
+        container
+      ) || pageTitle
+    company = firstTextFrom(
+      [
+        '[data-automation="advertiser-name"]',
+        '[data-automation="company-profile-name"]',
+        '[data-automation="jobCompany"]'
+      ],
+      container
+    )
+    location = firstTextFrom(
+      [
+        '[data-automation="job-detail-location"]',
+        '[data-automation="jobLocation"]',
+        '[data-automation="job-detail-work-type"]'
+      ],
+      container
+    )
+  } else {
+    title = firstTextFrom(["h1", "h2"], container) || pageTitle
+    company = firstTextFrom(
+      [
+        '[data-testid*="company"]',
+        '[class*="company"]',
+        '[data-automation*="company"]'
+      ],
+      container
+    )
+    location = firstTextFrom(
+      [
+        '[data-testid*="location"]',
+        '[class*="location"]',
+        '[data-automation*="location"]'
+      ],
+      container
+    )
+  }
+
+  return {
+    title: cleanText(title),
+    company: cleanText(company),
+    location: cleanText(location),
+    application_url: url
+  }
+}
+
 // Helper to extract job ID from URL
 const getJobIdentifier = (url: string): string => {
   // Seek: extract job ID from URL like /job/12345678
@@ -243,16 +389,10 @@ export const SaveJobButton = () => {
       // 2. Extract focused content
       const contentContainer = container || document.body
       const jobUrl = getJobUrl(container)
-      const pageTitle = cleanText(document.title)
-      const jobTitle =
-        textFrom('[data-automation="job-detail-title"]') ||
-        textFrom("h1") ||
-        pageTitle
-      const company =
-        textFrom('[data-automation="advertiser-name"]') ||
-        textFrom('[data-automation="jobCompany"]') ||
-        textFrom(".job-details-jobs-unified-top-card__company-name") ||
-        textFrom(".jobs-unified-top-card__company-name")
+      const metadata = {
+        ...extractJobMetadata(container),
+        application_url: jobUrl
+      }
       const bodyText = capText(
         cleanText(
           (contentContainer as HTMLElement).innerText || document.body.innerText
@@ -260,9 +400,10 @@ export const SaveJobButton = () => {
       )
       const jobContent = [
         `Source URL: ${jobUrl}`,
-        `Page title: ${pageTitle}`,
-        `Job title: ${jobTitle}`,
-        company ? `Company: ${company}` : "",
+        `Page title: ${cleanText(document.title)}`,
+        metadata.title ? `Job title: ${metadata.title}` : "",
+        metadata.company ? `Company: ${metadata.company}` : "",
+        metadata.location ? `Location: ${metadata.location}` : "",
         "",
         "Job content:",
         bodyText
@@ -277,6 +418,7 @@ export const SaveJobButton = () => {
           name: "save-job",
           body: {
             content: jobContent,
+            metadata,
             url: jobUrl
           }
         }),
@@ -322,6 +464,25 @@ export const SaveJobButton = () => {
     <button
       onClick={handleSave}
       disabled={status === "loading" || status === "success"}
+      style={{
+        alignItems: "center",
+        border: 0,
+        borderRadius: "9999px",
+        boxShadow: "0 10px 30px rgba(15, 23, 42, 0.22)",
+        cursor:
+          status === "loading" || status === "success" ? "default" : "pointer",
+        display: "inline-flex",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontSize: "14px",
+        fontWeight: 700,
+        gap: "8px",
+        lineHeight: "20px",
+        minHeight: "44px",
+        minWidth: "188px",
+        padding: "10px 16px",
+        position: "relative",
+        whiteSpace: "nowrap"
+      }}
       className={`
         plasmo-flex plasmo-items-center plasmo-gap-2 plasmo-px-4 plasmo-py-2 plasmo-rounded-full plasmo-font-medium plasmo-transition-all plasmo-shadow-sm
         ${status === "idle" ? "plasmo-bg-blue-600 plasmo-text-white hover:plasmo-bg-blue-700" : ""}

@@ -6,7 +6,7 @@ import { getAuthDebugInfo, getAuthToken } from "../auth"
 const IMPORT_TIMEOUT_MS = 110000
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
-  const { content, url } = req.body
+  const { content, metadata, url } = req.body
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), IMPORT_TIMEOUT_MS)
 
@@ -34,6 +34,7 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
       body: JSON.stringify({
         url: url,
         content: content,
+        metadata: metadata,
         save_immediately: true
       })
     })
