@@ -40,6 +40,7 @@ import {
   type TemplateRecommendation,
 } from '@/lib/ai/template-recommender'
 import { fitResumeContentToOnePageBudget } from '@/lib/resume-content-budget'
+import { buildGeneratedResumeTitle } from '@/lib/resumes/resume-title'
 import { NextRequest, NextResponse } from 'next/server'
 import type {
   CVStrategy,
@@ -199,7 +200,7 @@ export async function POST(request: NextRequest) {
     console.log(`📊 Quality Score: ${qualityReport.qualityScore}/100`)
 
     // 11. 保存简历
-    const resumeTitle = `简历 - ${job.title} at ${job.company} (V2)`
+    const resumeTitle = buildGeneratedResumeTitle(job)
 
     // 检查是否已存在
     const { data: existingResume } = await supabase

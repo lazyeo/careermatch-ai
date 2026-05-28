@@ -88,6 +88,54 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const [{ data: job }, { data: resume }] = await Promise.all([
+      supabase
+        .from('jobs')
+        .select('id')
+        .eq('id', jobId)
+        .eq('user_id', user.id)
+        .maybeSingle(),
+      supabase
+        .from('resumes')
+        .select('id')
+        .eq('id', resumeId)
+        .eq('user_id', user.id)
+        .maybeSingle(),
+    ])
+
+    if (!job) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+    }
+
+    if (!resume) {
+      return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
+    }
+
+    const { data: existingApplication, error: existingError } = await supabase
+      .from('applications')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('job_id', jobId)
+      .maybeSingle()
+
+    if (existingError) {
+      console.error('Error checking existing application:', existingError)
+      return NextResponse.json(
+        {
+          error: 'Failed to check existing application',
+          details: existingError.message,
+        },
+        { status: 500 }
+      )
+    }
+
+    if (existingApplication) {
+      return NextResponse.json({
+        ...existingApplication,
+        already_exists: true,
+      })
+    }
+
     // Initialize timeline with creation event
     const initialTimeline = [
       {
@@ -132,7 +180,11 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        { error: 'Failed to create application' },
+        {
+          error: 'Failed to create application',
+          details: error.message,
+          code: error.code,
+        },
         { status: 500 }
       )
     }

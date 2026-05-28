@@ -9,6 +9,7 @@ import {
 } from '@/lib/ai-providers'
 import { validateResumeContent, type FlattenedProfile } from '@/lib/ai/resume-quality-validator'
 import { fitResumeContentToOnePageBudget } from '@/lib/resume-content-budget'
+import { buildGeneratedResumeTitle } from '@/lib/resumes/resume-title'
 import { NextRequest, NextResponse } from 'next/server'
 import type { ResumeContent } from '@careermatch/shared'
 
@@ -353,7 +354,7 @@ Default to a one-page A4 resume. Select the strongest evidence; do not include e
     console.log(`   - Warnings: ${qualityReport.stats.warningCount}`)
 
     // Generate title
-    const resumeTitle = `简历 - ${job.title} at ${job.company}`
+    const resumeTitle = buildGeneratedResumeTitle(job)
 
     // Save resume to database
     // Check for existing resume for this job
