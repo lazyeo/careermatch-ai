@@ -14,7 +14,10 @@ import {
 } from '../ai/prompts/features/job-matching-v2'
 import { getAnalysisOutputLocale } from '../ai/analysis-locale'
 import type { AutomaticJobAnalysisSource, FullProfile } from '@careermatch/shared'
-import { buildJobAnalysisSummaryUpdate } from '../../server/job-processing/decide-next-action'
+import {
+  buildJobAnalysisSummaryUpdate,
+  toAnalysisSessionRecommendation,
+} from '../../server/job-processing/decide-next-action'
 
 export type AutomaticJobAnalysisPayload = {
   taskId: string
@@ -107,6 +110,10 @@ export async function runAutomaticJobAnalysis(
   }
 
   const analysisResult = await perform8DimensionAnalysis(job, profileData)
+  const recommendation = toAnalysisSessionRecommendation(
+    analysisResult.recommendation,
+    analysisResult.score
+  )
 
   const { data: savedSession, error: saveError } = await supabase
     .from('analysis_sessions')
@@ -116,7 +123,7 @@ export async function runAutomaticJobAnalysis(
       user_id: payload.userId,
       status: 'active',
       score: analysisResult.score,
-      recommendation: analysisResult.recommendation,
+      recommendation,
       analysis: analysisResult.analysis,
       dimensions: analysisResult.dimensions,
       provider: 'trigger',

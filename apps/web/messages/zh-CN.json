@@ -41,6 +41,7 @@
     "jobManagement": "岗位管理",
     "jobManagementDesc": "浏览和保存感兴趣的岗位",
     "manageJobs": "管理岗位",
+    "importJob": "导入岗位",
     "applicationTracking": "申请追踪",
     "applicationTrackingDesc": "追踪您的申请进度和面试安排",
     "manageApplications": "管理申请",

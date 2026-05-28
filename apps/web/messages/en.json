@@ -41,6 +41,7 @@
     "jobManagement": "Job Management",
     "jobManagementDesc": "Browse and save jobs you're interested in",
     "manageJobs": "Manage Jobs",
+    "importJob": "Import Job",
     "applicationTracking": "Application Tracking",
     "applicationTrackingDesc": "Track your application progress and interview schedules",
     "manageApplications": "Manage Applications",
