@@ -154,19 +154,49 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    const applicationPayload = {
+      user_id: user.id,
+      job_id: jobId,
+      resume_id: resumeId,
+      status,
+      notes,
+      timeline: initialTimeline,
+    }
+
     // Create the application
-    const { data: application, error } = await supabase
+    let { data: application, error } = await supabase
       .from('applications')
-      .insert({
-        user_id: user.id,
-        job_id: jobId,
-        resume_id: resumeId,
-        status,
-        notes,
-        timeline: initialTimeline,
-      })
+      .insert(applicationPayload)
       .select()
       .single()
+
+    if (isArchivedResumeForeignKeyError(error)) {
+      console.warn(
+        'applications.resume_id still points at resumes_v1_archived; creating application without resume link',
+        error
+      )
+
+      const fallbackResult = await supabase
+        .from('applications')
+        .insert({
+          ...applicationPayload,
+          resume_id: null,
+          timeline: [
+            ...initialTimeline,
+            {
+              type: 'resume_link_skipped',
+              date: new Date().toISOString(),
+              description:
+                'Resume link skipped because the applications resume foreign key is awaiting migration.',
+            },
+          ],
+        })
+        .select()
+        .single()
+
+      application = fallbackResult.data
+      error = fallbackResult.error
+    }
 
     if (error) {
       console.error('Error creating application:', error)
@@ -197,4 +227,14 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+function isArchivedResumeForeignKeyError(error: { code?: string; message?: string; details?: string } | null) {
+  if (!error) return false
+
+  return (
+    error.code === '23503' &&
+    error.message?.includes('applications_resume_id_fkey') &&
+    error.details?.includes('resumes_v1_archived')
+  )
 }
