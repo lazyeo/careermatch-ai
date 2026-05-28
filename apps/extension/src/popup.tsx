@@ -53,9 +53,9 @@ function IndexPopup() {
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: () => {
-            const capText = (value: string, maxLength = 80000) => {
+            const capHtml = (value: string, maxLength = 120000) => {
               if (value.length <= maxLength) return value
-              return `${value.slice(0, maxLength)}\n\n[Content trimmed by CareerMatch extension]`
+              return `${value.slice(0, maxLength)}\n<p><em>Content trimmed by CareerMatch extension.</em></p>`
             }
 
             const cleanText = (value?: string | null) =>
@@ -93,6 +93,97 @@ function IndexPopup() {
                 .split(/\s(?:·|\|)\s|\n/)
                 .map((part) => cleanText(part))
                 .filter(Boolean)
+
+            const sanitizeJobHtml = (source: Element) => {
+              const clone = source.cloneNode(true) as HTMLElement
+
+              clone
+                .querySelectorAll(
+                  [
+                    "script",
+                    "style",
+                    "svg",
+                    "canvas",
+                    "iframe",
+                    "noscript",
+                    "button",
+                    "form",
+                    "nav",
+                    "header",
+                    "footer",
+                    '[aria-hidden="true"]',
+                    '[role="button"]'
+                  ].join(",")
+                )
+                .forEach((element) => element.remove())
+
+              clone.querySelectorAll("*").forEach((element) => {
+                for (const attribute of Array.from(element.attributes)) {
+                  const shouldKeep =
+                    element.tagName.toLowerCase() === "a" &&
+                    attribute.name === "href"
+
+                  if (!shouldKeep) {
+                    element.removeAttribute(attribute.name)
+                  }
+                }
+
+                if (element.tagName.toLowerCase() === "a") {
+                  const href = element.getAttribute("href")
+                  if (href) {
+                    element.setAttribute(
+                      "href",
+                      new URL(href, window.location.href).href
+                    )
+                  }
+                }
+              })
+
+              return capHtml(clone.innerHTML)
+            }
+
+            const escapeHtml = (value: string) =>
+              value
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;")
+
+            const buildJobContentHtml = (
+              metadata: {
+                title: string
+                company: string
+                location: string
+                application_url: string
+              },
+              contentContainer: Element,
+              jobUrl: string
+            ) => {
+              const metadataRows = [
+                ["Source URL", jobUrl],
+                ["Page title", cleanText(document.title)],
+                ["Job title", metadata.title],
+                ["Company", metadata.company],
+                ["Location", metadata.location]
+              ].filter(([, value]) => value)
+
+              const metadataHtml = metadataRows
+                .map(
+                  ([label, value]) =>
+                    `<p><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>`
+                )
+                .join("")
+
+              return [
+                "<article>",
+                metadataHtml ? `<section>${metadataHtml}</section>` : "",
+                "<section>",
+                sanitizeJobHtml(contentContainer),
+                "</section>",
+                "</article>"
+              ].join("")
+            }
 
             const getScopedContainer = () => {
               const url = window.location.href
@@ -278,26 +369,14 @@ function IndexPopup() {
               location: cleanText(location),
               application_url: jobUrl
             }
-            const bodyText = capText(
-              cleanText(
-                (contentContainer as HTMLElement).innerText ||
-                  document.body.innerText
-              )
+            const jobContent = buildJobContentHtml(
+              metadata,
+              contentContainer,
+              jobUrl
             )
 
             return {
-              content: [
-                `Source URL: ${jobUrl}`,
-                `Page title: ${pageTitle}`,
-                metadata.title ? `Job title: ${metadata.title}` : "",
-                metadata.company ? `Company: ${metadata.company}` : "",
-                metadata.location ? `Location: ${metadata.location}` : "",
-                "",
-                "Job content:",
-                bodyText
-              ]
-                .filter(Boolean)
-                .join("\n"),
+              content: jobContent,
               metadata,
               url: jobUrl
             }

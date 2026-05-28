@@ -53,6 +53,12 @@ function buildContentWithMetadata(
 ): string {
   if (!metadata) return content;
 
+  // Extension captures already include metadata in semantic HTML. Avoid
+  // prepending plain text, because that degrades the saved original post layout.
+  if (/^\s*</.test(content)) {
+    return content;
+  }
+
   const metadataLines = [
     metadata.title ? `Job title: ${metadata.title}` : "",
     metadata.company ? `Company: ${metadata.company}` : "",

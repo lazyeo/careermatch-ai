@@ -31,9 +31,9 @@ function withTimeout<T>(
 const cleanText = (value?: string | null): string =>
   value?.replace(/\s+/g, " ").trim() || ""
 
-const capText = (value: string, maxLength = 80000): string => {
+const capHtml = (value: string, maxLength = 120000): string => {
   if (value.length <= maxLength) return value
-  return `${value.slice(0, maxLength)}\n\n[Content trimmed by CareerMatch extension]`
+  return `${value.slice(0, maxLength)}\n<p><em>Content trimmed by CareerMatch extension.</em></p>`
 }
 
 const textFrom = (selector: string): string =>
@@ -183,6 +183,88 @@ const extractJobMetadata = (container: Element | null) => {
     location: cleanText(location),
     application_url: url
   }
+}
+
+const sanitizeJobHtml = (source: Element): string => {
+  const clone = source.cloneNode(true) as HTMLElement
+
+  clone
+    .querySelectorAll(
+      [
+        "script",
+        "style",
+        "svg",
+        "canvas",
+        "iframe",
+        "noscript",
+        "button",
+        "form",
+        "nav",
+        "header",
+        "footer",
+        '[aria-hidden="true"]',
+        '[role="button"]'
+      ].join(",")
+    )
+    .forEach((element) => element.remove())
+
+  clone.querySelectorAll("*").forEach((element) => {
+    for (const attribute of Array.from(element.attributes)) {
+      const shouldKeep =
+        element.tagName.toLowerCase() === "a" && attribute.name === "href"
+
+      if (!shouldKeep) {
+        element.removeAttribute(attribute.name)
+      }
+    }
+
+    if (element.tagName.toLowerCase() === "a") {
+      const href = element.getAttribute("href")
+      if (href) {
+        element.setAttribute("href", new URL(href, window.location.href).href)
+      }
+    }
+  })
+
+  return capHtml(clone.innerHTML)
+}
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+
+const buildJobContentHtml = (
+  metadata: ReturnType<typeof extractJobMetadata>,
+  contentContainer: Element,
+  jobUrl: string
+): string => {
+  const metadataRows = [
+    ["Source URL", jobUrl],
+    ["Page title", cleanText(document.title)],
+    ["Job title", metadata.title],
+    ["Company", metadata.company],
+    ["Location", metadata.location]
+  ].filter(([, value]) => value)
+
+  const metadataHtml = metadataRows
+    .map(
+      ([label, value]) =>
+        `<p><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>`
+    )
+    .join("")
+
+  return [
+    "<article>",
+    metadataHtml ? `<section>${metadataHtml}</section>` : "",
+    "<section>",
+    sanitizeJobHtml(contentContainer),
+    "</section>",
+    "</article>"
+  ].join("")
 }
 
 // Helper to extract job ID from URL
@@ -393,23 +475,7 @@ export const SaveJobButton = () => {
         ...extractJobMetadata(container),
         application_url: jobUrl
       }
-      const bodyText = capText(
-        cleanText(
-          (contentContainer as HTMLElement).innerText || document.body.innerText
-        )
-      )
-      const jobContent = [
-        `Source URL: ${jobUrl}`,
-        `Page title: ${cleanText(document.title)}`,
-        metadata.title ? `Job title: ${metadata.title}` : "",
-        metadata.company ? `Company: ${metadata.company}` : "",
-        metadata.location ? `Location: ${metadata.location}` : "",
-        "",
-        "Job content:",
-        bodyText
-      ]
-        .filter(Boolean)
-        .join("\n")
+      const jobContent = buildJobContentHtml(metadata, contentContainer, jobUrl)
       console.log(`📦 [Extension] Extracted ${jobContent.length} chars`)
       console.log(`🔗 [Extension] Identified Job URL: ${jobUrl}`)
 
