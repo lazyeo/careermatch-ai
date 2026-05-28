@@ -75,6 +75,13 @@ export default async function JobDetailPage({
   const resumes = resumesResult.data || []
   const coverLetters = coverLettersResult.data || []
 
+  const getTime = (value?: string | null) => value ? new Date(value).getTime() : 0
+  const hasFreshAnalysis =
+    Boolean(latestAnalysis) &&
+    (!latestProcessingTask ||
+      getTime(latestAnalysis?.created_at) >=
+        getTime(latestProcessingTask.completed_at || latestProcessingTask.created_at))
+
   // Helper functions
   const getJobTypeLabel = (type: string | null) => {
     if (!type) return t('notSpecified')
@@ -115,6 +122,14 @@ export default async function JobDetailPage({
   }
 
   const getAnalysisTaskBadge = () => {
+    if (hasFreshAnalysis) {
+      return {
+        label: t('detail.analysisCompleted'),
+        tone: 'sage' as const,
+        description: t('detail.analysisCompletedDesc'),
+      }
+    }
+
     if (!latestProcessingTask) return null
 
     if (latestProcessingTask.status === 'pending') {
@@ -159,6 +174,11 @@ export default async function JobDetailPage({
   ].filter(Boolean).join('\n\n---\n\n') || t('noContent')
 
   const analysisTaskBadge = getAnalysisTaskBadge()
+  const hasActiveProcessingTask =
+    !hasFreshAnalysis &&
+    (latestProcessingTask?.status === 'pending' || latestProcessingTask?.status === 'processing')
+  const hasCurrentFailedTask =
+    !hasFreshAnalysis && latestProcessingTask?.status === 'failed'
 
   return (
     <div className="space-y-6">
@@ -273,7 +293,7 @@ export default async function JobDetailPage({
                                 <Button variant="primary">{t('detail.viewDetailedAnalysis')}</Button>
                               </Link>
                             </div>
-                          ) : latestProcessingTask?.status === 'pending' || latestProcessingTask?.status === 'processing' ? (
+                          ) : hasActiveProcessingTask ? (
                             <div className="rounded-lg border border-indigo-soft bg-indigo-soft p-4 text-sm text-indigo">
                               {t('detail.analysisGenerating')}
                             </div>
@@ -283,20 +303,20 @@ export default async function JobDetailPage({
                             </div>
                           )}
 
-                          {latestProcessingTask?.status === 'failed' && (
+                          {hasCurrentFailedTask && (
                             <div className="rounded-lg border border-clay-soft bg-clay-soft p-4 text-sm text-clay">
                               {latestProcessingTask.error || t('detail.analysisFailedDesc')}
                             </div>
                           )}
 
-                          {latestProcessingTask?.status === 'pending' || latestProcessingTask?.status === 'processing' ? (
+                          {hasActiveProcessingTask ? (
                             <Button variant="primary" className="w-full" disabled>
                               {t('detail.analysisInProgress')}
                             </Button>
                           ) : (
                             <Link href={`/jobs/${params.id}/analysis`} className="block">
                               <Button variant="primary" className="w-full">
-                                {latestProcessingTask?.status === 'failed' ? t('detail.restartAnalysis') : t('startAnalysis')}
+                                {hasCurrentFailedTask ? t('detail.restartAnalysis') : t('startAnalysis')}
                               </Button>
                             </Link>
                           )}

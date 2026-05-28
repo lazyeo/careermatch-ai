@@ -10,6 +10,7 @@ import { tasks } from '@trigger.dev/sdk/v3'
 
 import { createClient } from '@/lib/supabase-server'
 import { enqueueProcessJobPipeline } from '@/lib/jobs/enqueue-process-job-pipeline'
+import { assertTriggerSecretMatchesDeployment } from '@/lib/trigger/validate-trigger-environment'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       resumeId: resumeId || null,
       mode: 'full_artifacts',
       triggerPipelineTask: async (payload) => {
+        assertTriggerSecretMatchesDeployment()
         await tasks.trigger('process-job-pipeline', payload)
       },
     })

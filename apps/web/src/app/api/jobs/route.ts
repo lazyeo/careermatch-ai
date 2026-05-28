@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
 import { enqueueAutomaticJobAnalysis } from '@/lib/jobs/enqueue-job-analysis'
+import { assertTriggerSecretMatchesDeployment } from '@/lib/trigger/validate-trigger-environment'
 import { tasks } from '@trigger.dev/sdk/v3'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
         jobId: job.id,
         source: 'job_create',
         triggerAnalysisTask: async (payload) => {
+          assertTriggerSecretMatchesDeployment()
           await tasks.trigger('analyze-saved-job', payload)
         },
       })

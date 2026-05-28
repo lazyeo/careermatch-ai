@@ -28,14 +28,22 @@ export default async function JobsPage() {
     .order('updated_at', { ascending: false })
 
   const jobIds = jobs?.map((job) => job.id) || []
-  const processingTasksResult = jobIds.length
-    ? await supabase
-        .from('processing_tasks')
-        .select('id, job_id, status, current_step, error, created_at, completed_at')
-        .eq('user_id', user.id)
-        .in('job_id', jobIds)
-        .order('created_at', { ascending: false })
-    : { data: [], error: null }
+  const [processingTasksResult, analysisSessionsResult] = jobIds.length
+    ? await Promise.all([
+        supabase
+          .from('processing_tasks')
+          .select('id, job_id, status, current_step, error, created_at, completed_at')
+          .eq('user_id', user.id)
+          .in('job_id', jobIds)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('analysis_sessions')
+          .select('id, job_id, score, created_at')
+          .eq('user_id', user.id)
+          .in('job_id', jobIds)
+          .order('created_at', { ascending: false }),
+      ])
+    : [{ data: [], error: null }, { data: [], error: null }]
 
   const latestTaskByJobId = new Map<string, {
     id: string
@@ -53,10 +61,24 @@ export default async function JobsPage() {
     }
   }
 
+  const latestAnalysisByJobId = new Map<string, {
+    id: string
+    job_id: string
+    score: number | null
+    created_at: string
+  }>()
+
+  for (const analysis of analysisSessionsResult.data || []) {
+    if (!latestAnalysisByJobId.has(analysis.job_id)) {
+      latestAnalysisByJobId.set(analysis.job_id, analysis)
+    }
+  }
+
   const jobsWithAnalysisState =
     jobs?.map((job) => ({
       ...job,
       latest_processing_task: latestTaskByJobId.get(job.id) || null,
+      latest_analysis: latestAnalysisByJobId.get(job.id) || null,
     })) || []
 
   console.log('🔍 [Dashboard] Current User:', user.id)
@@ -207,6 +229,11 @@ interface Job {
     created_at: string
     completed_at: string | null
   } | null
+  latest_analysis?: {
+    id: string
+    score: number | null
+    created_at: string
+  } | null
 }
 
 interface JobCardProps {
@@ -275,7 +302,31 @@ function JobSection({
   )
 }
 
-function getAnalysisTaskBadge(task?: Job['latest_processing_task']) {
+function getTime(value?: string | null) {
+  return value ? new Date(value).getTime() : 0
+}
+
+function hasFreshAnalysis(
+  analysis?: Job['latest_analysis'],
+  task?: Job['latest_processing_task']
+) {
+  if (!analysis) return false
+  if (!task) return true
+
+  return getTime(analysis.created_at) >= getTime(task.completed_at || task.created_at)
+}
+
+function getAnalysisTaskBadge(
+  task?: Job['latest_processing_task'],
+  analysis?: Job['latest_analysis']
+) {
+  if (hasFreshAnalysis(analysis, task)) {
+    return {
+      labelKey: 'analysisStatus.completed',
+      tone: 'sage' as const,
+    }
+  }
+
   if (!task) return null
 
   if (task.status === 'pending') {
@@ -306,11 +357,16 @@ function getAnalysisTaskBadge(task?: Job['latest_processing_task']) {
 }
 
 function JobCard({ job, t, compact = false }: JobCardProps) {
-  const analysisTaskBadge = getAnalysisTaskBadge(job.latest_processing_task)
+  const analysisTaskBadge = getAnalysisTaskBadge(job.latest_processing_task, job.latest_analysis)
+  const showTaskError =
+    job.latest_processing_task?.status === 'failed' &&
+    job.latest_processing_task.error &&
+    !hasFreshAnalysis(job.latest_analysis, job.latest_processing_task)
+  const taskError = showTaskError ? job.latest_processing_task?.error : null
 
   return (
     <Card variant="interactive" className="relative h-full overflow-hidden">
-      <CardContent className={compact ? 'p-4' : 'p-5'}>
+      <CardContent className={`${compact ? 'p-4' : 'p-5'} flex h-full flex-col`}>
         <div className="mb-2 flex items-start justify-between">
           <div className="flex-1 pr-2">
             <Link href={`/jobs/${job.id}`} className="transition-colors hover:text-brick">
@@ -340,9 +396,9 @@ function JobCard({ job, t, compact = false }: JobCardProps) {
         {analysisTaskBadge && (
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <Badge tone={analysisTaskBadge.tone}>{t(analysisTaskBadge.labelKey)}</Badge>
-            {job.latest_processing_task?.status === 'failed' && job.latest_processing_task.error && (
-              <span className="line-clamp-1 text-xs text-clay" title={job.latest_processing_task.error}>
-                {job.latest_processing_task.error}
+            {taskError && (
+              <span className="line-clamp-1 text-xs text-clay" title={taskError}>
+                {taskError}
               </span>
             )}
           </div>
@@ -366,7 +422,7 @@ function JobCard({ job, t, compact = false }: JobCardProps) {
           )}
         </div>
 
-        <div className="flex gap-2 mt-3">
+        <div className="mt-auto flex gap-2 pt-3">
           <Link href={`/jobs/${job.id}`} className="flex-1">
             <Button variant="secondary" className="h-8 w-full text-xs" size="sm">
               {t('view')}
